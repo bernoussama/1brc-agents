@@ -1,8 +1,8 @@
-# GLM via coding plan (OpenAI-compatible endpoint). If your plan gives a
-# custom base URL, set it here and pi's models.json/provider override on
-# the target machine — see harness/README.
-PROVIDER=glm
+# GLM coding plan. pi has a built-in ZAI Coding Plan provider — if your
+# plan exposes an API key, this is just ZAI_API_KEY. (OAuth variant: login
+# once on the host and use AUTH_JSON=1 like the codex profile.)
+PROVIDER=zai
 MODEL_ID=glm-4.7
-AUTH_ENV=GLM_API_KEY
+AUTH_ENV=ZAI_API_KEY
 NCPUS=4
 MEM=8g

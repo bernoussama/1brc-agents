@@ -45,11 +45,26 @@ docker run --rm -v "$RUNDIR/work:/w" -v "$RUNDIR/pi-home:/h" alpine:latest chown
 # --- image ---
 docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" "$ROOT/sandbox"
 
-# --- profile: PROVIDER, MODEL_ID, AUTH_ENV (+ optional THINKING, NCPUS, MEM) ---
+# --- profile: PROVIDER, MODEL_ID, AUTH_ENV or AUTH_JSON (+ THINKING, NCPUS, MEM) ---
 set -a; source "$PROFILE"; set +a
-AUTH_VAL="${!AUTH_ENV:-}"
-[ -n "$AUTH_VAL" ] || { echo "$AUTH_ENV not set — export it first"; exit 1; }
 mkdir -p "$RUNDIR/pi-home"   # pi state (sessions = the trace!) persists here
+
+# --- auth: two modes ---
+#  API-key providers: export AUTH_ENV var on host (e.g. OPENROUTER_API_KEY)
+#  OAuth providers (codex/claude/xai subscriptions): login ONCE on the host
+#  with `pi` + /login, then set AUTH_JSON=~/.pi/agent/auth.json in the profile.
+AUTH_VAL="${!AUTH_ENV:-}"
+AUTH_FILE="${AUTH_JSON:-$HOME/.pi/agent/auth.json}"
+if [ -n "${AUTH_JSON:-}" ]; then
+  [ -f "$AUTH_FILE" ] || { echo "auth.json not found at $AUTH_FILE"; exit 1; }
+  mkdir -p "$RUNDIR/pi-home/.pi/agent"
+  cp "$AUTH_FILE" "$RUNDIR/pi-home/.pi/agent/auth.json"
+  chmod 600 "$RUNDIR/pi-home/.pi/agent/auth.json"
+elif [ -n "$AUTH_VAL" ]; then
+  :   # passed via -e below
+else
+  echo "no auth: export \\$AUTH_ENV or set AUTH_JSON in the profile"; exit 1
+fi
 
 CID_FILE="$RUNDIR/container.id"
 
@@ -72,13 +87,19 @@ deadline=$(( $(date +%s) + BUDGET_MIN * 60 ))
 ( sleep $(( BUDGET_MIN * 60 + 300 )); docker kill "$(cat "$CID_FILE" 2>/dev/null)" 2>/dev/null || true ) &
 WATCHDOG=$!
 
+docker network inspect 1brc-agent-net >/dev/null 2>&1 \
+  || { echo "network missing — run: sudo ./harness/setup_network.sh"; exit 1; }
+
 docker run --rm \
   --name "1brc-${SLUG}-${STAMP}" \
-  --network none \
+  --network 1brc-agent-net \
   --cpus="${NCPUS:-4}" --memory="${MEM:-8g}" \
   --user 1000:1000 \
   -e HOME=/home/agent \
-  -e "${AUTH_ENV}=${AUTH_VAL}" \
+  -e HTTPS_PROXY=http://172.28.77.2:3128 \
+  -e HTTP_PROXY=http://172.28.77.2:3128 \
+  -e NO_PROXY=localhost,127.0.0.1 \
+  ${AUTH_VAL:+-e "${AUTH_ENV}=${AUTH_VAL}"} \
   -v "$RUNDIR/work:/work" \
   -v "$RUNDIR/pi-home:/home/agent" \
   -v "$DEV:/data/measurements-dev.txt:ro" \
