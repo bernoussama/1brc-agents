@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Dataset generator for 1BRC-Agents.
+"""Legacy synthetic smoke-test generator for 1BRC-Agents.
 
 Synthetic station names — deliberately NOT the official 1BRC list — so
 hardcoded hash-tables tuned to the famous 413 keys buy you nothing.
+
+The session runner uses the authoritative Java generator from the sibling
+1brc checkout instead. Keep this utility for small, deterministic local
+smoke tests that need arbitrary station names.
 
 Usage: generator.py <rows> <seed> <output-path>
 """

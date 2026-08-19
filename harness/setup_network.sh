@@ -5,8 +5,8 @@
 #   sudo ./harness/setup_network.sh
 #
 # Topology:
-#   1brc-agent-net (172.28.77.0/24, no internet)
-#     ├── sandbox containers (egress LOCKED by DOCKER-USER rule)
+#   1brc-agent-net (172.28.77.0/24, Docker-internal)
+#     ├── sandbox containers (egress LOCKED by the internal network + rule)
 #     └── 1brc-proxy @ 172.28.77.2 (also attached to default bridge = egress)
 #   Sandbox reaches ONLY the proxy; proxy forwards HTTPS to ALLOW_DOMAINS.
 #
@@ -22,25 +22,67 @@ PROXY_IP=172.28.77.2
 ALLOW_DOMAINS="${ALLOW_DOMAINS:-api.openai.com,auth.openai.com,chatgpt.com,api.anthropic.com,api.deepseek.com,openrouter.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai}"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+source "$ROOT/harness/lib/firewall.sh"
 
-docker network inspect "$NET_NAME" >/dev/null 2>&1 \
-  || docker network create --subnet "$SUBNET" "$NET_NAME"
+die() {
+  echo "error: $*" >&2
+  exit 1
+}
+
+[ "$(id -u)" -eq 0 ] || die "run as root, for example: sudo ./harness/setup_network.sh"
+command -v docker >/dev/null 2>&1 || die "docker is required"
+command -v iptables >/dev/null 2>&1 || die "iptables is required"
+iptables -L DOCKER-USER -n >/dev/null 2>&1 \
+  || die "Docker's DOCKER-USER chain is not available"
+
+cleanup_on_error() {
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    docker rm -f 1brc-proxy >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup_on_error EXIT
+
+# Disable any previous proxy before doing work that can fail. The internal
+# network remains fail-closed while this script is incomplete.
+docker rm -f 1brc-proxy >/dev/null 2>&1 || true
+
+if docker network inspect "$NET_NAME" >/dev/null 2>&1; then
+  internal="$(docker network inspect -f '{{.Internal}}' "$NET_NAME")"
+  [ "$internal" = true ] \
+    || die "network $NET_NAME already exists but is not internal; recreate it before running sessions"
+  configured_subnet="$(docker network inspect -f '{{(index .IPAM.Config 0).Subnet}}' "$NET_NAME")"
+  [ "$configured_subnet" = "$SUBNET" ] \
+    || die "network $NET_NAME uses subnet $configured_subnet, expected $SUBNET"
+else
+  docker network create --internal --subnet "$SUBNET" \
+    --label com.1brc.agents.network=internal-v1 "$NET_NAME" >/dev/null
+fi
 
 docker build -q -t 1brc-allowlist-proxy "$ROOT/harness/proxy" >/dev/null
 
-docker rm -f 1brc-proxy >/dev/null 2>&1 || true
 docker run -d --name 1brc-proxy --restart unless-stopped \
   --network "$NET_NAME" --ip "$PROXY_IP" \
+  --label com.1brc.agents.proxy=allowlist-v1 \
   -e ALLOW_DOMAINS="$ALLOW_DOMAINS" \
   1brc-allowlist-proxy >/dev/null
 
 # proxy also joins the default bridge so it can reach the internet
-docker network connect bridge 1brc-proxy 2>/dev/null || true
+docker network connect --gw-priority 1 bridge 1brc-proxy >/dev/null
 
-# Lock the sandbox subnet: everything except the proxy IP is dropped.
-if ! iptables -C DOCKER-USER -s "$SUBNET" ! -d "$PROXY_IP" -j DROP 2>/dev/null; then
-  iptables -I DOCKER-USER -s "$SUBNET" ! -d "$PROXY_IP" -j DROP
-fi
+proxy_running="$(docker inspect -f '{{.State.Running}}' 1brc-proxy)"
+[ "$proxy_running" = true ] || die "proxy container is not running"
+proxy_ip="$(docker inspect -f '{{(index .NetworkSettings.Networks "1brc-agent-net").IPAddress}}' 1brc-proxy)"
+[ "$proxy_ip" = "$PROXY_IP" ] || die "proxy has IP $proxy_ip on $NET_NAME, expected $PROXY_IP"
+proxy_networks="$(docker inspect -f '{{json .NetworkSettings.Networks}}' 1brc-proxy)"
+case "$proxy_networks" in
+  *'"bridge":'*) : ;;
+  *) die "proxy is not attached to Docker's bridge network" ;;
+esac
+
+# Lock the sandbox subnet: established replies and the proxy are allowed;
+# new traffic from sandbox IPs to any other destination is dropped.
+install_firewall_rules "$PROXY_IP" "$SUBNET"
 
 echo "OK: network $NET_NAME, proxy at 172.28.77.2:3128, subnet locked."
 echo "Verify: docker run --rm --network $NET_NAME curlimages/curl:8.16.0 -sI -x http://$PROXY_IP:3128 https://api.openai.com"

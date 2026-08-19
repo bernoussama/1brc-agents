@@ -4,3 +4,13 @@ runs/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Local test and profiling output
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+*.log
+*.perf
+*.out
