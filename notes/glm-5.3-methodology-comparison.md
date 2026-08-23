@@ -1,5 +1,11 @@
 # Why the More Rigorous 1BRC Run Scored Worse
 
+> Note: the underlying sessions referenced below (`glm-5.3-20260818T003813` and
+> `glm-5.3-20260818T102354`) were never published as part of a release batch.
+> Links into those session directories are historical and will not resolve on
+> GitHub. The published neutral-prompt v0.5 batch is
+> [runs/2026-08-21-neutral-v0.5](../runs/2026-08-21-neutral-v0.5/).
+
 ## Comparing two GLM 5.3 optimization sessions
 
 The second GLM 5.3 run scored **5.239 seconds**, compared with **2.899 seconds** in the earlier run. At first glance, that looks like a regression. It is a regression on the judge's median, but it is not a simple failure of optimization.

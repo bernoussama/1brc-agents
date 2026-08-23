@@ -8,14 +8,14 @@ configurations and adapter routes, not a definitive model ranking.
 
 | Rank | Configuration | Reasoning | Median | Five timed runs (ms) | Agent time | Adapter/provider route |
 |---:|---|---|---:|---|---:|---|
-| 1 | [Cursor Grok 4.6 Medium](artifacts/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733/) | medium | 1904.5 ms | 1940.6, 1883.2, 1905.2, 1904.5, 1894.1 | 72.0 min | pi to in-container cursor-api-proxy to Cursor CLI Grok 4.6 Medium |
-| 2 | [GLM 5.3](artifacts/neutral-20260821T191231-01-glm-5.3-20260821T191231/) | max | 1923.5 ms | 1879.8, 1878.5, 1928.6, 1952.8, 1923.5 | 56.1 min | pi to Z.AI Coding Plan to glm-5.3 |
-| 3 | [GPT-5.6 Luna](artifacts/neutral-20260821T191231-02-gpt-5.6-luna-20260821T200857/) | max | 2403.7 ms | 2343.9, 2434.2, 2465.4, 2338.4, 2403.7 | 79.8 min | pi to openai-codex OAuth to gpt-5.6-luna |
-| 4 | [Gemini 3.7 Flash](artifacts/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131/) | high | 2989.7 ms | 4836.8, 2989.7, 2675.4, 2761.3, 3480.6 | 19.4 min | pi to CLIProxyAPI bridge to Antigravity gemini-3.7-flash-high |
-| 5 | [Ox Alpha](artifacts/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130/) | max | 3898.2 ms | 3686.9, 3756.0, 3914.0, 3898.2, 3974.8 | 100.0 min | pi to OpenRouter to stealth/ox-alpha |
-| 6 | [GPT-5.6 Terra](artifacts/neutral-gpt-5.6-terra-medium-20260822T132613/) | medium | 4661.3 ms | 6838.0, 4797.1, 4661.3, 4425.6, 4535.0 | 9.3 min | pi to openai-codex OAuth to gpt-5.6-terra |
-| 7 | [GPT-5.6 Sol](artifacts/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907/) | high | 5186.3 ms | 4915.3, 5561.1, 5369.1, 5077.4, 5186.3 | 7.4 min | pi to openai-codex OAuth to gpt-5.6-sol |
-| 8 | [GPT-5.6 Terra](artifacts/neutral-gpt-5.6-terra-max-20260822T133750/) | max | 5905.4 ms | 7700.5, 5695.6, 5819.9, 5925.9, 5905.4 | 43.1 min | pi to openai-codex OAuth to gpt-5.6-terra |
+| 1 | [Cursor Grok 4.6 Medium](cursor-grok-4.6-medium/) | medium | 1904.5 ms | 1940.6, 1883.2, 1905.2, 1904.5, 1894.1 | 72.0 min | pi to in-container cursor-api-proxy to Cursor CLI Grok 4.6 Medium |
+| 2 | [GLM 5.3](glm-5.3/) | max | 1923.5 ms | 1879.8, 1878.5, 1928.6, 1952.8, 1923.5 | 56.1 min | pi to Z.AI Coding Plan to glm-5.3 |
+| 3 | [GPT-5.6 Luna](gpt-5.6-luna/) | max | 2403.7 ms | 2343.9, 2434.2, 2465.4, 2338.4, 2403.7 | 79.8 min | pi to openai-codex OAuth to gpt-5.6-luna |
+| 4 | [Gemini 3.7 Flash](gemini-3.7-flash/) | high | 2989.7 ms | 4836.8, 2989.7, 2675.4, 2761.3, 3480.6 | 19.4 min | pi to CLIProxyAPI bridge to Antigravity gemini-3.7-flash-high |
+| 5 | [Ox Alpha](ox-alpha/) | max | 3898.2 ms | 3686.9, 3756.0, 3914.0, 3898.2, 3974.8 | 100.0 min | pi to OpenRouter to stealth/ox-alpha |
+| 6 | [GPT-5.6 Terra](gpt-5.6-terra-medium/) | medium | 4661.3 ms | 6838.0, 4797.1, 4661.3, 4425.6, 4535.0 | 9.3 min | pi to openai-codex OAuth to gpt-5.6-terra |
+| 7 | [GPT-5.6 Sol](gpt-5.6-sol-high/) | high | 5186.3 ms | 4915.3, 5561.1, 5369.1, 5077.4, 5186.3 | 7.4 min | pi to openai-codex OAuth to gpt-5.6-sol |
+| 8 | [GPT-5.6 Terra](gpt-5.6-terra-max/) | max | 5905.4 ms | 7700.5, 5695.6, 5819.9, 5925.9, 5905.4 | 43.1 min | pi to openai-codex OAuth to gpt-5.6-terra |
 
 Cursor Grok 4.6 Medium and GLM 5.3 are a **near-tie**: their medians
 differ by only 19.0 ms (1.0%), and their timed ranges overlap.
@@ -27,8 +27,8 @@ network, 6 CPU-equivalents, 16 GiB, one untimed warmup, and five timed runs.
 
 ## Failed first attempts
 
-- [Gemini 3.7 Flash first attempt](artifacts/neutral-20260821T191231-04-gemini-3.7-flash-20260821T213706/): The agent exited after two seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary. The manifest records score exit status 1.
-- [Ox Alpha first attempt](artifacts/neutral-20260821T191231-05-ox-alpha-20260821T213711/): The agent exited after 17 seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary. The manifest records score exit status 1.
+- [Gemini 3.7 Flash first attempt](gemini-3.7-flash-attempt-1/): The agent exited after two seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary. The manifest records score exit status 1.
+- [Ox Alpha first attempt](ox-alpha-attempt-1/): The agent exited after 17 seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary. The manifest records score exit status 1.
 
 These attempts are excluded from the result table, but retained so the
 serial batch history is not rewritten as an all-success run.
@@ -50,7 +50,7 @@ serial batch history is not rewritten as an all-success run.
 - Warm-cache policy: one untimed warmup followed by five timed runs
 
 The complete machine-readable record is [results.json](results.json).
-Verify the published bundles with `python3 verify_release.py`.
+Verify the published bundles with `python3 release/verify_release.py`.
 Each artifact directory contains `SHA256SUMS` and an `omitted-files.json`
 inventory. Only generated development files larger than 5 MiB and Python
 bytecode caches are omitted; the full event trace and scoring evidence are retained.

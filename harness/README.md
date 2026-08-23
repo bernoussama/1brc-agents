@@ -3,6 +3,31 @@
 One session = one model, one benchmark container, one round. The same
 container that runs the agent also runs the final submission score.
 
+## Quick start
+
+```bash
+# 1. build the box once (from the repo root)
+docker build -t 1brc-agents-sandbox:latest -f docker/Dockerfile .
+
+# 2. lock the model-API network (once per host)
+sudo ./harness/setup_network.sh
+
+# 3. smoke-test the judge end-to-end (no agent involved)
+bash harness/lib/onebrc_generator.sh 100000 /tmp/smoke.txt
+mkdir -p /tmp/dummy && cp judge/reference.py /tmp/dummy/
+printf '#!/bin/sh\nexec python3 "$(dirname "$0")/reference.py" "$1"\n' \
+  > /tmp/dummy/run.sh && chmod +x /tmp/dummy/run.sh
+python3 judge/score.py --host --round A --input /tmp/smoke.txt \
+  --submission /tmp/dummy/run.sh --runs 3
+
+# 4. optionally prepare the shared 1B dataset and expected output now
+./harness/prepare_scored_dataset.sh A
+
+# 5. run a session (auto-prepares the volume if step 4 was skipped)
+export OPENROUTER_API_KEY=...
+BUDGET_MIN=120 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh A
+```
+
 ## Usage
 
 Set up the internal network and allowlist proxy once on the host before the
@@ -20,7 +45,7 @@ BUDGET_WRAPUP_SEC=600 ./harness/run_session.sh glm-5.3 harness/profiles/glm-5.3.
 ./harness/run_session.sh deepseek harness/profiles/deepseek.sh B
 ```
 
-Artifacts land in `runs/<slug>-<timestamp>/`:
+Session scratch lands in `.sessions/<slug>-<timestamp>/` (gitignored):
 - `events.jsonl` — full pi event stream (the trace)
 - `work/` — everything the agent built (includes `submission/run.sh`)
 - `control/budget.json` — read-only authoritative session deadline metadata
@@ -28,6 +53,8 @@ Artifacts land in `runs/<slug>-<timestamp>/`:
 - `score.log` — live judge progress, including reference-generation time
 - `manifest.yaml` — image digest, host info, generator source hash
 - `cleanup.log` — exact disposable paths removed after the session
+
+Published batches live under `runs/<date>-<label>/`.
 
 The runner expects the sibling checkout at `../1brc` by default. Set
 `ONEBRC_ROOT` to another checkout when needed. It compiles and runs
@@ -60,7 +87,7 @@ the run directory and are never removed by this cleanup. Set
 clean an existing completed run explicitly with:
 
 ```bash
-./harness/cleanup_run.sh runs/<slug>-<timestamp>
+./harness/cleanup_run.sh .sessions/<slug>-<timestamp>
 ```
 
 `EXPERIMENT_MAX_SEC` defaults to 300. The runner stops a top-level agent shell
@@ -110,8 +137,8 @@ pi   # interactive once on the runner host, or edit ~/.pi/agent/models.json
 
 Add the endpoint as a custom provider (pi docs → Custom Providers /
 Custom Models), then point `PROVIDER`/`MODEL_ID` in the profile at it.
-The runner mounts `runs/<...>/pi-home` over `/home/agent`, so each session
-starts with a clean but pre-configured pi state.
+The runner mounts `.sessions/<...>/pi-home` over `/home/agent`, so each
+session starts with a clean but pre-configured pi state.
 
 ## Timing fairness (the bit that keeps the leaderboard honest)
 
@@ -152,7 +179,7 @@ mode.
 After building the image on the target machine, optionally freeze it:
 
 ```bash
-docker build -t 1brc-agents-sandbox:latest sandbox/
+docker build -t 1brc-agents-sandbox:latest -f docker/Dockerfile .
 docker tag  1brc-agents-sandbox:latest 1brc-agents-sandbox:$(git -C . rev-parse --short HEAD)
 ```
 

@@ -95,8 +95,8 @@ RUN set -eux; \
 
 # Rulebook + judge-provided dev tools live OUTSIDE /work (which gets
 # bind-mounted over) — the runner copies them into the session workdir.
-COPY program.md /opt/bench/program.md
-COPY tools/ /opt/bench/tools/
+COPY task/program.md /opt/bench/program.md
+COPY task/tools/ /opt/bench/tools/
 RUN chmod +x /opt/bench/tools/*.py
 
 # Non-root user. The official Node image already uses UID 1000, so retain the

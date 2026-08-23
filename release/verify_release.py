@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the published neutral-v0.5 result without access to ignored raw runs."""
+"""Verify the published neutral-v0.5 result without access to ignored raw sessions."""
 
 from __future__ import annotations
 
@@ -9,6 +9,8 @@ from pathlib import Path
 
 
 HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
+BATCH = ROOT / "runs" / "2026-08-21-neutral-v0.5"
 
 
 def sha256(path: Path) -> str:
@@ -42,7 +44,7 @@ def verify_checksums(bundle: Path) -> None:
 
 
 def main() -> None:
-    canonical = json.loads((HERE / "results.json").read_text())
+    canonical = json.loads((BATCH / "results.json").read_text())
     release = canonical["release"]
     if len(release["harness_git_commit"]) != 40:
         raise ValueError("release does not record a full harness Git commit")
@@ -54,7 +56,7 @@ def main() -> None:
     for result in canonical["results"]:
         if result["n_agent_sessions"] != 1 or len(result["runs_ms"]) != 5:
             raise ValueError(f"invalid sample labeling: {result['label']}")
-        bundle = HERE / result["published_artifacts"]
+        bundle = BATCH / result["published_artifacts"]
         verify_checksums(bundle)
         score = json.loads((bundle / "score.json").read_text())
         manifest = parse_manifest(bundle / "manifest.yaml")
@@ -70,7 +72,7 @@ def main() -> None:
             raise ValueError(f"published cleanup is incomplete: {bundle}")
 
     for failure in canonical["failed_first_attempts"]:
-        bundle = HERE / failure["published_artifacts"]
+        bundle = BATCH / failure["published_artifacts"]
         verify_checksums(bundle)
         if (bundle / "score.json").stat().st_size != 0:
             raise ValueError(f"failed attempt score should be empty: {bundle}")

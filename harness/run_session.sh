@@ -42,7 +42,7 @@ GENERATOR_SOURCE="$ONEBRC_ROOT/src/main/java/dev/morling/onebrc/CreateMeasuremen
 source "$ROOT/harness/lib/auth.sh"
 IMAGE="1brc-agents-sandbox:latest"
 STAMP="$(date -u +%Y%m%dT%H%M%S)"
-RUNDIR="$ROOT/runs/${SLUG}-${STAMP}"
+RUNDIR="$ROOT/.sessions/${SLUG}-${STAMP}"
 mkdir -p "$RUNDIR"
 CLEANUP_RUN_ARTIFACTS="${CLEANUP_RUN_ARTIFACTS:-1}"
 CLEANUP_SCRIPT="$ROOT/harness/cleanup_run.sh"
@@ -107,8 +107,8 @@ case "$EXPERIMENT_MAX_SEC" in
   ''|*[!0-9]*|0) echo "EXPERIMENT_MAX_SEC must be a positive integer" >&2; exit 2 ;;
 esac
 
-RESOURCE_TOOL="$ROOT/sandbox/tools/resources.py"
-BOUNDED_TOOL="$ROOT/sandbox/tools/1brc-bounded"
+RESOURCE_TOOL="$ROOT/task/tools/resources.py"
+BOUNDED_TOOL="$ROOT/task/tools/1brc-bounded"
 AGENT_ENTRYPOINT="$ROOT/harness/lib/agent_entrypoint.sh"
 SCORE_RUNNER="$ROOT/judge/score_run.py"
 SCORED_DATASET_LIB="$ROOT/harness/lib/scored_dataset.sh"
@@ -126,7 +126,7 @@ NCPUS="${NCPUS:-4}"
 MEM="${MEM:-8g}"
 ADAPTER_ROUTE="${ADAPTER_ROUTE:-pi to $PROVIDER/$MODEL_ID}"
 PROFILE_SHA256="$(sha256sum "$PROFILE" | awk '{print $1}')"
-PROMPT_SHA256="$(sha256sum "$ROOT/sandbox/program.md" | awk '{print $1}')"
+PROMPT_SHA256="$(sha256sum "$ROOT/task/program.md" | awk '{print $1}')"
 JUDGE_SHA256="$(sha256sum "$ROOT/judge/score.py" | awk '{print $1}')"
 JUDGE_RUNNER_SHA256="$(sha256sum "$ROOT/judge/score_run.py" | awk '{print $1}')"
 RUNNER_SHA256="$(sha256sum "$ROOT/harness/run_session.sh" | awk '{print $1}')"
@@ -226,7 +226,7 @@ if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
 fi
 
 # --- image + datasets (the scored volume is prepared/reused before budget) ---
-docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" "$ROOT/sandbox"
+docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" -f "$ROOT/docker/Dockerfile" "$ROOT"
 AGENT_VERSION="$(docker run --rm --network none --entrypoint pi "$IMAGE" --version 2>/dev/null | head -n 1)"
 [ -n "$AGENT_VERSION" ] || AGENT_VERSION=unknown
 source "$SCORED_DATASET_LIB"
@@ -262,8 +262,8 @@ fi
 # (chown via docker so the script works without host sudo.)
 mkdir -p "$RUNDIR/work/submission"
 mkdir -p "$RUNDIR/lifecycle"
-cp "$ROOT/sandbox/program.md" "$RUNDIR/work/program.md"
-cp -r "$ROOT/sandbox/tools" "$RUNDIR/work/tools"
+cp "$ROOT/task/program.md" "$RUNDIR/work/program.md"
+cp -r "$ROOT/task/tools" "$RUNDIR/work/tools"
 cp "$ROOT/judge/reference.py" "$RUNDIR/work/tools/reference.py"
 find "$RUNDIR/work/tools" -maxdepth 1 -type f -exec chmod +x {} +
 docker run --rm \
@@ -338,7 +338,7 @@ SESSION_START_EPOCH="$(date +%s)"
 deadline=$(( SESSION_START_EPOCH + BUDGET_MIN * 60 ))
 CONTROL_DIR="$RUNDIR/control"
 LIFECYCLE_DIR="$RUNDIR/lifecycle"
-TIME_TOOL="$ROOT/sandbox/tools/remaining_time.py"
+TIME_TOOL="$ROOT/task/tools/remaining_time.py"
 [ -f "$TIME_TOOL" ] || { echo "missing remaining-time tool: $TIME_TOOL" >&2; exit 1; }
 mkdir -p "$CONTROL_DIR"
 printf '{"budget_seconds":%s,"started_epoch":%s,"deadline_epoch":%s,"wrapup_seconds":%s}\n' \

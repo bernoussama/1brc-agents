@@ -1,0 +1,39 @@
+# Frozen record of the published neutral-prompt v0.5 batch.
+# Not yet consumed by run_session.sh; values are taken from the run
+# manifests unless marked declared.
+
+version: 1
+
+environment:
+  # From session manifests
+  image: sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab
+  proxy_image: sha256:e43291217da0015d62997806078392bccc8d196a82891b251568a597938f0bff
+  resources:
+    cpus: 6
+    memory: 16GiB
+  network:
+    mode: allowlist
+    hosts: [model-api-only]
+
+agent:
+  name: pi
+  version: 0.84.2  # declared in release-spec.json; not recorded by the sessions
+  budget_minutes: 120  # declared; per-session budgets vary in practice
+
+dataset:
+  rows: 1000000000
+  sha256: 59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088
+  generator_sha256: efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d
+
+judge:
+  round: A
+  warmup_runs: 1  # declared warm-cache policy
+  timed_runs: 5
+  report: median
+  prompt_sha256: dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e
+
+hardware:  # declared in release-spec.json; not recorded by the sessions
+  cpu: Intel Core i7-9750H
+  physical_cores: 6
+  logical_cpus: 12
+  storage: Intel SSDPEMKF010T8 NVMe

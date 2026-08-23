@@ -4,18 +4,18 @@
       "agent_elapsed_seconds": 2,
       "label": "Gemini 3.7 Flash first attempt",
       "profile": "harness/profiles/cliproxyapi-gemini-3.7.sh",
-      "published_artifacts": "artifacts/neutral-20260821T191231-04-gemini-3.7-flash-20260821T213706",
+      "published_artifacts": "gemini-3.7-flash-attempt-1",
       "reason": "The agent exited after two seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary.",
-      "run_dir": "runs/neutral-20260821T191231-04-gemini-3.7-flash-20260821T213706",
+      "run_dir": ".sessions/neutral-20260821T191231-04-gemini-3.7-flash-20260821T213706",
       "score_exit_status": 1
     },
     {
       "agent_elapsed_seconds": 17,
       "label": "Ox Alpha first attempt",
       "profile": "harness/profiles/openrouter-ox-alpha.sh",
-      "published_artifacts": "artifacts/neutral-20260821T191231-05-ox-alpha-20260821T213711",
+      "published_artifacts": "ox-alpha-attempt-1",
       "reason": "The agent exited after 17 seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary.",
-      "run_dir": "runs/neutral-20260821T191231-05-ox-alpha-20260821T213711",
+      "run_dir": ".sessions/neutral-20260821T191231-05-ox-alpha-20260821T213711",
       "score_exit_status": 1
     }
   ],
@@ -79,7 +79,7 @@
       ],
       "profile": "harness/profiles/cursor-grok-4.6-medium-container.sh",
       "profile_sha256": "a9e122ab901995102f482009a23d444460424b9b52a6355bfa1f542b38e6d488",
-      "published_artifacts": "artifacts/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733",
+      "published_artifacts": "cursor-grok-4.6-medium",
       "rank": 1,
       "reasoning": "medium",
       "runs_ms": [
@@ -89,7 +89,7 @@
         1904.5,
         1894.1
       ],
-      "source_run_dir": "runs/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733",
+      "source_run_dir": ".sessions/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733",
       "stop_reason": "agent_exit"
     },
     {
@@ -107,7 +107,7 @@
       "omitted_generated_files": [],
       "profile": "harness/profiles/glm-5.3.sh",
       "profile_sha256": "00f7942c8e7a711945b516062049165bf8092dfe3b530472ddc7c86f63b3c894",
-      "published_artifacts": "artifacts/neutral-20260821T191231-01-glm-5.3-20260821T191231",
+      "published_artifacts": "glm-5.3",
       "rank": 2,
       "reasoning": "max",
       "runs_ms": [
@@ -117,7 +117,7 @@
         1952.8,
         1923.5
       ],
-      "source_run_dir": "runs/neutral-20260821T191231-01-glm-5.3-20260821T191231",
+      "source_run_dir": ".sessions/neutral-20260821T191231-01-glm-5.3-20260821T191231",
       "stop_reason": "agent_exit"
     },
     {
@@ -135,7 +135,7 @@
       "omitted_generated_files": [],
       "profile": "harness/profiles/gpt-5.6-luna.sh",
       "profile_sha256": "e9ce7b1fb42f74c0d95013b2b370240f2ecf8332de78dac000f9e0c59e4c731c",
-      "published_artifacts": "artifacts/neutral-20260821T191231-02-gpt-5.6-luna-20260821T200857",
+      "published_artifacts": "gpt-5.6-luna",
       "rank": 3,
       "reasoning": "max",
       "runs_ms": [
@@ -145,7 +145,7 @@
         2338.4,
         2403.7
       ],
-      "source_run_dir": "runs/neutral-20260821T191231-02-gpt-5.6-luna-20260821T200857",
+      "source_run_dir": ".sessions/neutral-20260821T191231-02-gpt-5.6-luna-20260821T200857",
       "stop_reason": "agent_exit"
     },
     {
@@ -163,7 +163,7 @@
       "omitted_generated_files": [],
       "profile": "harness/profiles/cliproxyapi-gemini-3.7.sh",
       "profile_sha256": "f6b5ff0db7e9c8b7d0dc9494e3bea7a9db21c112fb03833b8f7695f473be4755",
-      "published_artifacts": "artifacts/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131",
+      "published_artifacts": "gemini-3.7-flash",
       "rank": 4,
       "reasoning": "high",
       "runs_ms": [
@@ -173,7 +173,7 @@
         2761.3,
         3480.6
       ],
-      "source_run_dir": "runs/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131",
+      "source_run_dir": ".sessions/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131",
       "stop_reason": "agent_exit"
     },
     {
@@ -202,7 +202,7 @@
       ],
       "profile": "harness/profiles/openrouter-ox-alpha.sh",
       "profile_sha256": "3e91541e7134a0f894632c734682e00fa6f843e942e55a7a90c5d1f2ad449ea6",
-      "published_artifacts": "artifacts/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130",
+      "published_artifacts": "ox-alpha",
       "rank": 5,
       "reasoning": "max",
       "runs_ms": [
@@ -212,7 +212,7 @@
         3898.2,
         3974.8
       ],
-      "source_run_dir": "runs/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130",
+      "source_run_dir": ".sessions/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130",
       "stop_reason": "agent_exit"
     },
     {
@@ -230,7 +230,7 @@
       "omitted_generated_files": [],
       "profile": "harness/profiles/gpt-5.6-terra.sh",
       "profile_sha256": "827aa1b84bc8ae1ece54a33d69039f830a3c42c11e8e4fc1df92971eed140bfc",
-      "published_artifacts": "artifacts/neutral-gpt-5.6-terra-medium-20260822T132613",
+      "published_artifacts": "gpt-5.6-terra-medium",
       "rank": 6,
       "reasoning": "medium",
       "runs_ms": [
@@ -240,7 +240,7 @@
         4425.6,
         4535.0
       ],
-      "source_run_dir": "runs/neutral-gpt-5.6-terra-medium-20260822T132613",
+      "source_run_dir": ".sessions/neutral-gpt-5.6-terra-medium-20260822T132613",
       "stop_reason": "agent_exit"
     },
     {
@@ -264,7 +264,7 @@
       ],
       "profile": "harness/profiles/gpt-5.6-sol-high.sh",
       "profile_sha256": "8284b6831bc9d7b2ceaa25739879bf81763d16e965e423fe38826a41baaabf3d",
-      "published_artifacts": "artifacts/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907",
+      "published_artifacts": "gpt-5.6-sol-high",
       "rank": 7,
       "reasoning": "high",
       "runs_ms": [
@@ -274,7 +274,7 @@
         5077.4,
         5186.3
       ],
-      "source_run_dir": "runs/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907",
+      "source_run_dir": ".sessions/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907",
       "stop_reason": "agent_exit"
     },
     {
@@ -303,7 +303,7 @@
       ],
       "profile": "harness/profiles/gpt-5.6-terra-max.sh",
       "profile_sha256": "fbfff00b4cd4c369152c7ce513ff9cd1e6518cda6bdf5787e4041fc2b0e331ad",
-      "published_artifacts": "artifacts/neutral-gpt-5.6-terra-max-20260822T133750",
+      "published_artifacts": "gpt-5.6-terra-max",
       "rank": 8,
       "reasoning": "max",
       "runs_ms": [
@@ -313,7 +313,7 @@
         5925.9,
         5905.4
       ],
-      "source_run_dir": "runs/neutral-gpt-5.6-terra-max-20260822T133750",
+      "source_run_dir": ".sessions/neutral-gpt-5.6-terra-max-20260822T133750",
       "stop_reason": "agent_exit"
     }
   ]

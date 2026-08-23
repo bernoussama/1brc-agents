@@ -12,9 +12,9 @@ from pathlib import Path
 
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
+ROOT = HERE.parent
 SPEC_PATH = HERE / "release-spec.json"
-ARTIFACTS_DIR = HERE / "artifacts"
+BATCH_DIR = ROOT / "runs" / "2026-08-21-neutral-v0.5"
 MAX_WORK_FILE_BYTES = 5 * 1024 * 1024
 ROOT_ARTIFACTS = (
     "events.jsonl",
@@ -168,12 +168,13 @@ def copy_publication_bundle(run_dir: Path, destination: Path) -> list[dict]:
 def build(harness_commit: str) -> None:
     spec = json.loads(SPEC_PATH.read_text())
     release = spec["release"]
-    prompt_hash = sha256(ROOT / "sandbox/program.md")
+    prompt_hash = sha256(ROOT / "task/program.md")
     if prompt_hash != release["prompt_sha256"]:
         raise ValueError("current prompt does not match the neutral release prompt")
 
-    if ARTIFACTS_DIR.exists():
-        shutil.rmtree(ARTIFACTS_DIR)
+    if BATCH_DIR.exists():
+        shutil.rmtree(BATCH_DIR)
+    BATCH_DIR.mkdir(parents=True)
 
     results = []
     common_dataset = None
@@ -190,8 +191,8 @@ def build(harness_commit: str) -> None:
         if dataset_hash != common_dataset or image_hash != common_image:
             raise ValueError(f"run is outside the common dataset/image cohort: {run_dir}")
 
-        artifact_id = run_dir.name
-        omitted = copy_publication_bundle(run_dir, ARTIFACTS_DIR / artifact_id)
+        artifact_id = entry["slug"]
+        omitted = copy_publication_bundle(run_dir, BATCH_DIR / artifact_id)
         timings = score["runs_ms"]
         results.append({
             "rank": 0,
@@ -202,7 +203,7 @@ def build(harness_commit: str) -> None:
             "profile": entry["profile"],
             "profile_sha256": sha256(ROOT / entry["profile"]),
             "source_run_dir": entry["run_dir"],
-            "published_artifacts": f"artifacts/{artifact_id}",
+            "published_artifacts": artifact_id,
             "correct": True,
             "median_ms": score["median_ms"],
             "runs_ms": timings,
@@ -229,13 +230,13 @@ def build(harness_commit: str) -> None:
             raise ValueError(f"expected an empty failed score file: {score_path}")
         if manifest.get("score_exit_status") == "0":
             raise ValueError(f"failed attempt has successful score status: {run_dir}")
-        artifact_id = run_dir.name
-        copy_publication_bundle(run_dir, ARTIFACTS_DIR / artifact_id)
+        artifact_id = entry["slug"]
+        copy_publication_bundle(run_dir, BATCH_DIR / artifact_id)
         failures.append({
-            **entry,
+            **{k: v for k, v in entry.items() if k != "slug"},
             "score_exit_status": int(manifest["score_exit_status"]),
             "agent_elapsed_seconds": int(manifest["agent_elapsed_seconds"]),
-            "published_artifacts": f"artifacts/{artifact_id}",
+            "published_artifacts": artifact_id,
         })
 
     canonical = {
@@ -269,10 +270,10 @@ def build(harness_commit: str) -> None:
         "results": results,
         "failed_first_attempts": failures,
     }
-    (HERE / "results.json").write_text(
+    (BATCH_DIR / "results.json").write_text(
         json.dumps(canonical, indent=2, sort_keys=True) + "\n"
     )
-    (HERE / "README.md").write_text(render_markdown(canonical))
+    (BATCH_DIR / "README.md").write_text(render_markdown(canonical))
 
 
 def render_markdown(canonical: dict) -> str:
@@ -343,7 +344,7 @@ def render_markdown(canonical: dict) -> str:
         f'- Warm-cache policy: {release["warm_cache_policy"]}',
         "",
         "The complete machine-readable record is [results.json](results.json).",
-        "Verify the published bundles with `python3 verify_release.py`.",
+        "Verify the published bundles with `python3 release/verify_release.py`.",
         "Each artifact directory contains `SHA256SUMS` and an `omitted-files.json`",
         "inventory. Only generated development files larger than 5 MiB and Python",
         "bytecode caches are omitted; the full event trace and scoring evidence are retained.",
