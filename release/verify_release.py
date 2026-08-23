@@ -98,6 +98,7 @@ def main() -> None:
     for failure in canonical["failed_first_attempts"]:
         bundle = BATCH / failure["published_artifacts"]
         verify_checksums(bundle)
+        verify_bundle_policy(bundle)
         if (bundle / "score.json").stat().st_size != 0:
             raise ValueError(f"failed attempt score should be empty: {bundle}")
         manifest = parse_manifest(bundle / "manifest.yaml")

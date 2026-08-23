@@ -9,5 +9,3 @@ AUTH_MODE=file
 AUTH_FILE="${HOME}/.pi/agent/auth.json"
 
 # Keep the resource envelope aligned with the current 1BRC comparison runs.
-NCPUS=6
-MEM=16g

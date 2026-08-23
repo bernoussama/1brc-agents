@@ -25,8 +25,13 @@ python3 judge/score.py --host --round A --input /tmp/smoke.txt \
 
 # 5. run a session (auto-prepares the volume if step 4 was skipped)
 export OPENROUTER_API_KEY=...
-BUDGET_MIN=120 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh A
+./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
 ```
+
+Environment, budget, dataset size, and timed-run count come from
+[bench.yml](../bench.yml). Profiles supply only the model and credentials.
+For a local smoke test that changes those values, set
+`BENCH_ALLOW_OVERRIDE=1`.
 
 ## Usage
 
@@ -39,10 +44,11 @@ sudo ./harness/setup_network.sh
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-...   # whichever profile you're running
-./harness/run_session.sh glm-4.7 harness/profiles/glm-coding.sh A
-BUDGET_MIN=90 RUNS=5 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh A
-BUDGET_WRAPUP_SEC=600 ./harness/run_session.sh glm-5.3 harness/profiles/glm-5.3.sh A
+./harness/run_session.sh glm-4.7 harness/profiles/glm-coding.sh
+./harness/run_session.sh glm-5.3 harness/profiles/glm-5.3.sh
 ./harness/run_session.sh deepseek harness/profiles/deepseek.sh B
+# Local smoke test with a shorter budget:
+BENCH_ALLOW_OVERRIDE=1 BUDGET_MIN=5 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
 ```
 
 Session scratch lands in `.sessions/<slug>-<timestamp>/` (gitignored):
@@ -103,7 +109,8 @@ shorter per-completion limit is intentional; the selected value is recorded in
 
 ## Profiles
 
-Each profile file defines:
+Each profile file defines model identity and credentials only.
+Resource caps, budgets, and judge settings come from `bench.yml`.
 
 | var | meaning |
 |---|---|
@@ -114,12 +121,10 @@ Each profile file defines:
 | `AUTH_FILE` | host path to `auth.json` when `AUTH_MODE=file` |
 | `THINKING` | optional pi thinking level (`off`..`max`) |
 | `ADAPTER_ROUTE` | publication label for the complete model/provider adapter path |
-| `NCPUS` / `MEM` | container CPU-equivalent and memory caps; keep identical when comparing models |
 
 Never put keys in profile files. The runner reads them from the host env.
 For OAuth, log in once on the host with `pi` and point `AUTH_FILE` at the
 resulting `~/.pi/agent/auth.json`.
-
 The current runner must give pi the provider credential so it can authenticate.
 Commands launched by pi share that process environment and can therefore read
 the credential. The network boundary is fail-closed, but this is not a
@@ -156,8 +161,8 @@ session starts with a clean but pre-configured pi state.
   `control/budget.json` file. Agents must use it for remaining-time decisions;
   the manifest records the actual stop reason and elapsed time.
 - The container exposes `1brc-resources`, which reports cgroup CPU and memory
-  limits separately from visible host topology. The GLM 5.3 profile uses the
-  current host baseline of 6 CPU-equivalents and 16 GiB.
+  limits separately from visible host topology. `bench.yml` sets the current
+  baseline of 6 CPU-equivalents and 16 GiB.
 - Candidate commands should use `1brc-bounded`; it isolates an experiment's
   process group and cleans up descendants after a timeout. Docker's `--init`
   is also enabled so orphaned children are reaped.
@@ -189,6 +194,7 @@ sessions and keep both leaderboards separate.
 Focused harness checks:
 
 ```bash
+bash harness/tests/test_bench.sh
 bash harness/tests/test_auth.sh
 bash harness/tests/test_firewall.sh
 node harness/tests/test_proxy.js

@@ -71,8 +71,9 @@ Adapted from Prime Intellect's harness to CPU:
 
 - Re-inject the goal message if the agent stalls or goes interactive.
 
-The frozen run profile for the published v0.5 batch is in
-[bench.yml](bench.yml).
+The frozen run profile is [bench.yml](bench.yml). The session runner loads it
+for image digests, CPU and memory caps, budgets, dataset pins, and timed-run
+count. Profiles supply only the model and credentials.
 
 ## Budgets
 

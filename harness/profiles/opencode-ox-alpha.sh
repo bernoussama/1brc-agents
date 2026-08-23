@@ -10,5 +10,3 @@ ADAPTER_ROUTE="pi to OpenCode Zen to ox-alpha-free"
 AUTH_MODE=env
 AUTH_ENV=OPENCODE_API_KEY
 MODELS_FILE="${ROOT}/harness/profiles/opencode-ox-alpha.models.json"
-NCPUS=6
-MEM=16g

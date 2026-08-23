@@ -7,8 +7,8 @@ allowlist proxy.
 
 ## What's here
 
-- `bench.yml` — the frozen v0.5 run profile: image digests, resources,
-  budgets, judge settings.
+- `bench.yml` — frozen run profile the session runner loads: image digests,
+  CPU/memory, budgets, dataset pins, judge settings.
 - `task/` — what the agent sees: `program.md` and the agent-side tools.
 - `docker/` — the pinned sandbox image recipe.
 - `harness/` — session runner, profiles, network setup, cleanup.
@@ -27,8 +27,11 @@ sessions is in [harness/README.md](harness/README.md).
 docker build -t 1brc-agents-sandbox:latest -f docker/Dockerfile .
 sudo ./harness/setup_network.sh
 export OPENROUTER_API_KEY=...
-BUDGET_MIN=120 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh A
+./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
 ```
+
+Environment, budget, dataset, and judge settings come from
+[bench.yml](bench.yml). Profiles supply only the model and credentials.
 
 ## Honest labeling
 
