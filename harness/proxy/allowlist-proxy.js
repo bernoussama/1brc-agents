@@ -22,6 +22,20 @@ const PORT = envInteger("PROXY_PORT", 3128, 1, 65535);
 const CONNECT_TIMEOUT_MS = envInteger("PROXY_CONNECT_TIMEOUT_MS", 10000, 100, 300000);
 const IDLE_TIMEOUT_MS = envInteger("PROXY_IDLE_TIMEOUT_MS", 120000, 1000, 3600000);
 const MAX_CONNECTIONS = envInteger("PROXY_MAX_CONNECTIONS", 256, 1, 10000);
+// Optional fixed TCP bridge for a host-local model service. This is deliberately
+// an exact host/port mapping; it is not a general CONNECT or port-forwarding
+// facility. The benchmark uses it for the host's authenticated CLIProxyAPI.
+const LOCAL_FORWARD_PORT = envInteger("LOCAL_FORWARD_PORT", 0, 0, 65535);
+const LOCAL_FORWARD_TARGET_PORT = envInteger("LOCAL_FORWARD_TARGET_PORT", 0, 0, 65535);
+const LOCAL_FORWARD_HOST = (process.env.LOCAL_FORWARD_HOST || "").trim();
+const LOCAL_FORWARD_SOCKET = (process.env.LOCAL_FORWARD_SOCKET || "").trim();
+if (
+  LOCAL_FORWARD_PORT > 0 &&
+  !LOCAL_FORWARD_SOCKET &&
+  (!LOCAL_FORWARD_HOST || LOCAL_FORWARD_TARGET_PORT === 0)
+) {
+  throw new Error("LOCAL_FORWARD_SOCKET or LOCAL_FORWARD_HOST/LOCAL_FORWARD_TARGET_PORT is required when LOCAL_FORWARD_PORT is enabled");
+}
 const ALLOW = (process.env.ALLOW_DOMAINS || "")
   .split(",")
   .map((value) => normalizeHostname(value))
@@ -123,6 +137,51 @@ function createProxyServer() {
   return server;
 }
 
+function createLocalForwardServer() {
+  const server = net.createServer((clientSocket) => {
+    let upstream;
+    let closed = false;
+    const closeBoth = (reason) => {
+      if (closed) return;
+      closed = true;
+      if (reason) {
+        log({
+          type: "local-forward-error",
+          socket: LOCAL_FORWARD_SOCKET || undefined,
+          host: LOCAL_FORWARD_SOCKET ? undefined : LOCAL_FORWARD_HOST,
+          port: LOCAL_FORWARD_SOCKET ? undefined : LOCAL_FORWARD_TARGET_PORT,
+          err: reason,
+        });
+      }
+      clientSocket.destroy();
+      if (upstream) upstream.destroy();
+    };
+
+    clientSocket.setTimeout(CONNECT_TIMEOUT_MS, () => closeBoth("client_timeout"));
+    upstream = LOCAL_FORWARD_SOCKET
+      ? net.createConnection(LOCAL_FORWARD_SOCKET)
+      : net.connect({ host: LOCAL_FORWARD_HOST, port: LOCAL_FORWARD_TARGET_PORT });
+    upstream.setTimeout(CONNECT_TIMEOUT_MS, () => closeBoth("upstream_timeout"));
+    upstream.once("connect", () => {
+      if (closed) return;
+      upstream.setTimeout(IDLE_TIMEOUT_MS, () => closeBoth("upstream_idle_timeout"));
+      clientSocket.setTimeout(IDLE_TIMEOUT_MS, () => closeBoth("client_idle_timeout"));
+      upstream.pipe(clientSocket);
+      clientSocket.pipe(upstream);
+    });
+    upstream.on("error", (error) => closeBoth(String(error && error.code || error)));
+    clientSocket.on("error", (error) => closeBoth(String(error && error.code || error)));
+    upstream.on("close", () => closeBoth());
+    clientSocket.on("close", () => closeBoth());
+  });
+
+  server.maxConnections = MAX_CONNECTIONS;
+  server.on("connection", (socket) => {
+    socket.setTimeout(IDLE_TIMEOUT_MS, () => socket.destroy());
+  });
+  return server;
+}
+
 if (require.main === module) {
   const server = createProxyServer();
   server.listen(PORT, () => log({
@@ -131,6 +190,23 @@ if (require.main === module) {
     max_connections: MAX_CONNECTIONS,
     allow: ALLOW,
   }));
+
+  if (LOCAL_FORWARD_PORT > 0) {
+    const localForward = createLocalForwardServer();
+    localForward.listen(LOCAL_FORWARD_PORT, () => log({
+      type: "local_forward_start",
+      port: LOCAL_FORWARD_PORT,
+      target_socket: LOCAL_FORWARD_SOCKET || undefined,
+      target_host: LOCAL_FORWARD_SOCKET ? undefined : LOCAL_FORWARD_HOST,
+      target_port: LOCAL_FORWARD_SOCKET ? undefined : LOCAL_FORWARD_TARGET_PORT,
+    }));
+  }
 }
 
-module.exports = { allowed, normalizeHostname, parseConnectTarget, createProxyServer };
+module.exports = {
+  allowed,
+  normalizeHostname,
+  parseConnectTarget,
+  createProxyServer,
+  createLocalForwardServer,
+};

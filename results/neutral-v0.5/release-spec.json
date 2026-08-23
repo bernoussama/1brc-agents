@@ -1,0 +1,91 @@
+{
+  "release": {
+    "id": "neutral-v0.5",
+    "tag": "v0.5-neutral-2026-08-23",
+    "published_on": "2026-08-23",
+    "agent_version": "pi 0.84.2",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "warm_cache_policy": "one untimed warmup followed by five timed runs",
+    "hardware": {
+      "host": "Linux 7.1.8-arch1-3 x86_64 GNU/Linux",
+      "cpu": "Intel Core i7-9750H",
+      "physical_cores": 6,
+      "logical_cpus": 12,
+      "storage": "Intel SSDPEMKF010T8 NVMe",
+      "per_run_cpu_quota": 6,
+      "per_run_memory_gib": 16
+    }
+  },
+  "successful_runs": [
+    {
+      "label": "Cursor Grok 4.6 Medium",
+      "run_dir": "runs/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733",
+      "profile": "harness/profiles/cursor-grok-4.6-medium-container.sh",
+      "reasoning": "medium",
+      "adapter_route": "pi to in-container cursor-api-proxy to Cursor CLI Grok 4.6 Medium"
+    },
+    {
+      "label": "GLM 5.3",
+      "run_dir": "runs/neutral-20260821T191231-01-glm-5.3-20260821T191231",
+      "profile": "harness/profiles/glm-5.3.sh",
+      "reasoning": "max",
+      "adapter_route": "pi to Z.AI Coding Plan to glm-5.3"
+    },
+    {
+      "label": "GPT-5.6 Luna",
+      "run_dir": "runs/neutral-20260821T191231-02-gpt-5.6-luna-20260821T200857",
+      "profile": "harness/profiles/gpt-5.6-luna.sh",
+      "reasoning": "max",
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-luna"
+    },
+    {
+      "label": "Gemini 3.7 Flash",
+      "run_dir": "runs/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131",
+      "profile": "harness/profiles/cliproxyapi-gemini-3.7.sh",
+      "reasoning": "high",
+      "adapter_route": "pi to CLIProxyAPI bridge to Antigravity gemini-3.7-flash-high"
+    },
+    {
+      "label": "Ox Alpha",
+      "run_dir": "runs/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130",
+      "profile": "harness/profiles/openrouter-ox-alpha.sh",
+      "reasoning": "max",
+      "adapter_route": "pi to OpenRouter to stealth/ox-alpha"
+    },
+    {
+      "label": "GPT-5.6 Terra",
+      "run_dir": "runs/neutral-gpt-5.6-terra-medium-20260822T132613",
+      "profile": "harness/profiles/gpt-5.6-terra.sh",
+      "reasoning": "medium",
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-terra"
+    },
+    {
+      "label": "GPT-5.6 Sol",
+      "run_dir": "runs/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907",
+      "profile": "harness/profiles/gpt-5.6-sol-high.sh",
+      "reasoning": "high",
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-sol"
+    },
+    {
+      "label": "GPT-5.6 Terra",
+      "run_dir": "runs/neutral-gpt-5.6-terra-max-20260822T133750",
+      "profile": "harness/profiles/gpt-5.6-terra-max.sh",
+      "reasoning": "max",
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-terra"
+    }
+  ],
+  "failed_attempts": [
+    {
+      "label": "Gemini 3.7 Flash first attempt",
+      "run_dir": "runs/neutral-20260821T191231-04-gemini-3.7-flash-20260821T213706",
+      "profile": "harness/profiles/cliproxyapi-gemini-3.7.sh",
+      "reason": "The agent exited after two seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary."
+    },
+    {
+      "label": "Ox Alpha first attempt",
+      "run_dir": "runs/neutral-20260821T191231-05-ox-alpha-20260821T213711",
+      "profile": "harness/profiles/openrouter-ox-alpha.sh",
+      "reason": "The agent exited after 17 seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary."
+    }
+  ]
+}

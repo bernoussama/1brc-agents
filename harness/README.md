@@ -68,6 +68,12 @@ that bypasses `1brc-bounded` for longer than this cap and records the count in
 `manifest.yaml`; normal experiments should use the shorter explicit helper
 timeout.
 
+For in-container Cursor proxy profiles, `CURSOR_PROXY_TIMEOUT_MS` defaults to
+the session budget minus `BUDGET_WRAPUP_SEC`, so a long Cursor tool turn is not
+cut off by a separate 15-minute bridge timeout. Set it explicitly only when a
+shorter per-completion limit is intentional; the selected value is recorded in
+`manifest.yaml`.
+
 ## Profiles
 
 Each profile file defines:
@@ -80,6 +86,7 @@ Each profile file defines:
 | `AUTH_ENV` | name of the host env var holding the API key |
 | `AUTH_FILE` | host path to `auth.json` when `AUTH_MODE=file` |
 | `THINKING` | optional pi thinking level (`off`..`max`) |
+| `ADAPTER_ROUTE` | publication label for the complete model/provider adapter path |
 | `NCPUS` / `MEM` | container CPU-equivalent and memory caps; keep identical when comparing models |
 
 Never put keys in profile files. The runner reads them from the host env.
@@ -131,6 +138,10 @@ starts with a clean but pre-configured pi state.
   is injected: warmup pass untimed, then 5 timed runs, median reported.
   Timing is measured inside the container so `docker exec` startup overhead is
   excluded. Byte-exact output remains required.
+- Manifests record the exact model and thinking level, adapter route, agent
+  version, Git state, prompt/profile/judge/runner hashes, image digests, host
+  CPU identity, and warm-cache policy. A session command exits non-zero when
+  scoring fails, even though its manifest and cleanup evidence are preserved.
 
 For a local scorer-only smoke test without Docker, use `judge/score.py --host`
 explicitly. Benchmark sessions always pass `--container` and do not use that

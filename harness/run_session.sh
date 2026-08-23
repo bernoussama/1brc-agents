@@ -33,6 +33,7 @@ NETWORK_NAME=1brc-agent-net
 PROXY_NAME=1brc-proxy
 PROXY_IP=172.28.77.2
 PROXY_PORT=3128
+NO_PROXY_VALUE="localhost,127.0.0.1,$PROXY_IP"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ONEBRC_ROOT="${ONEBRC_ROOT:-$ROOT/../1brc}"
@@ -123,11 +124,111 @@ SCORED_DATASET_LIB="$ROOT/harness/lib/scored_dataset.sh"
 set -a; source "$PROFILE"; set +a
 NCPUS="${NCPUS:-4}"
 MEM="${MEM:-8g}"
+ADAPTER_ROUTE="${ADAPTER_ROUTE:-pi to $PROVIDER/$MODEL_ID}"
+PROFILE_SHA256="$(sha256sum "$PROFILE" | awk '{print $1}')"
+PROMPT_SHA256="$(sha256sum "$ROOT/sandbox/program.md" | awk '{print $1}')"
+JUDGE_SHA256="$(sha256sum "$ROOT/judge/score.py" | awk '{print $1}')"
+JUDGE_RUNNER_SHA256="$(sha256sum "$ROOT/judge/score_run.py" | awk '{print $1}')"
+RUNNER_SHA256="$(sha256sum "$ROOT/harness/run_session.sh" | awk '{print $1}')"
+HARNESS_GIT_COMMIT="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || printf unknown)"
+if [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=normal 2>/dev/null)" ]; then
+  HARNESS_GIT_DIRTY=true
+else
+  HARNESS_GIT_DIRTY=false
+fi
+
+# A Cursor CLI completion can legitimately contain many tool turns. The
+# bridge timeout must cover the session's usable budget; the old fixed 900s
+# timeout killed otherwise-live Cursor agents and surfaced as an incomplete
+# stream to pi. Allow profiles or callers to override it, but otherwise leave
+# the wrap-up window for the host-side deadline handoff.
+if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
+  CURSOR_PROXY_TIMEOUT_MS="${CURSOR_PROXY_TIMEOUT_MS:-$((BUDGET_MIN * 60 * 1000 - BUDGET_WRAPUP_SEC * 1000))}"
+  case "$CURSOR_PROXY_TIMEOUT_MS" in
+    ''|*[!0-9]*|0) echo "CURSOR_PROXY_TIMEOUT_MS must be a positive integer" >&2; exit 2 ;;
+  esac
+fi
 mkdir -p "$RUNDIR/pi-home"
 prepare_auth "$RUNDIR"
 
+# Optional in-container Cursor proxy mode. The proxy package and Cursor CLI
+# stay host-owned, while the proxy process and all of Cursor's native tools run
+# inside the same constrained container as pi and the final judge.
+CONTAINER_EXTRA_ARGS=()
+if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
+  CURSOR_HOST_NPX_ROOT="${CURSOR_HOST_NPX_ROOT:-}"
+  if [ -z "$CURSOR_HOST_NPX_ROOT" ]; then
+    cursor_proxy_pkg="$(find "$HOME/.npm/_npx" -type f -path '*/node_modules/cursor-api-proxy/package.json' -printf '%p\n' 2>/dev/null | sort | tail -n 1)"
+    [ -n "$cursor_proxy_pkg" ] || {
+      echo "could not find the npx cursor-api-proxy package cache" >&2
+      exit 1
+    }
+    CURSOR_HOST_NPX_ROOT="$(dirname "$(dirname "$(dirname "$cursor_proxy_pkg")")")"
+  fi
+  CURSOR_HOST_AGENT_ROOT="${CURSOR_HOST_AGENT_ROOT:-$HOME/.local/share/cursor-agent}"
+  CURSOR_HOST_CURSOR_CONFIG="${CURSOR_HOST_CURSOR_CONFIG:-$HOME/.config/cursor}"
+  CURSOR_HOST_AUTH_FILE="${CURSOR_HOST_AUTH_FILE:-$CURSOR_HOST_CURSOR_CONFIG/auth.json}"
+  CURSOR_HOST_AGENT_BIN="${CURSOR_HOST_AGENT_BIN:-$HOME/.local/bin/cursor-agent}"
+
+  [ -d "$CURSOR_HOST_NPX_ROOT/node_modules/cursor-api-proxy" ] || {
+    echo "cursor-api-proxy npx root is invalid: $CURSOR_HOST_NPX_ROOT" >&2
+    exit 1
+  }
+  [ -d "$CURSOR_HOST_AGENT_ROOT" ] || {
+    echo "Cursor agent installation not found: $CURSOR_HOST_AGENT_ROOT" >&2
+    exit 1
+  }
+  [ -d "$CURSOR_HOST_CURSOR_CONFIG" ] || {
+    echo "Cursor config directory not found: $CURSOR_HOST_CURSOR_CONFIG" >&2
+    exit 1
+  }
+  [ -f "$CURSOR_HOST_AUTH_FILE" ] || {
+    echo "Cursor auth file not found: $CURSOR_HOST_AUTH_FILE" >&2
+    exit 1
+  }
+  command -v jq >/dev/null 2>&1 || {
+    echo "jq is required to read the existing Cursor auth token" >&2
+    exit 1
+  }
+  CURSOR_AUTH_TOKEN="$(jq -r '.accessToken // empty' "$CURSOR_HOST_AUTH_FILE")"
+  [ -n "$CURSOR_AUTH_TOKEN" ] || {
+    echo "Cursor auth file has no access token" >&2
+    exit 1
+  }
+  CURSOR_AGENT_REALPATH="$(readlink -f "$CURSOR_HOST_AGENT_BIN")"
+  case "$CURSOR_AGENT_REALPATH" in
+    "$CURSOR_HOST_AGENT_ROOT"/*) ;;
+    *)
+      echo "Cursor agent must resolve under CURSOR_HOST_AGENT_ROOT: $CURSOR_AGENT_REALPATH" >&2
+      exit 1
+      ;;
+  esac
+  CURSOR_AGENT_RELATIVE="${CURSOR_AGENT_REALPATH#"$CURSOR_HOST_AGENT_ROOT/"}"
+  CURSOR_AGENT_CONTAINER_BIN="/opt/cursor-agent/$CURSOR_AGENT_RELATIVE"
+  [ -x "$CURSOR_AGENT_REALPATH" ] || {
+    echo "Cursor agent binary is not executable: $CURSOR_AGENT_REALPATH" >&2
+    exit 1
+  }
+  [ -n "${CURSOR_PROXY_API_KEY:-}" ] || {
+    echo "CURSOR_PROXY_API_KEY is required for the in-container cursor proxy" >&2
+    exit 1
+  }
+  CONTAINER_EXTRA_ARGS+=(
+    -e CURSOR_PROXY_IN_CONTAINER=1
+    -e CURSOR_PROXY_MODEL="$MODEL_ID"
+    -e CURSOR_PROXY_TIMEOUT_MS="$CURSOR_PROXY_TIMEOUT_MS"
+    -e CURSOR_AUTH_TOKEN="$CURSOR_AUTH_TOKEN"
+    -e CURSOR_AGENT_BIN="$CURSOR_AGENT_CONTAINER_BIN"
+    -v "$CURSOR_HOST_NPX_ROOT:/opt/cursor-npx:ro"
+    -v "$CURSOR_HOST_AGENT_ROOT:/opt/cursor-agent:ro"
+    -v "$CURSOR_HOST_CURSOR_CONFIG:/opt/cursor-config-source:ro"
+  )
+fi
+
 # --- image + datasets (the scored volume is prepared/reused before budget) ---
 docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" "$ROOT/sandbox"
+AGENT_VERSION="$(docker run --rm --network none --entrypoint pi "$IMAGE" --version 2>/dev/null | head -n 1)"
+[ -n "$AGENT_VERSION" ] || AGENT_VERSION=unknown
 source "$SCORED_DATASET_LIB"
 SCORED_DATASET_ROWS="$SCORED_ROWS"
 SCORED_DATASET_ROOT="$ROOT"
@@ -207,6 +308,7 @@ require_network_ready() {
 require_network_ready
 PROXY_ALLOW_DOMAINS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^ALLOW_DOMAINS=//p')"
 [ -n "$PROXY_ALLOW_DOMAINS" ] || { echo "proxy has no recorded allowlist" >&2; exit 1; }
+PROXY_LOCAL_FORWARD_PORT="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^LOCAL_FORWARD_PORT=//p')"
 
 echo "[$SLUG] starting: budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS}"
 
@@ -220,7 +322,7 @@ Resource management: run 1brc-resources at startup and before choosing a worker 
 
 Do not use sleep to manage the session budget or wait between experiments; query 1brc-remaining-time and keep working instead.
 
-Experiment hygiene: run every candidate benchmark, profiler, or other potentially long command through 1brc-bounded, for example: 1brc-bounded 60s bash /work/submission/run.sh /data/measurements-dev.txt. It kills the whole experiment process group after the deadline. For a multi-step command, put 1brc-bounded around the entire bash -c block; never put it only after an unbounded compile or run. Do not background experiments or run an unbounded full-file scan; after a failed experiment, verify that no candidate processes remain."
+Experiment hygiene: run every candidate benchmark, profiler, or other potentially long command through 1brc-bounded, for example: 1brc-bounded 60s bash /work/submission/run.sh /data/measurements-dev.txt. It kills the whole experiment process group after the deadline. For a multi-step command, put 1brc-bounded around the entire bash -c block; never put it only after an unbounded preparation or run. Do not background experiments or run an unbounded full-file scan; after a failed experiment, verify that no candidate processes remain."
 
 # Round B spec is revealed only in the launch prompt (anti-retrieval)
 if [ "$ROUND" = "B" ]; then
@@ -293,8 +395,9 @@ docker run --rm \
   -e ONEBRC_MEMORY_LIMIT="$MEM" \
   -e HTTPS_PROXY="http://${PROXY_IP}:${PROXY_PORT}" \
   -e HTTP_PROXY="http://${PROXY_IP}:${PROXY_PORT}" \
-  -e NO_PROXY=localhost,127.0.0.1 \
+  -e NO_PROXY="$NO_PROXY_VALUE" \
   "${AUTH_DOCKER_ARGS[@]}" \
+  "${CONTAINER_EXTRA_ARGS[@]}" \
   -v "$CONTROL_DIR:/run/1brc-budget:ro" \
   -v "$TIME_TOOL:/usr/local/bin/1brc-remaining-time:ro" \
   -v "$RESOURCE_TOOL:/usr/local/bin/1brc-resources:ro" \
@@ -435,9 +538,22 @@ fi
   echo "started: $STAMP"
   echo "provider: $PROVIDER"
   echo "model: $MODEL_ID"
+  echo "thinking: ${THINKING:-default}"
+  echo "adapter_route: \"$ADAPTER_ROUTE\""
+  echo "agent_version: \"$AGENT_VERSION\""
+  echo "harness_git_commit: $HARNESS_GIT_COMMIT"
+  echo "harness_git_dirty: $HARNESS_GIT_DIRTY"
+  echo "profile_sha256: $PROFILE_SHA256"
+  echo "prompt_sha256: $PROMPT_SHA256"
+  echo "judge_sha256: $JUDGE_SHA256"
+  echo "judge_runner_sha256: $JUDGE_RUNNER_SHA256"
+  echo "runner_sha256: $RUNNER_SHA256"
   echo "network: $NETWORK_NAME"
   echo "proxy_ip: $PROXY_IP"
   echo "proxy_allow_domains: $PROXY_ALLOW_DOMAINS"
+  echo "proxy_local_forward_port: $PROXY_LOCAL_FORWARD_PORT"
+  echo "cursor_proxy_execution: ${CURSOR_PROXY_IN_CONTAINER:-host}"
+  echo "cursor_proxy_timeout_ms: ${CURSOR_PROXY_TIMEOUT_MS:-0}"
   echo "credential_isolation: process-shared"
   echo "image: $(docker image inspect "$IMAGE" --format '{{.Id}}')"
   echo "proxy_image: $(docker image inspect 1brc-allowlist-proxy --format '{{.Id}}')"
@@ -445,6 +561,9 @@ fi
   echo "cpus: $(nproc)"
   echo "requested_cpu_quota: $NCPUS"
   echo "requested_memory_limit: $MEM"
+  echo "host_cpu_model: \"$(lscpu | sed -n 's/^Model name:[[:space:]]*//p' | head -n 1)\""
+  echo "host_cpu_microcode: \"$(lscpu | sed -n 's/^Microcode version:[[:space:]]*//p' | head -n 1)\""
+  echo "warm_cache_policy: one_untimed_warmup_then_${RUNS_N}_timed_runs"
   echo "budget_started_epoch: $SESSION_START_EPOCH"
   echo "budget_deadline_epoch: $deadline"
   echo "budget_wrapup_seconds: $BUDGET_WRAPUP_SEC"
@@ -470,3 +589,4 @@ fi
 cleanup_session 0
 trap - EXIT
 echo "[$SLUG] done — artifacts in $RUNDIR"
+exit "$SCORE_EXIT_STATUS"

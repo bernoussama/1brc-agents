@@ -6,6 +6,19 @@ prepare_auth() {
   local rundir="$1"
   AUTH_DOCKER_ARGS=()
 
+  # A profile may provide a non-secret models.json alongside its credential
+  # mode. Keep this opt-in so ordinary sessions do not inherit host-side
+  # provider configuration or credentials.
+  if [ -n "${MODELS_FILE:-}" ]; then
+    [ -f "$MODELS_FILE" ] || {
+      echo "models file not found at $MODELS_FILE" >&2
+      return 1
+    }
+    mkdir -p "$rundir/pi-home/.pi/agent"
+    cp "$MODELS_FILE" "$rundir/pi-home/.pi/agent/models.json"
+    chmod 600 "$rundir/pi-home/.pi/agent/models.json"
+  fi
+
   case "${AUTH_MODE:-}" in
     file)
       AUTH_FILE="${AUTH_FILE:-$HOME/.pi/agent/auth.json}"

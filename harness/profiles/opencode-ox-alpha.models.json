@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "opencode": {
+      "baseUrl": "https://opencode.ai/zen/v1",
+      "api": "openai-completions",
+      "apiKey": "OPENCODE_API_KEY",
+      "models": [
+        {
+          "id": "ox-alpha-free",
+          "name": "Ox Alpha Free (OpenCode Zen)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 131072,
+          "compat": {
+            "supportsReasoningEffort": true
+          }
+        }
+      ]
+    }
+  }
+}

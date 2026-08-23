@@ -73,6 +73,10 @@ BUDGET_MIN=120 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
 v0.5 results are **single-box, single-session, n=1 per model**. Publish
 with that label and full traces. That transparency is the product.
 
+The canonical neutral-prompt v0.5 result, including exact configurations,
+provenance, successful run bundles, and failed first attempts, is published in
+[results/neutral-v0.5](results/neutral-v0.5/README.md).
+
 ## Credits / priors
 
 - 1BRC by Gunnar Morling (the task)

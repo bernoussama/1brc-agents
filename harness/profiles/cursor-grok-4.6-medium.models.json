@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "cursor-api-proxy": {
+      "baseUrl": "http://172.28.77.2:8317/v1",
+      "api": "openai-completions",
+      "apiKey": "!printenv CURSOR_PROXY_API_KEY",
+      "models": [
+        {
+          "id": "cursor-grok-4.6-medium",
+          "name": "Cursor Grok 4.6 Medium (cursor-api-proxy)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1048576,
+          "maxTokens": 65536,
+          "compat": {
+            "supportsReasoningEffort": true
+          }
+        }
+      ]
+    }
+  }
+}

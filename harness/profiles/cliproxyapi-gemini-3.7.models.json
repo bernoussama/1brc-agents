@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "cliproxyapi": {
+      "baseUrl": "http://172.28.77.2:8317/v1",
+      "api": "openai-completions",
+      "apiKey": "!printenv CLIPROXY_API_KEY",
+      "models": [
+        {
+          "id": "gemini-3.7-flash",
+          "name": "Gemini 3.7 Flash (CLIProxyAPI/Antigravity)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1048576,
+          "maxTokens": 65536,
+          "compat": {
+            "supportsReasoningEffort": true
+          }
+        }
+      ]
+    }
+  }
+}

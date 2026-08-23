@@ -8,7 +8,8 @@
 #   1brc-agent-net (172.28.77.0/24, Docker-internal)
 #     ├── sandbox containers (egress LOCKED by the internal network + rule)
 #     └── 1brc-proxy @ 172.28.77.2 (also attached to default bridge = egress)
-#   Sandbox reaches ONLY the proxy; proxy forwards HTTPS to ALLOW_DOMAINS.
+#   Sandbox reaches ONLY the proxy; proxy forwards HTTPS to ALLOW_DOMAINS and
+#   exposes one fixed local bridge for the host CLIProxyAPI service.
 #
 # Proxy connection log (every allowed/denied connect): docker logs 1brc-proxy
 
@@ -17,9 +18,14 @@ set -euo pipefail
 NET_NAME=1brc-agent-net
 SUBNET=172.28.77.0/24
 PROXY_IP=172.28.77.2
+FORWARDER_NAME=1brc-cliproxyapi-forwarder
+BRIDGE_VOLUME=1brc-cliproxyapi-bridge
+LOCAL_FORWARD_PORT="${LOCAL_FORWARD_PORT:-8317}"
+LOCAL_FORWARD_TARGET_PORT="${LOCAL_FORWARD_TARGET_PORT:-8317}"
+LOCAL_FORWARD_SOCKET=/bridge/cliproxyapi.sock
 
 # Model APIs + their OAuth/token endpoints. Add providers here as needed.
-ALLOW_DOMAINS="${ALLOW_DOMAINS:-api.openai.com,auth.openai.com,chatgpt.com,api.anthropic.com,api.deepseek.com,openrouter.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai}"
+ALLOW_DOMAINS="${ALLOW_DOMAINS:-api.openai.com,auth.openai.com,chatgpt.com,api.anthropic.com,api.deepseek.com,openrouter.ai,opencode.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai,api2.cursor.sh,api5.cursor.sh,cursor.com}"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT/harness/lib/firewall.sh"
@@ -39,6 +45,7 @@ cleanup_on_error() {
   status=$?
   if [ "$status" -ne 0 ]; then
     docker rm -f 1brc-proxy >/dev/null 2>&1 || true
+    docker rm -f "$FORWARDER_NAME" >/dev/null 2>&1 || true
   fi
 }
 trap cleanup_on_error EXIT
@@ -46,6 +53,7 @@ trap cleanup_on_error EXIT
 # Disable any previous proxy before doing work that can fail. The internal
 # network remains fail-closed while this script is incomplete.
 docker rm -f 1brc-proxy >/dev/null 2>&1 || true
+docker rm -f "$FORWARDER_NAME" >/dev/null 2>&1 || true
 
 if docker network inspect "$NET_NAME" >/dev/null 2>&1; then
   internal="$(docker network inspect -f '{{.Internal}}' "$NET_NAME")"
@@ -61,10 +69,26 @@ fi
 
 docker build -q -t 1brc-allowlist-proxy "$ROOT/harness/proxy" >/dev/null
 
+docker volume inspect "$BRIDGE_VOLUME" >/dev/null 2>&1 \
+  || docker volume create "$BRIDGE_VOLUME" >/dev/null
+
+# The forwarder uses host networking only to reach the host-local service. It
+# publishes that service through a Unix socket in a named volume, not a host
+# TCP port; the allowlist proxy is the only container that consumes the socket.
+docker run -d --name "$FORWARDER_NAME" --restart unless-stopped \
+  --network host \
+  -v "$BRIDGE_VOLUME:/bridge" \
+  1brc-allowlist-proxy \
+  node /opt/proxy/host-local-forward.js "$LOCAL_FORWARD_SOCKET" 127.0.0.1 "$LOCAL_FORWARD_TARGET_PORT" >/dev/null
+
 docker run -d --name 1brc-proxy --restart unless-stopped \
   --network "$NET_NAME" --ip "$PROXY_IP" \
   --label com.1brc.agents.proxy=allowlist-v1 \
   -e ALLOW_DOMAINS="$ALLOW_DOMAINS" \
+  -e LOCAL_FORWARD_PORT="$LOCAL_FORWARD_PORT" \
+  -e LOCAL_FORWARD_TARGET_PORT="$LOCAL_FORWARD_TARGET_PORT" \
+  -e LOCAL_FORWARD_SOCKET="$LOCAL_FORWARD_SOCKET" \
+  -v "$BRIDGE_VOLUME:/bridge:ro" \
   1brc-allowlist-proxy >/dev/null
 
 # proxy also joins the default bridge so it can reach the internet
@@ -72,6 +96,8 @@ docker network connect --gw-priority 1 bridge 1brc-proxy >/dev/null
 
 proxy_running="$(docker inspect -f '{{.State.Running}}' 1brc-proxy)"
 [ "$proxy_running" = true ] || die "proxy container is not running"
+forwarder_running="$(docker inspect -f '{{.State.Running}}' "$FORWARDER_NAME")"
+[ "$forwarder_running" = true ] || die "CLIProxyAPI forwarder is not running"
 proxy_ip="$(docker inspect -f '{{(index .NetworkSettings.Networks "1brc-agent-net").IPAddress}}' 1brc-proxy)"
 [ "$proxy_ip" = "$PROXY_IP" ] || die "proxy has IP $proxy_ip on $NET_NAME, expected $PROXY_IP"
 proxy_networks="$(docker inspect -f '{{json .NetworkSettings.Networks}}' 1brc-proxy)"
@@ -87,3 +113,4 @@ install_firewall_rules "$PROXY_IP" "$SUBNET"
 echo "OK: network $NET_NAME, proxy at 172.28.77.2:3128, subnet locked."
 echo "Verify: docker run --rm --network $NET_NAME curlimages/curl:8.16.0 -sI -x http://$PROXY_IP:3128 https://api.openai.com"
 echo "        (and expect 403 for anything not in ALLOW_DOMAINS)"
+echo "Local API bridge: $PROXY_IP:$LOCAL_FORWARD_PORT -> host CLIProxyAPI 127.0.0.1:$LOCAL_FORWARD_TARGET_PORT"

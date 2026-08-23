@@ -40,6 +40,10 @@ grep -Fq -- "score_execution: same_agent_container" "$ROOT/harness/run_session.s
   echo "run_session.sh does not record container scoring" >&2
   exit 1
 }
+tail -n 1 "$ROOT/harness/run_session.sh" | grep -Fq 'exit "$SCORE_EXIT_STATUS"' || {
+  echo "run_session.sh does not propagate the scoring status" >&2
+  exit 1
+}
 
 echo "same-container scoring handoff: ok"
 

@@ -1,0 +1,22 @@
+{
+  "providers": {
+    "openrouter": {
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "api": "openai-completions",
+      "apiKey": "!printenv OPENROUTER_API_KEY",
+      "models": [
+        {
+          "id": "stealth/ox-alpha",
+          "name": "Ox Alpha (OpenRouter)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 131072,
+          "compat": {
+            "supportsReasoningEffort": true
+          }
+        }
+      ]
+    }
+  }
+}
