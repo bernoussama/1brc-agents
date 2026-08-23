@@ -8,6 +8,14 @@ import json
 from pathlib import Path
 
 
+from bundle_policy import (  # noqa: E402
+    INVENTORY_FILES,
+    SCORE_FILES,
+    TRACE_FILES,
+    collect_solution_files,
+)
+
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 BATCH = ROOT / "runs" / "2026-08-21-neutral-v0.5"
@@ -43,6 +51,21 @@ def verify_checksums(bundle: Path) -> None:
             raise ValueError(f"checksum mismatch: {path}")
 
 
+def verify_bundle_policy(bundle: Path) -> None:
+    allowed = {
+        *TRACE_FILES,
+        *SCORE_FILES,
+        *INVENTORY_FILES,
+        *collect_solution_files(bundle),
+    }
+    for path in bundle.rglob("*"):
+        if not path.is_file():
+            continue
+        relative = str(path.relative_to(bundle))
+        if relative not in allowed:
+            raise ValueError(f"unexpected published file: {bundle / relative}")
+
+
 def main() -> None:
     canonical = json.loads((BATCH / "results.json").read_text())
     release = canonical["release"]
@@ -58,6 +81,7 @@ def main() -> None:
             raise ValueError(f"invalid sample labeling: {result['label']}")
         bundle = BATCH / result["published_artifacts"]
         verify_checksums(bundle)
+        verify_bundle_policy(bundle)
         score = json.loads((bundle / "score.json").read_text())
         manifest = parse_manifest(bundle / "manifest.yaml")
         if not score.get("correct"):

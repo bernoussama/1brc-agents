@@ -51,9 +51,10 @@ serial batch history is not rewritten as an all-success run.
 
 The complete machine-readable record is [results.json](results.json).
 Verify the published bundles with `python3 release/verify_release.py`.
-Each artifact directory contains `SHA256SUMS` and an `omitted-files.json`
-inventory. Only generated development files larger than 5 MiB and Python
-bytecode caches are omitted; the full event trace and scoring evidence are retained.
+Each bundle directory contains `SHA256SUMS` and an `omitted-files.json`
+inventory. Published bundles retain the agent trace (`events.jsonl`, `pi.err`),
+scoring evidence, and the final submission (`run.sh`, binary, and source).
+Intermediate experiments and scratch files are omitted.
 
 ## Limits
 

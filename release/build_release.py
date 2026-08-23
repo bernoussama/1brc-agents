@@ -15,16 +15,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SPEC_PATH = HERE / "release-spec.json"
 BATCH_DIR = ROOT / "runs" / "2026-08-21-neutral-v0.5"
-MAX_WORK_FILE_BYTES = 5 * 1024 * 1024
-ROOT_ARTIFACTS = (
-    "events.jsonl",
-    "score.json",
-    "score.log",
-    "manifest.yaml",
-    "cleanup.log",
-    "pi.err",
-    "control/budget.json",
-)
+
+from bundle_policy import copy_publication_bundle, prune_bundle  # noqa: E402
 
 
 def sha256(path: Path) -> str:
@@ -114,54 +106,11 @@ def scan_json_strings(value: object, path: Path, line_number: int, key: str = ""
             raise ValueError(f"possible API key in {path}:{line_number}")
 
 
-def copy_publication_bundle(run_dir: Path, destination: Path) -> list[dict]:
-    destination.mkdir(parents=True)
-    omitted: list[dict] = []
-    copied: list[Path] = []
-
-    for relative in ROOT_ARTIFACTS:
-        source = run_dir / relative
-        if not source.exists():
-            continue
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
-        copied.append(target)
-
-    work = run_dir / "work"
-    if work.is_dir():
-        for source in sorted(work.rglob("*")):
-            if source.is_symlink():
-                raise ValueError(f"publication work tree contains a symlink: {source}")
-            if not source.is_file():
-                continue
-            relative = source.relative_to(run_dir)
-            if "__pycache__" in relative.parts or source.suffix == ".pyc":
-                continue
-            if source.stat().st_size > MAX_WORK_FILE_BYTES:
-                omitted.append({
-                    "path": str(relative),
-                    "bytes": source.stat().st_size,
-                    "reason": "generated development dataset exceeds 5 MiB publication limit",
-                })
-                continue
-            target = destination / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, target)
-            copied.append(target)
-
-    for path in copied:
-        secret_scan(path)
-
-    (destination / "omitted-files.json").write_text(
-        json.dumps(omitted, indent=2, sort_keys=True) + "\n"
-    )
-    copied.append(destination / "omitted-files.json")
-    checksum_lines = []
-    for path in sorted(copied):
-        relative = path.relative_to(destination)
-        checksum_lines.append(f"{sha256(path)}  {relative}")
-    (destination / "SHA256SUMS").write_text("\n".join(checksum_lines) + "\n")
+def copy_and_scan(run_dir: Path, destination: Path) -> list[dict]:
+    omitted = copy_publication_bundle(run_dir, destination)
+    for path in destination.rglob("*"):
+        if path.is_file() and path.name not in ("SHA256SUMS", "omitted-files.json"):
+            secret_scan(path)
     return omitted
 
 
@@ -192,7 +141,7 @@ def build(harness_commit: str) -> None:
             raise ValueError(f"run is outside the common dataset/image cohort: {run_dir}")
 
         artifact_id = entry["slug"]
-        omitted = copy_publication_bundle(run_dir, BATCH_DIR / artifact_id)
+        omitted = copy_and_scan(run_dir, BATCH_DIR / artifact_id)
         timings = score["runs_ms"]
         results.append({
             "rank": 0,
@@ -231,7 +180,7 @@ def build(harness_commit: str) -> None:
         if manifest.get("score_exit_status") == "0":
             raise ValueError(f"failed attempt has successful score status: {run_dir}")
         artifact_id = entry["slug"]
-        copy_publication_bundle(run_dir, BATCH_DIR / artifact_id)
+        copy_and_scan(run_dir, BATCH_DIR / artifact_id)
         failures.append({
             **{k: v for k, v in entry.items() if k != "slug"},
             "score_exit_status": int(manifest["score_exit_status"]),
@@ -345,9 +294,10 @@ def render_markdown(canonical: dict) -> str:
         "",
         "The complete machine-readable record is [results.json](results.json).",
         "Verify the published bundles with `python3 release/verify_release.py`.",
-        "Each artifact directory contains `SHA256SUMS` and an `omitted-files.json`",
-        "inventory. Only generated development files larger than 5 MiB and Python",
-        "bytecode caches are omitted; the full event trace and scoring evidence are retained.",
+        "Each bundle directory contains `SHA256SUMS` and an `omitted-files.json`",
+        "inventory. Published bundles retain the agent trace (`events.jsonl`, `pi.err`),",
+        "scoring evidence, and the final submission (`run.sh`, binary, and source).",
+        "Intermediate experiments and scratch files are omitted.",
         "",
         "## Limits",
         "",
