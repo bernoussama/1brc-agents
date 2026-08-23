@@ -2,10 +2,45 @@
 # the source of truth for environment, budgets, dataset, and judge settings.
 # Profiles supply only model identity and credentials.
 #
-# Set BENCH_ALLOW_OVERRIDE=1 to let env vars override these values for local
-# smoke tests. Published comparisons must run with the defaults below.
+# Host presets under `hosts:` set the resource envelope and declared hardware
+# for the machine the bench is running on. Default selection is `auto`: the
+# first preset whose `match` rules fit this host. Force one with
+# `BENCH_HOST=<name>` or by setting `host:` below.
+#
+# Set BENCH_ALLOW_OVERRIDE=1 to let env vars override resource caps for local
+# smoke tests. Published comparisons must run with a matched preset.
 
 version: 1
+
+host: auto
+
+hosts:
+  laptop:
+    # Published neutral-v0.5 box.
+    match:
+      cpu_contains: Intel Core i7-9750H
+    resources:
+      cpus: 6
+      memory: 16GiB
+    hardware:
+      cpu: Intel Core i7-9750H
+      physical_cores: 6
+      logical_cpus: 12
+      storage: Intel SSDPEMKF010T8 NVMe
+
+  dedicated:
+    # Draft v1 box. Select explicitly with BENCH_HOST=dedicated until the
+    # match rule is filled in for the sponsored machine.
+    match:
+      cpu_contains: REPLACE_WITH_DEDICATED_CPU_MODEL
+    resources:
+      cpus: 16
+      memory: 64GiB
+    hardware:
+      cpu: REPLACE_WITH_DEDICATED_CPU_MODEL
+      physical_cores: 16
+      logical_cpus: 32
+      storage: REPLACE_WITH_DEDICATED_STORAGE
 
 environment:
   image: 1brc-agents-sandbox:latest
@@ -14,9 +49,6 @@ environment:
   image_digest: sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab
   proxy_image: 1brc-allowlist-proxy
   proxy_image_digest: sha256:e43291217da0015d62997806078392bccc8d196a82891b251568a597938f0bff
-  resources:
-    cpus: 6
-    memory: 16GiB
   network:
     mode: allowlist
 

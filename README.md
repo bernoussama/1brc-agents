@@ -7,8 +7,8 @@ allowlist proxy.
 
 ## What's here
 
-- `bench.yml` — frozen run profile the session runner loads: image digests,
-  CPU/memory, budgets, dataset pins, judge settings.
+- `bench.yml` — frozen run profile the session runner loads: host resource
+  presets, image digests, budgets, dataset pins, judge settings.
 - `task/` — what the agent sees: `program.md` and the agent-side tools.
 - `docker/` — the pinned sandbox image recipe.
 - `harness/` — session runner, profiles, network setup, cleanup.
@@ -31,7 +31,8 @@ export OPENROUTER_API_KEY=...
 ```
 
 Environment, budget, dataset, and judge settings come from
-[bench.yml](bench.yml). Profiles supply only the model and credentials.
+[bench.yml](bench.yml). Host presets pick the resource envelope for the
+machine the bench is running on. Profiles supply only the model and credentials.
 
 ## Honest labeling
 

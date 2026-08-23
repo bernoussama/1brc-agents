@@ -5,11 +5,22 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 LOAD="$ROOT/harness/lib/load_bench.py"
 BENCH="$ROOT/bench.yml"
 
-eval "$(python3 "$LOAD" "$BENCH")"
+# Force the published laptop preset so CI hosts that are not the v0.5 box
+# still exercise the loader end to end.
+eval "$(python3 "$LOAD" --host laptop "$BENCH")"
 
 [ "$BENCH_VERSION" = 1 ] || { echo "unexpected version: $BENCH_VERSION" >&2; exit 1; }
+[ "$BENCH_HOST" = laptop ] || { echo "unexpected host: $BENCH_HOST" >&2; exit 1; }
 [ "$BENCH_NCPUS" = 6 ] || { echo "unexpected cpus: $BENCH_NCPUS" >&2; exit 1; }
 [ "$BENCH_MEM" = 16g ] || { echo "unexpected mem: $BENCH_MEM" >&2; exit 1; }
+[ "$BENCH_HARDWARE_CPU" = "Intel Core i7-9750H" ] || {
+  echo "unexpected hardware cpu: $BENCH_HARDWARE_CPU" >&2
+  exit 1
+}
+[ "$BENCH_HARDWARE_PHYSICAL_CORES" = 6 ] || {
+  echo "unexpected physical cores: $BENCH_HARDWARE_PHYSICAL_CORES" >&2
+  exit 1
+}
 [ "$BENCH_BUDGET_MIN" = 120 ] || { echo "unexpected budget: $BENCH_BUDGET_MIN" >&2; exit 1; }
 [ "$BENCH_TIMED_RUNS" = 5 ] || { echo "unexpected timed runs: $BENCH_TIMED_RUNS" >&2; exit 1; }
 [ "$BENCH_ROUND" = A ] || { echo "unexpected round: $BENCH_ROUND" >&2; exit 1; }
@@ -35,29 +46,59 @@ done < <(find "$ROOT/harness/profiles" -name '*.sh' | sort)
 BAD="$(mktemp)"
 cat > "$BAD" <<'YAML'
 version: 1
+host: broken
+hosts:
+  broken:
+    match: {cpu_contains: nowhere}
+    resources: {cpus: 1, memory: potato}
+    hardware:
+      cpu: x
+      physical_cores: 1
+      logical_cpus: 1
+      storage: x
 environment:
   image: x
-  resources: {cpus: 1, memory: potato}
 agent: {name: pi, budget_minutes: 1, wrapup_seconds: 1, experiment_max_seconds: 1}
 dataset: {rows: 1, volume: v}
 judge: {round: A, warmup_runs: 1, timed_runs: 1, report: median}
 YAML
-if python3 "$LOAD" "$BAD" >/dev/null 2>&1; then
+if python3 "$LOAD" --host broken "$BAD" >/dev/null 2>&1; then
   rm -f "$BAD"
   echo "invalid memory should fail" >&2
   exit 1
 fi
 rm -f "$BAD"
 
-# Confirm override rejection path in run_session argument parsing via a dry load.
+# Host presets select resources.
 TMP="$(mktemp)"
-cat > "$TMP" <<EOF
+cat > "$TMP" <<'EOF'
 version: 1
+host: auto
+hosts:
+  small:
+    match:
+      cpu_contains: TinyCPU
+    resources:
+      cpus: 2
+      memory: 8GiB
+    hardware:
+      cpu: TinyCPU
+      physical_cores: 2
+      logical_cpus: 4
+      storage: tiny-disk
+  large:
+    match:
+      cpu_contains: HugeCPU
+    resources:
+      cpus: 16
+      memory: 64GiB
+    hardware:
+      cpu: HugeCPU
+      physical_cores: 16
+      logical_cpus: 32
+      storage: huge-disk
 environment:
   image: 1brc-agents-sandbox:latest
-  resources:
-    cpus: 2
-    memory: 8GiB
 agent:
   name: pi
   budget_minutes: 10
@@ -72,10 +113,45 @@ judge:
   timed_runs: 3
   report: median
 EOF
-eval "$(python3 "$LOAD" "$TMP")"
-[ "$BENCH_NCPUS" = 2 ] || { echo "fixture cpus wrong" >&2; exit 1; }
-[ "$BENCH_MEM" = 8g ] || { echo "fixture mem wrong: $BENCH_MEM" >&2; exit 1; }
+
+eval "$(python3 "$LOAD" --host large "$TMP")"
+[ "$BENCH_HOST" = large ] || { echo "fixture host wrong: $BENCH_HOST" >&2; exit 1; }
+[ "$BENCH_NCPUS" = 16 ] || { echo "fixture cpus wrong" >&2; exit 1; }
+[ "$BENCH_MEM" = 64g ] || { echo "fixture mem wrong: $BENCH_MEM" >&2; exit 1; }
+[ "$BENCH_HARDWARE_STORAGE" = huge-disk ] || {
+  echo "fixture storage wrong: $BENCH_HARDWARE_STORAGE" >&2
+  exit 1
+}
 [ "$BENCH_ROUND" = B ] || { echo "fixture round wrong" >&2; exit 1; }
+
+# Unknown host name fails.
+if python3 "$LOAD" --host missing "$TMP" >/dev/null 2>&1; then
+  rm -f "$TMP"
+  echo "unknown host should fail" >&2
+  exit 1
+fi
+
+# environment.resources is rejected.
+cat > "$TMP" <<'EOF'
+version: 1
+host: only
+hosts:
+  only:
+    match: {cpu_contains: x}
+    resources: {cpus: 1, memory: 1GiB}
+    hardware: {cpu: x, physical_cores: 1, logical_cpus: 1, storage: x}
+environment:
+  image: x
+  resources: {cpus: 9, memory: 9GiB}
+agent: {name: pi, budget_minutes: 1, wrapup_seconds: 1, experiment_max_seconds: 1}
+dataset: {rows: 1, volume: v}
+judge: {round: A, warmup_runs: 1, timed_runs: 1, report: median}
+EOF
+if python3 "$LOAD" --host only "$TMP" >/dev/null 2>&1; then
+  rm -f "$TMP"
+  echo "legacy environment.resources should fail" >&2
+  exit 1
+fi
 rm -f "$TMP"
 
 echo "bench loader: ok"

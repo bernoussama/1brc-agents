@@ -29,8 +29,10 @@ export OPENROUTER_API_KEY=...
 ```
 
 Environment, budget, dataset size, and timed-run count come from
-[bench.yml](../bench.yml). Profiles supply only the model and credentials.
-For a local smoke test that changes those values, set
+[bench.yml](../bench.yml). Host presets under `hosts:` pick the resource
+envelope for the machine the bench is running on (`laptop` for the published
+v0.5 box; set `BENCH_HOST` to force one). Profiles supply only the model and
+credentials. For a local smoke test that changes resource caps, set
 `BENCH_ALLOW_OVERRIDE=1`.
 
 ## Usage
@@ -47,6 +49,8 @@ export OPENROUTER_API_KEY=sk-or-...   # whichever profile you're running
 ./harness/run_session.sh glm-4.7 harness/profiles/glm-coding.sh
 ./harness/run_session.sh glm-5.3 harness/profiles/glm-5.3.sh
 ./harness/run_session.sh deepseek harness/profiles/deepseek.sh B
+# Force the laptop resource preset on a different machine:
+BENCH_HOST=laptop ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
 # Local smoke test with a shorter budget:
 BENCH_ALLOW_OVERRIDE=1 BUDGET_MIN=5 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
 ```
@@ -161,8 +165,8 @@ session starts with a clean but pre-configured pi state.
   `control/budget.json` file. Agents must use it for remaining-time decisions;
   the manifest records the actual stop reason and elapsed time.
 - The container exposes `1brc-resources`, which reports cgroup CPU and memory
-  limits separately from visible host topology. `bench.yml` sets the current
-  baseline of 6 CPU-equivalents and 16 GiB.
+  limits separately from visible host topology. The active `hosts.*` preset in
+  `bench.yml` sets the current envelope (laptop: 6 CPU-equivalents / 16 GiB).
 - Candidate commands should use `1brc-bounded`; it isolates an experiment's
   process group and cleans up descendants after a timeout. Docker's `--init`
   is also enabled so orphaned children are reaped.

@@ -16,10 +16,10 @@
 # 5. injects the held-out input and scores inside the agent container
 #    before releasing it, then writes the run manifest
 #
-# Env: BENCH_FILE (default: <repo>/bench.yml), BENCH_ALLOW_OVERRIDE=0|1,
-#      CLEANUP_RUN_ARTIFACTS (default 1). With BENCH_ALLOW_OVERRIDE=1 also
-#      accepts BUDGET_MIN, BUDGET_WRAPUP_SEC, EXPERIMENT_MAX_SEC, RUNS,
-#      NCPUS, MEM, SCORED_DATASET_VOLUME.
+# Env: BENCH_FILE (default: <repo>/bench.yml), BENCH_HOST=<preset>,
+#      BENCH_ALLOW_OVERRIDE=0|1, CLEANUP_RUN_ARTIFACTS (default 1). With
+#      BENCH_ALLOW_OVERRIDE=1 also accepts BUDGET_MIN, BUDGET_WRAPUP_SEC,
+#      EXPERIMENT_MAX_SEC, RUNS, NCPUS, MEM, SCORED_DATASET_VOLUME.
 
 set -euo pipefail
 
@@ -410,7 +410,7 @@ PROXY_ALLOW_DOMAINS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{en
 [ -n "$PROXY_ALLOW_DOMAINS" ] || { echo "proxy has no recorded allowlist" >&2; exit 1; }
 PROXY_LOCAL_FORWARD_PORT="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^LOCAL_FORWARD_PORT=//p')"
 
-echo "[$SLUG] starting: budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS}"
+echo "[$SLUG] starting: host=$BENCH_HOST budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS} cpus=$NCPUS mem=$MEM"
 
 # --- launch pi headless inside the sandbox ---
 GOAL_PROMPT="Read program.md and follow it exactly. Run fully autonomously — never stop, never ask for input, never wait for a human. Goal: make /work/submission/run.sh the fastest CORRECT solution for Round ${ROUND} (${ROUND} is defined in program.md) within your ${BUDGET_MIN}-minute budget. Keep run.sh valid at all times once your first correct version exists.
@@ -626,6 +626,7 @@ fi
   echo "profile: $PROFILE"
   echo "bench_file: $BENCH_FILE"
   echo "bench_sha256: $BENCH_SHA256"
+  echo "bench_host: $BENCH_HOST"
   echo "bench_allow_override: $BENCH_ALLOW_OVERRIDE"
   echo "round: $ROUND"
   echo "budget_min: $BUDGET_MIN"
@@ -664,6 +665,10 @@ fi
   echo "cpus: $(nproc)"
   echo "requested_cpu_quota: $NCPUS"
   echo "requested_memory_limit: $MEM"
+  echo "bench_hardware_cpu: \"$BENCH_HARDWARE_CPU\""
+  echo "bench_hardware_physical_cores: $BENCH_HARDWARE_PHYSICAL_CORES"
+  echo "bench_hardware_logical_cpus: $BENCH_HARDWARE_LOGICAL_CPUS"
+  echo "bench_hardware_storage: \"$BENCH_HARDWARE_STORAGE\""
   echo "host_cpu_model: \"$(lscpu | sed -n 's/^Model name:[[:space:]]*//p' | head -n 1)\""
   echo "host_cpu_microcode: \"$(lscpu | sed -n 's/^Microcode version:[[:space:]]*//p' | head -n 1)\""
   echo "warm_cache_policy: ${WARMUP_RUNS}_untimed_warmup_then_${RUNS_N}_timed_runs"
@@ -685,6 +690,7 @@ fi
   echo "score_network: $SCORE_NETWORK_STATUS"
   echo "cleanup_run_artifacts: $CLEANUP_RUN_ARTIFACTS"
 } > "$RUNDIR/manifest.yaml"
+
 # The EXIT trap performs this as well on an early failure. Here it runs before
 # the completion message so every ordinary session frees its disposable files
 # before the command returns to the caller.
