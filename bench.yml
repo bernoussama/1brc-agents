@@ -28,6 +28,19 @@ hosts:
       logical_cpus: 12
       storage: Intel SSDPEMKF010T8 NVMe
 
+  cloud-agent:
+    # Cursor cloud agent VMs.
+    match:
+      hostname_equals: cursor
+    resources:
+      cpus: 4
+      memory: 16GiB
+    hardware:
+      cpu: Intel(R) Xeon(R) Processor
+      physical_cores: 4
+      logical_cpus: 4
+      storage: cloud-ephemeral
+
   dedicated:
     # Draft v1 box. Select explicitly with BENCH_HOST=dedicated until the
     # match rule is filled in for the sponsored machine.

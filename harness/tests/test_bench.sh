@@ -5,19 +5,35 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 LOAD="$ROOT/harness/lib/load_bench.py"
 BENCH="$ROOT/bench.yml"
 
-# Force the published laptop preset so CI hosts that are not the v0.5 box
-# still exercise the loader end to end.
-eval "$(python3 "$LOAD" --host laptop "$BENCH")"
+# Force a known preset so CI hosts that are not the v0.5 laptop still
+# exercise the loader end to end. Prefer cloud-agent when this machine
+# matches it; otherwise pin laptop.
+if python3 "$LOAD" --host cloud-agent "$BENCH" >/dev/null 2>&1 \
+  && python3 -c 'import socket; raise SystemExit(0 if socket.gethostname()=="cursor" else 1)'; then
+  eval "$(python3 "$LOAD" --host cloud-agent "$BENCH")"
+  EXPECT_HOST=cloud-agent
+  EXPECT_CPUS=4
+  EXPECT_MEM=16g
+  EXPECT_CPU_MODEL='Intel(R) Xeon(R) Processor'
+  EXPECT_PHYSICAL=4
+else
+  eval "$(python3 "$LOAD" --host laptop "$BENCH")"
+  EXPECT_HOST=laptop
+  EXPECT_CPUS=6
+  EXPECT_MEM=16g
+  EXPECT_CPU_MODEL='Intel Core i7-9750H'
+  EXPECT_PHYSICAL=6
+fi
 
 [ "$BENCH_VERSION" = 1 ] || { echo "unexpected version: $BENCH_VERSION" >&2; exit 1; }
-[ "$BENCH_HOST" = laptop ] || { echo "unexpected host: $BENCH_HOST" >&2; exit 1; }
-[ "$BENCH_NCPUS" = 6 ] || { echo "unexpected cpus: $BENCH_NCPUS" >&2; exit 1; }
-[ "$BENCH_MEM" = 16g ] || { echo "unexpected mem: $BENCH_MEM" >&2; exit 1; }
-[ "$BENCH_HARDWARE_CPU" = "Intel Core i7-9750H" ] || {
+[ "$BENCH_HOST" = "$EXPECT_HOST" ] || { echo "unexpected host: $BENCH_HOST" >&2; exit 1; }
+[ "$BENCH_NCPUS" = "$EXPECT_CPUS" ] || { echo "unexpected cpus: $BENCH_NCPUS" >&2; exit 1; }
+[ "$BENCH_MEM" = "$EXPECT_MEM" ] || { echo "unexpected mem: $BENCH_MEM" >&2; exit 1; }
+[ "$BENCH_HARDWARE_CPU" = "$EXPECT_CPU_MODEL" ] || {
   echo "unexpected hardware cpu: $BENCH_HARDWARE_CPU" >&2
   exit 1
 }
-[ "$BENCH_HARDWARE_PHYSICAL_CORES" = 6 ] || {
+[ "$BENCH_HARDWARE_PHYSICAL_CORES" = "$EXPECT_PHYSICAL" ] || {
   echo "unexpected physical cores: $BENCH_HARDWARE_PHYSICAL_CORES" >&2
   exit 1
 }
@@ -68,6 +84,21 @@ if python3 "$LOAD" --host broken "$BAD" >/dev/null 2>&1; then
   exit 1
 fi
 rm -f "$BAD"
+
+# Explicit cloud-agent preset.
+eval "$(python3 "$LOAD" --host cloud-agent "$BENCH")"
+[ "$BENCH_HOST" = cloud-agent ] || { echo "cloud-agent host wrong" >&2; exit 1; }
+[ "$BENCH_NCPUS" = 4 ] || { echo "cloud-agent cpus wrong: $BENCH_NCPUS" >&2; exit 1; }
+[ "$BENCH_MEM" = 16g ] || { echo "cloud-agent mem wrong: $BENCH_MEM" >&2; exit 1; }
+
+# Auto-detect on this Cursor cloud agent VM.
+if [ "$(hostname)" = cursor ]; then
+  eval "$(python3 "$LOAD" "$BENCH")"
+  [ "$BENCH_HOST" = cloud-agent ] || {
+    echo "auto should select cloud-agent on hostname=cursor; got $BENCH_HOST" >&2
+    exit 1
+  }
+fi
 
 # Host presets select resources.
 TMP="$(mktemp)"
