@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/home/oussama/projects/1brc-agents/runs/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131/work/submission/run.sh",
+  "execution_environment": "container:e2e105e7d194",
+  "correct": true,
+  "median_ms": 2989.7,
+  "runs_ms": [
+    4836.8,
+    2989.7,
+    2675.4,
+    2761.3,
+    3480.6
+  ],
+  "expected_ms": 0.4,
+  "scoring_elapsed_ms": 23935.2,
+  "expected_sha256": "ecf5e03865eacc1e",
+  "actual_sha256": "ecf5e03865eacc1e"
+}

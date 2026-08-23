@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/home/oussama/projects/1brc-agents/runs/neutral-20260821T191231-01-glm-5.3-20260821T191231/work/submission/run.sh",
+  "execution_environment": "container:42254a56f3b7",
+  "correct": true,
+  "median_ms": 1923.5,
+  "runs_ms": [
+    1879.8,
+    1878.5,
+    1928.6,
+    1952.8,
+    1923.5
+  ],
+  "expected_ms": 0.5,
+  "scoring_elapsed_ms": 14045.6,
+  "expected_sha256": "ecf5e03865eacc1e",
+  "actual_sha256": "ecf5e03865eacc1e"
+}

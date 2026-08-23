@@ -1,0 +1,12 @@
+[
+  {
+    "bytes": 13794563500,
+    "path": "work/measurements-x100.txt",
+    "reason": "generated development dataset exceeds 5 MiB publication limit"
+  },
+  {
+    "bytes": 2758912700,
+    "path": "work/measurements-x20.txt",
+    "reason": "generated development dataset exceeds 5 MiB publication limit"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/home/oussama/projects/1brc-agents/runs/neutral-gpt-5.6-terra-medium-20260822T132613/work/submission/run.sh",
+  "execution_environment": "container:755685119fe3",
+  "correct": true,
+  "median_ms": 4661.3,
+  "runs_ms": [
+    6838.0,
+    4797.1,
+    4661.3,
+    4425.6,
+    4535.0
+  ],
+  "expected_ms": 0.4,
+  "scoring_elapsed_ms": 37376.0,
+  "expected_sha256": "ecf5e03865eacc1e",
+  "actual_sha256": "ecf5e03865eacc1e"
+}

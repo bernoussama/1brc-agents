@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/home/oussama/projects/1brc-agents/runs/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130/work/submission/run.sh",
+  "execution_environment": "container:53a09c4a790f",
+  "correct": true,
+  "median_ms": 3898.2,
+  "runs_ms": [
+    3686.9,
+    3756.0,
+    3914.0,
+    3898.2,
+    3974.8
+  ],
+  "expected_ms": 1.1,
+  "scoring_elapsed_ms": 37904.4,
+  "expected_sha256": "ecf5e03865eacc1e",
+  "actual_sha256": "ecf5e03865eacc1e"
+}

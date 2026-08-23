@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/home/oussama/projects/1brc-agents/runs/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907/work/submission/run.sh",
+  "execution_environment": "container:d2fdece9532f",
+  "correct": true,
+  "median_ms": 5186.3,
+  "runs_ms": [
+    4915.3,
+    5561.1,
+    5369.1,
+    5077.4,
+    5186.3
+  ],
+  "expected_ms": 0.4,
+  "scoring_elapsed_ms": 31161.5,
+  "expected_sha256": "ecf5e03865eacc1e",
+  "actual_sha256": "ecf5e03865eacc1e"
+}

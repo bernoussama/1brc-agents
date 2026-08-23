@@ -1,0 +1,320 @@
+{
+  "failed_first_attempts": [
+    {
+      "agent_elapsed_seconds": 2,
+      "label": "Gemini 3.7 Flash first attempt",
+      "profile": "harness/profiles/cliproxyapi-gemini-3.7.sh",
+      "published_artifacts": "artifacts/neutral-20260821T191231-04-gemini-3.7-flash-20260821T213706",
+      "reason": "The agent exited after two seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary.",
+      "run_dir": "runs/neutral-20260821T191231-04-gemini-3.7-flash-20260821T213706",
+      "score_exit_status": 1
+    },
+    {
+      "agent_elapsed_seconds": 17,
+      "label": "Ox Alpha first attempt",
+      "profile": "harness/profiles/openrouter-ox-alpha.sh",
+      "published_artifacts": "artifacts/neutral-20260821T191231-05-ox-alpha-20260821T213711",
+      "reason": "The agent exited after 17 seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary.",
+      "run_dir": "runs/neutral-20260821T191231-05-ox-alpha-20260821T213711",
+      "score_exit_status": 1
+    }
+  ],
+  "interpretation": {
+    "round_b_run": false,
+    "sample_size": "n=1 autonomous agent session per configuration",
+    "top_median_difference_ms": 19.0,
+    "top_median_difference_percent": 1.0,
+    "top_result": "Cursor Grok 4.6 Medium and GLM 5.3 are a near-tie"
+  },
+  "release": {
+    "agent_version": "pi 0.84.2",
+    "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+    "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+    "hardware": {
+      "cpu": "Intel Core i7-9750H",
+      "host": "Linux 7.1.8-arch1-3 x86_64 GNU/Linux",
+      "logical_cpus": 12,
+      "per_run_cpu_quota": 6,
+      "per_run_memory_gib": 16,
+      "physical_cores": 6,
+      "storage": "Intel SSDPEMKF010T8 NVMe"
+    },
+    "harness_git_commit": "385df58f240644436fe0f5e24e307a47924eb52a",
+    "id": "neutral-v0.5",
+    "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+    "judge_runner_sha256": "b4a5c51b4143f81c2e2b18f50b4f016dd54a85c73bc5690540f523613c48edcc",
+    "judge_sha256": "1f3f8aeb0181e18248a253e54d0bfb23fec7c9166350c5be28f5447064cee2c1",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "proxy_image_sha256": "sha256:e43291217da0015d62997806078392bccc8d196a82891b251568a597938f0bff",
+    "published_on": "2026-08-23",
+    "runner_sha256": "a901a162424171e6669ba15bd5a81223d494abbf3daac2bd1cba9d54debf6333",
+    "scope": "single-box single-session unofficial Round A results",
+    "tag": "v0.5-neutral-2026-08-23",
+    "warm_cache_policy": "one untimed warmup followed by five timed runs"
+  },
+  "results": [
+    {
+      "adapter_route": "pi to in-container cursor-api-proxy to Cursor CLI Grok 4.6 Medium",
+      "agent_elapsed_seconds": 4321,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "Cursor Grok 4.6 Medium",
+      "max_ms": 1940.6,
+      "median_ms": 1904.5,
+      "min_ms": 1883.2,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [
+        {
+          "bytes": 1655347620,
+          "path": "work/m120.txt",
+          "reason": "generated development dataset exceeds 5 MiB publication limit"
+        },
+        {
+          "bytes": 551782540,
+          "path": "work/m40.txt",
+          "reason": "generated development dataset exceeds 5 MiB publication limit"
+        }
+      ],
+      "profile": "harness/profiles/cursor-grok-4.6-medium-container.sh",
+      "profile_sha256": "a9e122ab901995102f482009a23d444460424b9b52a6355bfa1f542b38e6d488",
+      "published_artifacts": "artifacts/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733",
+      "rank": 1,
+      "reasoning": "medium",
+      "runs_ms": [
+        1940.6,
+        1883.2,
+        1905.2,
+        1904.5,
+        1894.1
+      ],
+      "source_run_dir": "runs/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733",
+      "stop_reason": "agent_exit"
+    },
+    {
+      "adapter_route": "pi to Z.AI Coding Plan to glm-5.3",
+      "agent_elapsed_seconds": 3364,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "GLM 5.3",
+      "max_ms": 1952.8,
+      "median_ms": 1923.5,
+      "min_ms": 1878.5,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/glm-5.3.sh",
+      "profile_sha256": "00f7942c8e7a711945b516062049165bf8092dfe3b530472ddc7c86f63b3c894",
+      "published_artifacts": "artifacts/neutral-20260821T191231-01-glm-5.3-20260821T191231",
+      "rank": 2,
+      "reasoning": "max",
+      "runs_ms": [
+        1879.8,
+        1878.5,
+        1928.6,
+        1952.8,
+        1923.5
+      ],
+      "source_run_dir": "runs/neutral-20260821T191231-01-glm-5.3-20260821T191231",
+      "stop_reason": "agent_exit"
+    },
+    {
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-luna",
+      "agent_elapsed_seconds": 4786,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "GPT-5.6 Luna",
+      "max_ms": 2465.4,
+      "median_ms": 2403.7,
+      "min_ms": 2338.4,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/gpt-5.6-luna.sh",
+      "profile_sha256": "e9ce7b1fb42f74c0d95013b2b370240f2ecf8332de78dac000f9e0c59e4c731c",
+      "published_artifacts": "artifacts/neutral-20260821T191231-02-gpt-5.6-luna-20260821T200857",
+      "rank": 3,
+      "reasoning": "max",
+      "runs_ms": [
+        2343.9,
+        2434.2,
+        2465.4,
+        2338.4,
+        2403.7
+      ],
+      "source_run_dir": "runs/neutral-20260821T191231-02-gpt-5.6-luna-20260821T200857",
+      "stop_reason": "agent_exit"
+    },
+    {
+      "adapter_route": "pi to CLIProxyAPI bridge to Antigravity gemini-3.7-flash-high",
+      "agent_elapsed_seconds": 1167,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "Gemini 3.7 Flash",
+      "max_ms": 4836.8,
+      "median_ms": 2989.7,
+      "min_ms": 2675.4,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/cliproxyapi-gemini-3.7.sh",
+      "profile_sha256": "f6b5ff0db7e9c8b7d0dc9494e3bea7a9db21c112fb03833b8f7695f473be4755",
+      "published_artifacts": "artifacts/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131",
+      "rank": 4,
+      "reasoning": "high",
+      "runs_ms": [
+        4836.8,
+        2989.7,
+        2675.4,
+        2761.3,
+        3480.6
+      ],
+      "source_run_dir": "runs/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131",
+      "stop_reason": "agent_exit"
+    },
+    {
+      "adapter_route": "pi to OpenRouter to stealth/ox-alpha",
+      "agent_elapsed_seconds": 5997,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "Ox Alpha",
+      "max_ms": 3974.8,
+      "median_ms": 3898.2,
+      "min_ms": 3686.9,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [
+        {
+          "bytes": 13794563500,
+          "path": "work/dev100x.txt",
+          "reason": "generated development dataset exceeds 5 MiB publication limit"
+        },
+        {
+          "bytes": 1241510715,
+          "path": "work/dev10x.txt",
+          "reason": "generated development dataset exceeds 5 MiB publication limit"
+        }
+      ],
+      "profile": "harness/profiles/openrouter-ox-alpha.sh",
+      "profile_sha256": "3e91541e7134a0f894632c734682e00fa6f843e942e55a7a90c5d1f2ad449ea6",
+      "published_artifacts": "artifacts/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130",
+      "rank": 5,
+      "reasoning": "max",
+      "runs_ms": [
+        3686.9,
+        3756.0,
+        3914.0,
+        3898.2,
+        3974.8
+      ],
+      "source_run_dir": "runs/neutral-authretry-20260821T225131-02-ox-alpha-20260821T231130",
+      "stop_reason": "agent_exit"
+    },
+    {
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-terra",
+      "agent_elapsed_seconds": 561,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "GPT-5.6 Terra",
+      "max_ms": 6838.0,
+      "median_ms": 4661.3,
+      "min_ms": 4425.6,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/gpt-5.6-terra.sh",
+      "profile_sha256": "827aa1b84bc8ae1ece54a33d69039f830a3c42c11e8e4fc1df92971eed140bfc",
+      "published_artifacts": "artifacts/neutral-gpt-5.6-terra-medium-20260822T132613",
+      "rank": 6,
+      "reasoning": "medium",
+      "runs_ms": [
+        6838.0,
+        4797.1,
+        4661.3,
+        4425.6,
+        4535.0
+      ],
+      "source_run_dir": "runs/neutral-gpt-5.6-terra-medium-20260822T132613",
+      "stop_reason": "agent_exit"
+    },
+    {
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-sol",
+      "agent_elapsed_seconds": 442,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "GPT-5.6 Sol",
+      "max_ms": 5561.1,
+      "median_ms": 5186.3,
+      "min_ms": 4915.3,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [
+        {
+          "bytes": 1379456350,
+          "path": "work/test100m.txt",
+          "reason": "generated development dataset exceeds 5 MiB publication limit"
+        }
+      ],
+      "profile": "harness/profiles/gpt-5.6-sol-high.sh",
+      "profile_sha256": "8284b6831bc9d7b2ceaa25739879bf81763d16e965e423fe38826a41baaabf3d",
+      "published_artifacts": "artifacts/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907",
+      "rank": 7,
+      "reasoning": "high",
+      "runs_ms": [
+        4915.3,
+        5561.1,
+        5369.1,
+        5077.4,
+        5186.3
+      ],
+      "source_run_dir": "runs/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907",
+      "stop_reason": "agent_exit"
+    },
+    {
+      "adapter_route": "pi to openai-codex OAuth to gpt-5.6-terra",
+      "agent_elapsed_seconds": 2589,
+      "correct": true,
+      "dataset_sha256": "59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab",
+      "label": "GPT-5.6 Terra",
+      "max_ms": 7700.5,
+      "median_ms": 5905.4,
+      "min_ms": 5695.6,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [
+        {
+          "bytes": 13794563500,
+          "path": "work/measurements-x100.txt",
+          "reason": "generated development dataset exceeds 5 MiB publication limit"
+        },
+        {
+          "bytes": 2758912700,
+          "path": "work/measurements-x20.txt",
+          "reason": "generated development dataset exceeds 5 MiB publication limit"
+        }
+      ],
+      "profile": "harness/profiles/gpt-5.6-terra-max.sh",
+      "profile_sha256": "fbfff00b4cd4c369152c7ce513ff9cd1e6518cda6bdf5787e4041fc2b0e331ad",
+      "published_artifacts": "artifacts/neutral-gpt-5.6-terra-max-20260822T133750",
+      "rank": 8,
+      "reasoning": "max",
+      "runs_ms": [
+        7700.5,
+        5695.6,
+        5819.9,
+        5925.9,
+        5905.4
+      ],
+      "source_run_dir": "runs/neutral-gpt-5.6-terra-max-20260822T133750",
+      "stop_reason": "agent_exit"
+    }
+  ]
+}

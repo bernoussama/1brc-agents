@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Run one candidate experiment in an isolated process group.
+# Usage: 1brc-bounded <duration> <command> [args...]
+
+set -euo pipefail
+
+if [ "$#" -lt 2 ]; then
+  echo "usage: 1brc-bounded <duration> <command> [args...]" >&2
+  exit 2
+fi
+
+DURATION="$1"
+shift
+command -v setsid >/dev/null 2>&1 || {
+  echo "1brc-bounded: setsid is required" >&2
+  exit 2
+}
+command -v timeout >/dev/null 2>&1 || {
+  echo "1brc-bounded: timeout is required" >&2
+  exit 2
+}
+
+child_pid=""
+cleanup() {
+  if [ -n "$child_pid" ] && kill -0 "$child_pid" 2>/dev/null; then
+    kill -TERM -- "-$child_pid" 2>/dev/null || true
+    sleep 0.2
+    kill -KILL -- "-$child_pid" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+# setsid makes the PID also the process-group ID.  The EXIT trap removes any
+# descendants that a timed-out shell command left behind.
+setsid --wait timeout --foreground --kill-after=5s "$DURATION" "$@" &
+child_pid=$!
+set +e
+wait "$child_pid"
+status=$?
+set -e
+exit "$status"

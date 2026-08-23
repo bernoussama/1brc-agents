@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/home/oussama/projects/1brc-agents/runs/neutral-20260821T191231-01-glm-5.3-20260821T191231
+started_utc=2026-08-21T20:08:57Z
+removed=data bytes=137953280
+removed=lifecycle bytes=4096
+removed=pi-home bytes=22495232
+removed=container.id bytes=4096
+removed_bytes=160456704
+preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots
+finished_utc=2026-08-21T20:08:57Z

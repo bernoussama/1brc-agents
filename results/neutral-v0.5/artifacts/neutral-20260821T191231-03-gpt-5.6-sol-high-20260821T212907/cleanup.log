@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/home/oussama/projects/1brc-agents/runs/neutral-20260821T191231-03-gpt-5.6-sol-high-20260821T212907
+started_utc=2026-08-21T21:37:06Z
+removed=data bytes=137953280
+removed=lifecycle bytes=4096
+removed=pi-home bytes=196608
+removed=container.id bytes=4096
+removed_bytes=138158080
+preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots
+finished_utc=2026-08-21T21:37:06Z

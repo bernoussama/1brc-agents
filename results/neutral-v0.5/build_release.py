@@ -343,6 +343,7 @@ def render_markdown(canonical: dict) -> str:
         f'- Warm-cache policy: {release["warm_cache_policy"]}',
         "",
         "The complete machine-readable record is [results.json](results.json).",
+        "Verify the published bundles with `python3 verify_release.py`.",
         "Each artifact directory contains `SHA256SUMS` and an `omitted-files.json`",
         "inventory. Only generated development files larger than 5 MiB and Python",
         "bytecode caches are omitted; the full event trace and scoring evidence are retained.",

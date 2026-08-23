@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/home/oussama/projects/1brc-agents/runs/neutral-20260821T191231-06-cursor-grok-4.6-medium-20260821T213733
+started_utc=2026-08-21T22:49:55Z
+removed=data bytes=137953280
+removed=lifecycle bytes=4096
+removed=pi-home bytes=68345856
+removed=container.id bytes=4096
+removed_bytes=206307328
+preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots
+finished_utc=2026-08-21T22:49:55Z

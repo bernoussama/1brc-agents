@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/home/oussama/projects/1brc-agents/runs/neutral-authretry-20260821T225131-01-gemini-3.7-flash-20260821T225131
+started_utc=2026-08-21T23:11:30Z
+removed=data bytes=137953280
+removed=lifecycle bytes=4096
+removed=pi-home bytes=21954560
+removed=container.id bytes=4096
+removed_bytes=159916032
+preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots
+finished_utc=2026-08-21T23:11:30Z

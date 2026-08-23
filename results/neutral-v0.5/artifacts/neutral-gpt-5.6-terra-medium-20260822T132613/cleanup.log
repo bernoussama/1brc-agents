@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/home/oussama/projects/1brc-agents/runs/neutral-gpt-5.6-terra-medium-20260822T132613
+started_utc=2026-08-22T13:36:19Z
+removed=data bytes=137953280
+removed=lifecycle bytes=4096
+removed=pi-home bytes=208896
+removed=container.id bytes=4096
+removed_bytes=138170368
+preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots
+finished_utc=2026-08-22T13:36:19Z
