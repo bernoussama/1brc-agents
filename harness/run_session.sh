@@ -518,8 +518,19 @@ docker run --rm \
   > "$RUNDIR/events.jsonl" 2> "$RUNDIR/pi.err" &
 AGENT_PID=$!
 
-sleep 2
-CID="$(docker ps -q --filter "name=1brc-${SLUG}-${STAMP}")"
+# VFS / cold starts can take well over 2s before the container shows in
+# `docker ps`. Poll for the id instead of assuming a fixed sleep is enough.
+CID=""
+for _ in $(seq 1 60); do
+  if ! kill -0 "$AGENT_PID" 2>/dev/null; then
+    break
+  fi
+  CID="$(docker ps -q --filter "name=1brc-${SLUG}-${STAMP}")"
+  if [ -n "$CID" ]; then
+    break
+  fi
+  sleep 1
+done
 echo "$CID" > "$CID_FILE"
 
 # --- wait for pi to finish while keeping the container alive for scoring ---

@@ -110,6 +110,17 @@ esac
 # new traffic from sandbox IPs to any other destination is dropped.
 install_firewall_rules "$PROXY_IP" "$SUBNET"
 
+# On some hosts (notably nested Docker with bridge-nf enabled), same-bridge
+# traffic to the proxy is filtered by DOCKER-USER before ICC completes.
+# Disable bridge netfilter so L2 agent-net ↔ proxy stays reachable while the
+# internal network + DROP rules still block non-proxy egress.
+if [ -w /proc/sys/net/bridge/bridge-nf-call-iptables ]; then
+  echo 0 > /proc/sys/net/bridge/bridge-nf-call-iptables || true
+fi
+if [ -w /proc/sys/net/bridge/bridge-nf-call-ip6tables ]; then
+  echo 0 > /proc/sys/net/bridge/bridge-nf-call-ip6tables || true
+fi
+
 echo "OK: network $NET_NAME, proxy at 172.28.77.2:3128, subnet locked."
 echo "Verify: docker run --rm --network $NET_NAME curlimages/curl:8.16.0 -sI -x http://$PROXY_IP:3128 https://api.openai.com"
 echo "        (and expect 403 for anything not in ALLOW_DOMAINS)"
