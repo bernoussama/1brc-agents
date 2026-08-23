@@ -30,8 +30,9 @@ export OPENROUTER_API_KEY=...
 
 Environment, budget, dataset size, and timed-run count come from
 [bench.yml](../bench.yml). Host presets under `hosts:` pick the resource
-envelope for the machine the bench is running on (`laptop` for the published
-v0.5 box; set `BENCH_HOST` to force one). Profiles supply only the model and
+envelope for the machine the bench is running on (`laptop` = 6 CPUs / 16 GiB
+for the published v0.5 box; `cloud-agent` = 4 CPUs / 16 GiB for Cursor cloud
+VMs; set `BENCH_HOST` to force one). Profiles supply only the model and
 credentials. For a local smoke test that changes resource caps, set
 `BENCH_ALLOW_OVERRIDE=1`.
 
