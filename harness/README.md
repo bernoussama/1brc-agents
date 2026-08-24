@@ -110,7 +110,11 @@ For in-container Cursor proxy profiles, `CURSOR_PROXY_TIMEOUT_MS` defaults to
 the session budget minus `BUDGET_WRAPUP_SEC`, so a long Cursor tool turn is not
 cut off by a separate 15-minute bridge timeout. Set it explicitly only when a
 shorter per-completion limit is intentional; the selected value is recorded in
-`manifest.yaml`.
+`manifest.yaml`. The allowlist proxy's `PROXY_IDLE_TIMEOUT_MS` defaults to `0`
+(disabled) for the same reason: a short CONNECT idle kill shows up as pi
+`errorMessage: terminated`. After changing the proxy, rerun
+`sudo ./harness/setup_network.sh`. Cursor sessions also disable Node/undici's
+default 300s fetch `bodyTimeout` inside the agent container.
 
 ## Profiles
 

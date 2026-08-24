@@ -25,7 +25,12 @@ LOCAL_FORWARD_TARGET_PORT="${LOCAL_FORWARD_TARGET_PORT:-8317}"
 LOCAL_FORWARD_SOCKET=/bridge/cliproxyapi.sock
 
 # Model APIs + their OAuth/token endpoints. Add providers here as needed.
-ALLOW_DOMAINS="${ALLOW_DOMAINS:-api.openai.com,auth.openai.com,chatgpt.com,api.anthropic.com,api.deepseek.com,openrouter.ai,opencode.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai,api2.cursor.sh,api5.cursor.sh,cursor.com}"
+# cursor.sh covers api2/api3/api5 and any other Cursor API vhost.
+ALLOW_DOMAINS="${ALLOW_DOMAINS:-api.openai.com,auth.openai.com,chatgpt.com,api.anthropic.com,api.deepseek.com,openrouter.ai,opencode.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai,cursor.sh,cursor.com}"
+# 0 = do not kill idle CONNECT tunnels. Long Cursor thinking/tool turns can
+# go minutes without bytes on the TLS stream; a short idle timeout surfaces
+# as pi errorMessage "terminated".
+PROXY_IDLE_TIMEOUT_MS="${PROXY_IDLE_TIMEOUT_MS:-0}"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT/harness/lib/firewall.sh"
@@ -85,6 +90,7 @@ docker run -d --name 1brc-proxy --restart unless-stopped \
   --network "$NET_NAME" --ip "$PROXY_IP" \
   --label com.1brc.agents.proxy=allowlist-v1 \
   -e ALLOW_DOMAINS="$ALLOW_DOMAINS" \
+  -e PROXY_IDLE_TIMEOUT_MS="$PROXY_IDLE_TIMEOUT_MS" \
   -e LOCAL_FORWARD_PORT="$LOCAL_FORWARD_PORT" \
   -e LOCAL_FORWARD_TARGET_PORT="$LOCAL_FORWARD_TARGET_PORT" \
   -e LOCAL_FORWARD_SOCKET="$LOCAL_FORWARD_SOCKET" \

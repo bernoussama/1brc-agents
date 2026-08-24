@@ -280,12 +280,19 @@ if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
     echo "CURSOR_PROXY_API_KEY is required for the in-container cursor proxy" >&2
     exit 1
   }
+  FETCH_BODY_TIMEOUT_PATCH="$ROOT/harness/lib/disable_fetch_body_timeout.mjs"
+  [ -f "$FETCH_BODY_TIMEOUT_PATCH" ] || {
+    echo "missing fetch timeout patch: $FETCH_BODY_TIMEOUT_PATCH" >&2
+    exit 1
+  }
   CONTAINER_EXTRA_ARGS+=(
     -e CURSOR_PROXY_IN_CONTAINER=1
     -e CURSOR_PROXY_MODEL="$MODEL_ID"
     -e CURSOR_PROXY_TIMEOUT_MS="$CURSOR_PROXY_TIMEOUT_MS"
     -e CURSOR_AUTH_TOKEN="$CURSOR_AUTH_TOKEN"
     -e CURSOR_AGENT_BIN="$CURSOR_AGENT_CONTAINER_BIN"
+    -e NODE_OPTIONS="--import /opt/1brc-harness/disable_fetch_body_timeout.mjs"
+    -v "$FETCH_BODY_TIMEOUT_PATCH:/opt/1brc-harness/disable_fetch_body_timeout.mjs:ro"
     -v "$CURSOR_HOST_NPX_ROOT:/opt/cursor-npx:ro"
     -v "$CURSOR_HOST_AGENT_ROOT:/opt/cursor-agent:ro"
     -v "$CURSOR_HOST_CURSOR_CONFIG:/opt/cursor-config-source:ro"
@@ -409,6 +416,30 @@ require_network_ready
 PROXY_ALLOW_DOMAINS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^ALLOW_DOMAINS=//p')"
 [ -n "$PROXY_ALLOW_DOMAINS" ] || { echo "proxy has no recorded allowlist" >&2; exit 1; }
 PROXY_LOCAL_FORWARD_PORT="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^LOCAL_FORWARD_PORT=//p')"
+PROXY_IDLE_TIMEOUT_MS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^PROXY_IDLE_TIMEOUT_MS=//p')"
+if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
+  if [ -z "$PROXY_IDLE_TIMEOUT_MS" ]; then
+    echo "1brc-proxy was started without PROXY_IDLE_TIMEOUT_MS." >&2
+    echo "Cursor sessions need CONNECT idle timeouts disabled (or >= CURSOR_PROXY_TIMEOUT_MS)." >&2
+    echo "Rerun: sudo ./harness/setup_network.sh" >&2
+    exit 1
+  fi
+  case "$PROXY_IDLE_TIMEOUT_MS" in
+    0) ;;
+    *[!0-9]*)
+      echo "1brc-proxy PROXY_IDLE_TIMEOUT_MS is invalid: $PROXY_IDLE_TIMEOUT_MS" >&2
+      exit 1
+      ;;
+    *)
+      if [ "$PROXY_IDLE_TIMEOUT_MS" -lt "$CURSOR_PROXY_TIMEOUT_MS" ]; then
+        echo "1brc-proxy idle timeout ${PROXY_IDLE_TIMEOUT_MS}ms is shorter than CURSOR_PROXY_TIMEOUT_MS=$CURSOR_PROXY_TIMEOUT_MS." >&2
+        echo "Idle CONNECT kills during Cursor thinking/tools show up as pi errorMessage=terminated." >&2
+        echo "Rerun: sudo ./harness/setup_network.sh" >&2
+        exit 1
+      fi
+      ;;
+  esac
+fi
 
 echo "[$SLUG] starting: host=$BENCH_HOST budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS} cpus=$NCPUS mem=$MEM"
 
@@ -667,6 +698,7 @@ fi
   echo "proxy_ip: $PROXY_IP"
   echo "proxy_allow_domains: $PROXY_ALLOW_DOMAINS"
   echo "proxy_local_forward_port: $PROXY_LOCAL_FORWARD_PORT"
+  echo "proxy_idle_timeout_ms: ${PROXY_IDLE_TIMEOUT_MS:-}"
   echo "cursor_proxy_execution: ${CURSOR_PROXY_IN_CONTAINER:-host}"
   echo "cursor_proxy_timeout_ms: ${CURSOR_PROXY_TIMEOUT_MS:-0}"
   echo "credential_isolation: process-shared"
