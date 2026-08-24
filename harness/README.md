@@ -114,7 +114,10 @@ shorter per-completion limit is intentional; the selected value is recorded in
 (disabled) for the same reason: a short CONNECT idle kill shows up as pi
 `errorMessage: terminated`. After changing the proxy, rerun
 `sudo ./harness/setup_network.sh`. Cursor sessions also disable Node/undici's
-default 300s fetch `bodyTimeout` inside the agent container.
+default 300s fetch `bodyTimeout` inside the agent container, write pi
+`settings.json` with `httpIdleTimeoutMs: 0` (pi otherwise replaces that
+dispatcher with a 300s idle abort), and raise `retry.maxRetries` so a long
+session can survive several Cursor CLI drops.
 
 ## Profiles
 

@@ -280,6 +280,40 @@ if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
     echo "CURSOR_PROXY_API_KEY is required for the in-container cursor proxy" >&2
     exit 1
   }
+  # Pi overwrites the process-wide undici dispatcher with httpIdleTimeoutMs
+  # (default 300s). Long Cursor tool turns go silent on the OpenAI stream and
+  # then abort as errorMessage "terminated". Disable that idle timeout and
+  # raise agent retries so a 120-minute session can survive several CLI drops.
+  mkdir -p "$RUNDIR/pi-home/.pi/agent"
+  python3 - "$RUNDIR/pi-home/.pi/agent/settings.json" "$CURSOR_PROXY_TIMEOUT_MS" <<'PY'
+import json, sys
+path, timeout_ms = sys.argv[1], int(sys.argv[2])
+try:
+    with open(path, encoding="utf-8") as fh:
+        settings = json.load(fh)
+    if not isinstance(settings, dict):
+        settings = {}
+except FileNotFoundError:
+    settings = {}
+retry = settings.get("retry")
+if not isinstance(retry, dict):
+    retry = {}
+provider = retry.get("provider")
+if not isinstance(provider, dict):
+    provider = {}
+settings["httpIdleTimeoutMs"] = 0
+retry["enabled"] = True
+retry["maxRetries"] = max(int(retry.get("maxRetries") or 0), 20)
+retry["baseDelayMs"] = retry.get("baseDelayMs") or 2000
+provider["timeoutMs"] = max(int(provider.get("timeoutMs") or 0), timeout_ms)
+provider["maxRetries"] = 0
+retry["provider"] = provider
+settings["retry"] = retry
+with open(path, "w", encoding="utf-8") as fh:
+    json.dump(settings, fh, indent=2)
+    fh.write("\n")
+PY
+  chmod 600 "$RUNDIR/pi-home/.pi/agent/settings.json"
   FETCH_BODY_TIMEOUT_PATCH="$ROOT/harness/lib/disable_fetch_body_timeout.mjs"
   [ -f "$FETCH_BODY_TIMEOUT_PATCH" ] || {
     echo "missing fetch timeout patch: $FETCH_BODY_TIMEOUT_PATCH" >&2
@@ -701,6 +735,7 @@ fi
   echo "proxy_idle_timeout_ms: ${PROXY_IDLE_TIMEOUT_MS:-}"
   echo "cursor_proxy_execution: ${CURSOR_PROXY_IN_CONTAINER:-host}"
   echo "cursor_proxy_timeout_ms: ${CURSOR_PROXY_TIMEOUT_MS:-0}"
+  echo "pi_http_idle_timeout_ms: $([ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ] && echo 0 || echo default)"
   echo "credential_isolation: process-shared"
   echo "image: $IMAGE_DIGEST"
   echo "proxy_image: $(docker image inspect "$BENCH_PROXY_IMAGE" --format '{{.Id}}')"
