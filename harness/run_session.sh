@@ -27,7 +27,19 @@ SLUG="${1:?model slug, e.g. glm-4.7}"
 PROFILE="${2:?profile file, see harness/profiles/}"
 ROUND_ARG="${3:-}"
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Bash re-reads this file from disk as it runs. Snapshot + re-exec so later
+# harness edits cannot shift line numbers under a live session (that previously
+# aborted scoring with `VFS: command not found` after an in-flight patch).
+if [ -z "${ONEBRC_RUN_SESSION_FROZEN:-}" ]; then
+  ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+  SNAP="$(mktemp "${TMPDIR:-/tmp}/1brc-run_session.XXXXXX.sh")"
+  cp -a "$0" "$SNAP"
+  export ONEBRC_RUN_SESSION_FROZEN=1
+  export ONEBRC_RUN_SESSION_ROOT="$ROOT"
+  export ONEBRC_RUN_SESSION_SNAPSHOT="$SNAP"
+  exec bash "$SNAP" "$@"
+fi
+ROOT="${ONEBRC_RUN_SESSION_ROOT:?ONEBRC_RUN_SESSION_ROOT must be set after runner snapshot re-exec}"
 BENCH_FILE="${BENCH_FILE:-$ROOT/bench.yml}"
 BENCH_ALLOW_OVERRIDE="${BENCH_ALLOW_OVERRIDE:-0}"
 case "$BENCH_ALLOW_OVERRIDE" in
@@ -90,6 +102,9 @@ source "$ROOT/harness/lib/auth.sh"
 STAMP="$(date -u +%Y%m%dT%H%M%S)"
 RUNDIR="$ROOT/.sessions/${SLUG}-${STAMP}"
 mkdir -p "$RUNDIR"
+if [ -n "${ONEBRC_RUN_SESSION_SNAPSHOT:-}" ]; then
+  cp -a "$ONEBRC_RUN_SESSION_SNAPSHOT" "$RUNDIR/run_session.frozen.sh"
+fi
 CLEANUP_RUN_ARTIFACTS="${CLEANUP_RUN_ARTIFACTS:-1}"
 CLEANUP_SCRIPT="$ROOT/harness/cleanup_run.sh"
 CID_FILE="$RUNDIR/container.id"
@@ -583,8 +598,8 @@ docker run --rm \
   > "$RUNDIR/events.jsonl" 2> "$RUNDIR/pi.err" &
 AGENT_PID=$!
 
-# VFS / cold starts can take well over 2s before the container shows in
-# `docker ps`. Poll for the id instead of assuming a fixed sleep is enough.
+# Overlayfs/vfs-backed and other cold starts can take well over 2s before
+# the container appears in `docker ps`. Poll for the id instead of a fixed sleep.
 CID=""
 for _ in $(seq 1 60); do
   if ! kill -0 "$AGENT_PID" 2>/dev/null; then

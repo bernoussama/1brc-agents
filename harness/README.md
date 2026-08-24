@@ -119,6 +119,11 @@ default 300s fetch `bodyTimeout` inside the agent container, write pi
 dispatcher with a 300s idle abort), and raise `retry.maxRetries` so a long
 session can survive several Cursor CLI drops.
 
+`run_session.sh` copies itself to a temp snapshot and re-execs immediately so
+later harness edits cannot shift line numbers under a live session (bash
+re-reads the script from disk; that previously aborted scoring with
+`VFS: command not found`).
+
 ## Profiles
 
 Each profile file defines model identity and credentials only.
@@ -213,6 +218,7 @@ node harness/tests/test_proxy.js
 bash harness/tests/test_1brc.sh
 bash harness/tests/test_profiling.sh
 bash harness/tests/test_budget.sh
+bash harness/tests/test_runner_snapshot.sh
 bash harness/tests/test_resources.sh
 bash harness/tests/test_scoring_container.sh
 bash harness/tests/test_scored_dataset.sh

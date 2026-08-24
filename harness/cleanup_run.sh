@@ -63,7 +63,7 @@ removed_bytes=0
   remove_path measurements-dev.txt
 
   printf 'removed_bytes=%s\n' "$removed_bytes"
-  printf 'preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots\n'
+  printf 'preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots run_session.frozen.sh\n'
   printf 'finished_utc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 } > "$LOG"
 

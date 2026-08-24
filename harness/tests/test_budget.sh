@@ -43,6 +43,12 @@ fi
 
 bash -n "$ROOT/harness/run_session.sh"
 grep -Fq "1brc-remaining-time" "$ROOT/harness/run_session.sh"
+# Live edits previously shifted this script under a running session and
+# aborted scoring with `VFS: command not found`.
+grep -Fq 'ONEBRC_RUN_SESSION_FROZEN' "$ROOT/harness/run_session.sh"
+grep -Fq 'ONEBRC_RUN_SESSION_ROOT' "$ROOT/harness/run_session.sh"
+grep -Fq 'exec bash "$SNAP" "$@"' "$ROOT/harness/run_session.sh"
+! grep -E '^[[:space:]]*VFS[[:space:]]/' "$ROOT/harness/run_session.sh"
 grep -Fq "1brc-remaining-time" "$ROOT/task/program.md"
 
 echo "budget tool: ok"
