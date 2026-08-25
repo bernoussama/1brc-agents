@@ -21,10 +21,13 @@ pnpm dev          # http://localhost:4321
 | `src/config/portfolioData.json.ts` | Home / about copy for the benchmark |
 | `src/data/blog/measuring-autonomous-coding-agents-on-1brc/` | Engineering blog draft |
 | `src/data/projects/1brc-agents/` | Project card for the harness |
+| `src/components/dither-kit/` | [dither-kit](https://tripwire.sh/dither-kit) charts (via CLI) |
+| `src/components/charts/` | Blog chart islands (`client:load`) |
+| `dither-kit.json` | CLI lockfile for `pnpm dlx @dither-kit/cli update` |
 
 The blog post body tracks `notes/1brc-agents-blog-draft.md` in the repo root
-(with absolute GitHub links for in-repo paths).
-
+(with absolute GitHub links for in-repo paths). Cloud / Muse medians are also
+rendered as dithered bar charts.
 ## Commands
 
 | Command | Action |

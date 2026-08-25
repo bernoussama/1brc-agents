@@ -1,6 +1,7 @@
 // @ts-check
 import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
+import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, envField } from "astro/config";
@@ -68,6 +69,7 @@ export default defineConfig({
   // customPages: the sitemap can't enumerate the on-demand `/contact/` route (it emits no static
   // file), so it's added by hand — the one manual entry seo.md prescribes for SSR routes.
   integrations: [
+    react(),
     mdx(),
     sitemap({
       filter: (page) => !page.includes("/examples/") && !page.includes("/404/"),
