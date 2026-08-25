@@ -1,4 +1,4 @@
-data/
+/data/
 .sessions/
 *.expected-*
 __pycache__/
