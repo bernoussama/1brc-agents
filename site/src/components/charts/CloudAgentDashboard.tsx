@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   CLOUD_AGENT_RUNS,
   cloudMetricBarValue,
@@ -25,6 +26,18 @@ const costData = CLOUD_AGENT_RUNS.map((run) => ({
 
 /** Three-up dashboard: median, agent wall time, estimated cost. Mount with `client:load`. */
 export default function CloudAgentDashboard() {
+  const [replayToken, setReplayToken] = useState(0);
+
+  useEffect(() => {
+    const win = window as Window & { __replayDashboardCharts?: () => void };
+    win.__replayDashboardCharts = () => {
+      setReplayToken((token) => token + 1);
+    };
+    return () => {
+      delete win.__replayDashboardCharts;
+    };
+  }, []);
+
   return (
     <div className="not-prose flex flex-col gap-8">
       <header className="flex flex-col gap-2 text-center">
@@ -49,6 +62,7 @@ export default function CloudAgentDashboard() {
           yAxisFormatter={formatYAxisSecondsFromMs}
           bloom="aura"
           barVariant="gradient"
+          replayToken={replayToken}
         />
         <CloudMetricPanel
           title="Agent wall time"
@@ -61,6 +75,7 @@ export default function CloudAgentDashboard() {
           yAxisFormatter={formatYAxisMinutesFromSeconds}
           bloom="low"
           barVariant="hatched"
+          replayToken={replayToken}
         />
         <CloudMetricPanel
           title="Estimated cost"
@@ -74,6 +89,7 @@ export default function CloudAgentDashboard() {
           naAware
           bloom="low"
           barVariant="hatched"
+          replayToken={replayToken}
         />
       </div>
 

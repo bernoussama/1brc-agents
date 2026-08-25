@@ -38,4 +38,21 @@ python3 scripts/test_cloud_agent_cost.py -v
 
 After changing pricing or adding sessions, re-run the script and update
 `site/src/components/charts/cloud-agent-runs.ts` with the new `tokens` and
+`costUsd` values.
+
+## Dashboard chart GIFs
+
+Capture the dither-kit bar entrance animations from `/charts/cloud-agent/`:
+
+```bash
+# Start the site dev server first (port 4321)
+cd site && npm run dev -- --host 127.0.0.1 --port 4321
+
+# Requires: pip install playwright && playwright install chromium, ffmpeg
+python3 scripts/capture_dashboard_chart_gifs.py
+```
+
+Output: `artifacts/chart-gifs/{median-run-time,agent-wall-time,estimated-cost}.gif`.
+The page exposes `window.__replayDashboardCharts()` so capture can re-trigger
+the entrance animation after hydration.
 `costUsd` fields.

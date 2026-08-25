@@ -27,6 +27,7 @@ export type CloudMetricPanelProps = {
   naAware?: boolean;
   bloom?: BloomInput;
   barVariant?: AreaVariant;
+  replayToken?: number;
 };
 
 function MetricTooltip({
@@ -82,6 +83,7 @@ export function CloudMetricPanel({
   naAware = false,
   bloom = "low",
   barVariant = "gradient",
+  replayToken = 0,
 }: CloudMetricPanelProps) {
   const config = {
     [dataKey]: { label: seriesLabel, color },
@@ -99,6 +101,7 @@ export function CloudMetricPanel({
           config={config}
           bloom={bloom}
           animate
+          replayToken={replayToken}
           margins={{ top: 28, bottom: 72, left: 40, right: 8 }}
         >
           <Grid horizontal />
