@@ -6,8 +6,8 @@
       "apiKey": "!printenv OPENROUTER_API_KEY",
       "models": [
         {
-          "id": "minimax/minimax-m3",
-          "name": "MiniMax M3 (OpenRouter)",
+          "id": "minimax/minimax-m3:free",
+          "name": "MiniMax M3 free (OpenRouter)",
           "reasoning": true,
           "input": ["text", "image"],
           "contextWindow": 1048576,
