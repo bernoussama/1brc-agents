@@ -55,4 +55,5 @@ python3 scripts/capture_dashboard_chart_videos.py
 Output: `artifacts/chart-videos/{median-run-time,agent-wall-time,estimated-cost}.mp4` (1920×1080).
 
 Each panel loads at `?capture=1&panel=<slug>` using the same 900ms entrance animation
-as the live site. Playwright records real-time video at 1920×1080 with a larger chart layout.
+as the live site. The capture script temporarily enlarges type via inline styles and
+zooms the panel so labels stay readable at full HD — the live dashboard is unchanged.
