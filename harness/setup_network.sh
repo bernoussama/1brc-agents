@@ -26,7 +26,7 @@ LOCAL_FORWARD_SOCKET=/bridge/cliproxyapi.sock
 
 # Model APIs + their OAuth/token endpoints. Add providers here as needed.
 # cursor.sh covers api2/api3/api5 and any other Cursor API vhost.
-ALLOW_DOMAINS="${ALLOW_DOMAINS:-api.openai.com,auth.openai.com,chatgpt.com,api.anthropic.com,api.deepseek.com,openrouter.ai,opencode.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai,cursor.sh,cursor.com}"
+ALLOW_DOMAINS="${ALLOW_DOMAINS:-api.openai.com,auth.openai.com,chatgpt.com,api.anthropic.com,api.deepseek.com,openrouter.ai,opencode.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai,api.gmi-serving.com,cursor.sh,cursor.com}"
 # 0 = do not kill idle CONNECT tunnels. Long Cursor thinking/tool turns can
 # go minutes without bytes on the TLS stream; a short idle timeout surfaces
 # as pi errorMessage "terminated".
