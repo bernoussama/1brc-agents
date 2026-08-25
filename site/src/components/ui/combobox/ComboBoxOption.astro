@@ -1,0 +1,48 @@
+---
+// src/components/ui/combobox/ComboBoxOption.astro — ComboBox compound part (see ../README.md).
+// One role="option". The slotted content is both the label and what the filter matches on; pass
+// `value` for a distinct stored value and `label` to override the text written into the input.
+// The check marks the committed option (the ComboBox script toggles `data-selected`). Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"li"> &
+  VariantProps<typeof comboboxOption> & { value?: string; label?: string };
+
+export const comboboxOption = tv({
+  base: [
+    "text-foreground flex cursor-pointer items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-sm outline-none",
+    "aria-selected:bg-muted",
+    "aria-disabled:pointer-events-none aria-disabled:opacity-50",
+    "[&[data-selected=true]_[data-slot=combobox-check]]:opacity-100",
+  ],
+});
+
+const { value, label, class: className, ...rest } = Astro.props;
+---
+
+<li
+  role="option"
+  aria-selected="false"
+  data-slot="combobox-option"
+  data-value={value}
+  data-label={label}
+  class={comboboxOption({ class: className })}
+  {...rest}
+>
+  <span><slot /></span>
+  <svg
+    data-slot="combobox-check"
+    class="text-primary size-4 shrink-0 opacity-0"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20 6 9 17l-5-5"></path>
+  </svg>
+</li>

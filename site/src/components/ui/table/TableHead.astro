@@ -1,0 +1,16 @@
+---
+// src/components/ui/table/TableHead.astro — Table compound part (see ../README.md). Wraps <th>; pass
+// `scope="col"` / `scope="row"` through for assistive tech.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"th"> & VariantProps<typeof tableHead>;
+
+export const tableHead = tv({
+  base: ["text-muted-foreground h-10 px-3 text-left align-middle font-medium whitespace-nowrap"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<th class={tableHead({ class: className })} data-slot="table-head" {...rest}><slot /></th>

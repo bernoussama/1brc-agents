@@ -5,6 +5,15 @@ __pycache__/
 *.pyc
 .DS_Store
 
+# Astro project site (8-BitQuest theme)
+site/node_modules/
+site/dist/
+site/.astro/
+site/.wrangler/
+site/.env
+site/.env.*
+!site/.env.example
+
 # Personal learning notes (not part of the public corpus)
 MISSION.md
 NOTES.md

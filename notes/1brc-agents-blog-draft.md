@@ -3,6 +3,10 @@
 *Draft. Not a formal release. The published laptop batch and later cloud-agent
 sessions are different boxes — do not rank them against each other.*
 
+> Site copy: this draft is also published as an Astro MDX post under
+> [`site/src/data/blog/measuring-autonomous-coding-agents-on-1brc/`](../site/src/data/blog/measuring-autonomous-coding-agents-on-1brc/)
+> (8-BitQuest theme). Prefer editing both when the text changes.
+
 We want to measure how well coding agents can optimize a known systems
 problem without a human in the loop. Claims about agent autonomy are
 everywhere; convincing, pinned evaluations of long autonomous coding sessions

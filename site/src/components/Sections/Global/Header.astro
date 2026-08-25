@@ -1,0 +1,110 @@
+---
+// src/components/Sections/Global/Header.astro — the global site header (8-BitQuest top nav).
+//
+// Cross-page chrome, rendered once in BaseLayout. Reproduces Figma node 5:110 (the dark frame):
+// a full-bleed pixel bar (black bottom border + `shadow-pixel`), the brand on the left, the primary
+// nav on the right. Nav links use the `retro` NavLink variant — Press Start 2P, uppercase, green on
+// hover/active with a leading ► pointer. Below `lg` the nav collapses into a pink 8-bit "MENU"
+// button → Sheet drawer (the four Press Start labels fit the desktop bar at `lg`). Tokens only.
+//
+// Reuses existing pieces — ui/nav, ui/sheet (opened/closed via its `_dialog` data hooks), the pink
+// `.pixel-btn` (global.css), and ui/theme-toggle. No new primitives. The MENU / CLOSE controls are
+// worded (no icons). Content is wired from config: brand = siteData.name, links = navData.
+import HeaderNavLinks from "@components/Sections/Global/HeaderNavLinks.astro";
+import { Nav } from "@components/ui/nav";
+import { Sheet } from "@components/ui/sheet";
+import { ThemeToggle } from "@components/ui/theme-toggle";
+import siteData from "@config/siteData.json";
+import heroAvatar from "@images/hero-avatar.jpg";
+
+const pathname = Astro.url.pathname;
+---
+
+<header
+  class="bg-background border-border shadow-pixel sticky top-0 z-50 h-16 border-b-4"
+  data-slot="site-header"
+>
+  {
+    /* h-16 on the header (border-box) so the bar is 64px total incl. the 4px border — the Figma frame. */
+  }
+  <div class="site-container flex h-full items-center justify-between">
+    <!-- Brand: pixel avatar + wordmark, links home. The link's accessible name is the wordmark. On a
+         narrow phone the brand (min-w-0) shrinks and the wordmark truncates before the row overflows. -->
+    <a
+      href="/"
+      class="primary-focus flex min-w-0 items-center gap-3 sm:gap-4"
+      aria-label={`${siteData.name} — home`}
+    >
+      <span
+        class="bg-accent border-border flex size-9 shrink-0 items-center justify-center overflow-clip border-4 p-1 sm:size-10"
+      >
+        {
+          /* ponytail: plain <img> on the Vite-fingerprinted import, not astro:assets <Image>, so the
+            build needs no Sharp (the template has no Sharp dep; see the README's image note).
+            Fine for a 1KB brand mark; switch to <Image> if the project adds Sharp for real content. */
+        }
+        <img
+          src={heroAvatar.src}
+          width={heroAvatar.width}
+          height={heroAvatar.height}
+          alt=""
+          loading="eager"
+          decoding="async"
+          class="size-full object-cover object-center"
+        />
+      </span>
+      <span
+        class="font-display text-info xs:text-lg truncate text-base tracking-[-0.06em] uppercase sm:text-2xl"
+      >
+        {siteData.name}
+      </span>
+    </a>
+
+    <!-- Right cluster: desktop nav + theme toggle, or (below lg) toggle + hamburger. `shrink-0` so
+         the controls keep their size and only the brand gives way on a cramped viewport. -->
+    <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+      <!-- `lg:contents` dissolves the wrapper on desktop so <Nav> flexes with its siblings; below lg
+           the whole nav landmark is display:none (not just visually hidden). -->
+      <div class="hidden lg:contents">
+        <Nav aria-label="Primary" class="gap-6 xl:gap-8">
+          <HeaderNavLinks pathname={pathname} />
+        </Nav>
+      </div>
+
+      <ThemeToggle />
+
+      {
+        /* Mobile menu opener — the pink 8-bit button, worded "MENU" (no burger icon). `data-dialog-open`
+          is the Sheet's own `_dialog` hook, so no SheetTrigger wrapper is needed. */
+      }
+      <button
+        type="button"
+        data-dialog-open="site-menu"
+        aria-haspopup="dialog"
+        aria-controls="site-menu"
+        class="pixel-btn h-9 shrink-0 px-3 text-[10px] leading-none uppercase lg:hidden"
+      >
+        Menu
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile navigation drawer (native <dialog>). Opened by the MENU button above; `data-dialog-close`
+       is the Sheet's own `_dialog` hook (Escape + backdrop dismiss are automatic). -->
+  <Sheet id="site-menu" side="right" aria-labelledby="site-menu-title" class="w-72 gap-6">
+    <div class="flex items-center justify-between">
+      <span id="site-menu-title" class="font-display text-foreground text-sm uppercase">Menu</span>
+      <button
+        type="button"
+        data-dialog-close
+        class="pixel-btn h-9 shrink-0 px-3 text-[10px] leading-none uppercase"
+      >
+        Close
+      </button>
+    </div>
+
+    <Nav orientation="vertical" aria-label="Primary" class="gap-2">
+      <HeaderNavLinks pathname={pathname} fullWidth />
+    </Nav>
+  </Sheet>
+</header>

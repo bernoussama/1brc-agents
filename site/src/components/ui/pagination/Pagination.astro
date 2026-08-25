@@ -1,0 +1,20 @@
+---
+// src/components/ui/pagination/Pagination.astro — astro-boiler primitive (see ../README.md).
+// Static pager (<nav> + <ul>). Compose PaginationItem / PaginationLink / PaginationEllipsis.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"nav"> & VariantProps<typeof pagination>;
+
+export const pagination = tv({
+  base: ["flex flex-wrap items-center gap-1"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<nav aria-label="Pagination" data-slot="pagination" {...rest}>
+  <ul class={pagination({ class: className })}>
+    <slot />
+  </ul>
+</nav>

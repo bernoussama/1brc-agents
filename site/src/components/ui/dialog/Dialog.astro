@@ -1,0 +1,32 @@
+---
+// src/components/ui/dialog/Dialog.astro — astro-boiler primitive (see ../README.md).
+// Native modal <dialog>. Open it with a DialogTrigger whose `for` matches this dialog's `id`; close
+// with DialogClose, Escape (native), or a backdrop click. Compose DialogHeader / DialogTitle /
+// DialogDescription / DialogFooter inside, and wire `aria-labelledby` / `aria-describedby` to their
+// ids so the title and description are announced. Behavior is the shared `_dialog` controller; the
+// fade/scale entry-exit animation, backdrop scrim, and modal scroll-lock live in `_overlay.css`
+// (which also respects `prefers-reduced-motion`). Tokens only.
+import "../_overlay.css";
+
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"dialog"> & VariantProps<typeof dialog>;
+
+export const dialog = tv({
+  base: [
+    "bg-card text-card-foreground border-border flex w-[calc(100%-2rem)] max-w-lg flex-col gap-4 rounded-lg border p-6 shadow-lg",
+    "max-h-[85vh] overflow-y-auto",
+  ],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<dialog class={dialog({ class: className })} data-slot="dialog" {...rest}>
+  <slot />
+</dialog>
+
+<script>
+  import "../_dialog";
+</script>

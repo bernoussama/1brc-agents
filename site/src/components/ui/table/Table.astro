@@ -1,0 +1,22 @@
+---
+// src/components/ui/table/Table.astro — astro-boiler primitive (see ../README.md).
+// Static <table> styling in a horizontal-scroll wrapper. Compose TableHeader / TableBody /
+// TableFooter / TableRow / TableHead / TableCell / TableCaption. (Sorting / data-grid behavior is
+// intentionally out of scope.) Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"table"> & VariantProps<typeof table>;
+
+export const table = tv({
+  base: ["w-full caption-bottom border-collapse text-sm"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class="relative w-full overflow-x-auto" data-slot="table-container">
+  <table class={table({ class: className })} data-slot="table" {...rest}>
+    <slot />
+  </table>
+</div>

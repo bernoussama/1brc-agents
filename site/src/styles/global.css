@@ -1,0 +1,271 @@
+/**
+ * * Global stylesheet — the single CSS entry point (imported once in BaseLayout).
+ *
+ * Token architecture lives across two files:
+ *   - tailwind-theme.css  → LAYER 1 palette aliases + LAYER 3 `@theme inline` bridge
+ *   - this file           → LAYER 2 semantic runtime vars (`:root` / `.dark`) that flip with the theme
+ */
+@import url("./fonts.css");
+
+@import "tailwindcss";
+
+/* class-based dark mode: toggle `.dark` on <html> (BaseHead sets it pre-paint) */
+@variant dark (&:where(.dark, .dark *));
+
+/* LAYER 1 + 3 token definitions */
+@import "./tailwind-theme.css";
+
+/* motion catalog: keyframes + `animate-*` utilities + the global reduced-motion guard (owned,
+   dependency-free port of tailwind-animations — see motion/index.css) */
+@import "./motion/index.css";
+
+/* explicit layer order */
+@layer theme, base, components, utilities;
+
+@layer base {
+  /* LAYER 2 — semantic vars mapped onto the palette aliases. Edit these to retheme.
+     8-BitQuest is a committed retro pixel theme cut from ONE cool navy ramp. `.dark` is the
+     Figma-accurate dark (navy surfaces, light ink). `:root` is the LIGHT mode — a soft inversion
+     of dark, NOT cream and NOT stark white: the page sits on a light lavender-blue, cards lift to
+     near-white, ink is navy, and the blue/pink/green accents are deepened for contrast on a light
+     ground. Both keep the pixel signature: pure-black borders + sharp corners (--radius: 0). */
+  :root {
+    /* LIGHT — a crisp "retro desktop": a clean, cool light-blue ground with pure-white
+       window-panels (cards) that pop against it, navy ink, and the blue/pink/green accents
+       deepened for contrast. This de-purples the old dull lavender and opens up the
+       ground↔card value gap so panels actually lift (the black pixel border no longer has
+       to carry all the separation). The light neutrals are tuned literals here on purpose:
+       the shared navy ramp's light end leans violet (it is cut for dark-mode text), so light
+       mode gets its own cleaner blue. Accents stay tokenised. */
+    --background: #d6e3f4; /* clean light retro-blue desktop (was #e1e1f7 lavender) */
+    --foreground: var(--color-base-900); /* #101222 navy ink */
+    --card: #ffffff; /* crisp white window panel — pops against the blue ground */
+    --card-foreground: var(--color-base-900);
+    --primary: var(--color-primary-700); /* #1f6cc0 action blue, deepened for the light ground */
+    --primary-foreground: #ffffff;
+    --secondary: var(--color-secondary-200); /* #ffb2ba pink */
+    --secondary-foreground: var(--color-secondary-800); /* #670120 */
+    --muted: #c3d5ef; /* light-blue muted surface (tags, chips, code) — was flat grey */
+    --muted-foreground: var(--color-base-600); /* #323445 — a touch darker for contrast on light */
+    --accent: #c3d5ef;
+    --accent-foreground: var(--color-base-900);
+    --info: var(--color-primary-800); /* #114e90 deep blue — the brand wordmark on light */
+    --info-foreground: var(--color-primary-50);
+    --success: var(--color-success-700); /* #237c44 green tuned to read on the light ground */
+    --success-foreground: #ffffff;
+    --warning: #b8760a;
+    --warning-foreground: var(--color-base-900); /* #101222 navy ink reads on the amber ground */
+    --error: var(--color-secondary-600); /* #892037 maroon reads as danger */
+    --error-foreground: var(--color-secondary-50);
+    --border: #6a769a; /* soft slate-navy — SAME color as the pixel shadow below (dark keeps #000) */
+    --input: #ffffff; /* crisp white field on the blue ground */
+    --outline: var(--color-primary-800); /* deep-blue focus ring — reads on light */
+    --pixel-shadow: #6a769a; /* light-mode pixel shadow — matches --border exactly */
+
+    --radius: 0; /* sharp pixel corners — no rounding anywhere */
+  }
+
+  .dark {
+    --background: var(--color-base-900); /* #101222 page */
+    --foreground: var(--color-base-100); /* #e1e1f7 heading text */
+    --card: var(--color-base-800); /* #1c1e2f panel */
+    --card-foreground: var(--color-base-100);
+    --primary: var(--color-primary-500); /* #41a6f6 action blue */
+    --primary-foreground: var(--color-primary-900); /* #00395e */
+    --secondary: var(--color-secondary-200); /* #ffb2ba pink */
+    --secondary-foreground: var(--color-secondary-800); /* #670120 */
+    --muted: var(--color-base-700); /* #272939 stats strip / input */
+    --muted-foreground: var(--color-base-200); /* #bfc7d3 body text */
+    --accent: var(--color-base-600); /* #323445 thumbnails / tags */
+    --accent-foreground: var(--color-base-100);
+    --info: var(--color-primary-300); /* #99cbff airy blue */
+    --info-foreground: var(--color-primary-950);
+    --success: var(--color-success-400); /* #63de86 */
+    --success-foreground: var(--color-success-900); /* #00401b */
+    --warning: #ffd166;
+    --warning-foreground: #2a1c00;
+    --error: var(--color-secondary-300); /* #ff9da8 */
+    --error-foreground: var(--color-secondary-950);
+    --border: #000000; /* pixel borders stay pure black on the dark navy ground */
+    --input: var(--color-base-700);
+    --outline: var(--color-primary-400);
+    --pixel-shadow: #000000; /* the signature hard black pixel shadow, dark mode */
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background text-foreground scheme-light dark:scheme-dark;
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    /* reserve scrollbar space to prevent layout shift */
+    scrollbar-gutter: stable;
+    font-feature-settings:
+      "liga" 1,
+      "calt" 1;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  /* shared typographic primitives. Headings are the pixel face (Press Start 2P via `font-display`),
+     uppercase, tuned to the Figma scale (H1 32 / H2 24 / H3 16 at md) and stepped down on mobile so
+     the wide pixel glyphs don't overflow narrow screens. Press Start 2P has a single weight, so no
+     `font-medium`. Body copy is Space Mono (the site default from --font-sans).
+     The blog article body (`.blog-prose`) has no class hooks on its MDX-rendered headings, so it
+     shares these definitions via the grouped selectors below (a custom @layer class can't be
+     `@apply`-ed) and layers on only its own colour/spacing/pointer. */
+  .h1 {
+    @apply font-display text-xl leading-tight tracking-[-0.03em] uppercase sm:text-2xl md:text-[2rem] md:leading-[2.5rem];
+  }
+  .h2,
+  .blog-prose h2 {
+    @apply font-display text-lg leading-tight uppercase md:text-2xl md:leading-8;
+  }
+  .h3,
+  .blog-prose h3 {
+    @apply font-display text-sm leading-6 uppercase md:text-base;
+  }
+
+  .description {
+    @apply text-base-700 dark:text-base-200 md:text-lg;
+  }
+
+  /* Blog article body — styles the rendered MDX (<Content />) on /blog/<slug>/ (see BlogArticle.astro).
+     GLOBAL (not scoped): the markup comes from MDX, which Astro's scoped styles can't reach. Tokens
+     only, so it flips with the theme — except the fenced code block, which stays a fixed-dark Shiki
+     panel in both themes (the scoreboard precedent). Headings reuse the shared .h2/.h3 face (grouped
+     selectors above); here they add only colour, spacing, and the ► pointer. */
+  .blog-prose {
+    @apply text-muted-foreground text-base leading-relaxed;
+
+    & > * + * {
+      @apply mt-6;
+    }
+    & a {
+      @apply text-info hover:text-success underline underline-offset-2 transition-colors;
+    }
+    & strong {
+      @apply text-info font-bold;
+    }
+    & h2 {
+      @apply text-info mt-8 flex items-center gap-3;
+    }
+    /* the retro ► selector — a green right-triangle via clip-path (no glyph, so it's font-safe). */
+    & h2::before {
+      content: "";
+      @apply bg-success block h-3 w-2 shrink-0;
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+    & h3 {
+      @apply text-secondary-700 dark:text-secondary mt-6;
+    }
+    & ul {
+      @apply flex flex-col gap-3;
+    }
+    & li {
+      @apply relative pl-6;
+    }
+    & li::before {
+      content: "";
+      @apply bg-info absolute top-2.5 left-0 size-2;
+    }
+    & blockquote {
+      @apply border-secondary bg-muted/40 text-foreground border-l-4 py-3 pr-4 pl-5 italic;
+    }
+    & :not(pre) > code {
+      @apply bg-muted border-border border-2 px-1.5 py-0.5 text-sm;
+    }
+    & pre {
+      @apply border-border overflow-x-auto border-4 p-4 text-sm;
+    }
+  }
+
+  .site-container {
+    @apply mx-auto max-w-[1100px] px-4;
+  }
+
+  /* Retro 8-bit button — a dependency-free port of the CodePen "Pure CSS 8bit Button Style"
+     (Maximuz/BdqXXN). A flat face with an inset darker shadow for depth and a notched black pixel
+     border drawn by two pseudo-elements (the corners stay clipped, NES-style). Hover deepens the
+     shadow; :active presses it inward — instant, no transition (authentic snap; nothing for
+     reduced-motion to worry about). Same in both themes (the accent tokens don't flip).
+     The colour is parameterised by four CSS vars (defaulting to the theme PINK); the `--blue`
+     modifier repoints them to the action blue for the Figma READ BLOG / EMAIL ME CTAs. Used by the
+     header toggle + MENU button and the hero/contact CTAs; size it with height / width / padding
+     utilities at the call site. */
+  .pixel-btn {
+    --pixel-btn-face: var(--color-secondary-200); /* #ffb2ba flat face */
+    --pixel-btn-face-hover: var(--color-secondary-300); /* #ff9da8 */
+    --pixel-btn-ink: var(--color-secondary-800); /* #670120 dark ink on pink */
+    --pixel-btn-depth: var(--color-secondary-400); /* inset shadow colour */
+    @apply font-display relative inline-flex cursor-pointer items-center justify-center;
+    background-color: var(--pixel-btn-face);
+    color: var(--pixel-btn-ink);
+    box-shadow: inset -4px -4px 0 0 var(--pixel-btn-depth);
+  }
+  .pixel-btn--blue {
+    --pixel-btn-face: var(--color-primary-500); /* #41a6f6 action blue */
+    --pixel-btn-face-hover: var(--color-primary-400);
+    --pixel-btn-ink: var(--color-primary-900); /* #00395e navy ink on blue */
+    --pixel-btn-depth: var(--color-primary-700);
+  }
+  /* the Figma contact SEND MESSAGE green — the action-green counterpart to `--blue`. Points at the
+     fixed `--color-success-*` palette ramp (NOT the semantic `--success`, which flips per theme),
+     so the button reads identically in both themes like the pink/blue faces. */
+  .pixel-btn--green {
+    --pixel-btn-face: var(--color-success-400); /* #63de86 the mock's SEND MESSAGE face */
+    --pixel-btn-face-hover: var(--color-success-300);
+    --pixel-btn-ink: var(--color-success-900); /* #00401b dark green ink on green */
+    --pixel-btn-depth: var(--color-success-600);
+  }
+  .pixel-btn:hover,
+  .pixel-btn:focus-visible {
+    background-color: var(--pixel-btn-face-hover);
+    box-shadow: inset -6px -6px 0 0 var(--pixel-btn-depth);
+  }
+  .pixel-btn:focus-visible {
+    outline: 3px solid var(--outline);
+    outline-offset: 5px;
+  }
+  .pixel-btn:active {
+    box-shadow: inset 4px 4px 0 0 var(--pixel-btn-depth);
+  }
+  /* the notched black frame: :before draws the top/bottom bars, :after the left/right ones */
+  .pixel-btn::before,
+  .pixel-btn::after {
+    @apply pointer-events-none absolute h-full w-full;
+    content: "";
+    box-sizing: content-box;
+  }
+  .pixel-btn::before {
+    @apply top-[-4px] left-0;
+    border-top: 4px solid var(--border);
+    border-bottom: 4px solid var(--border);
+  }
+  .pixel-btn::after {
+    @apply top-0 left-[-4px];
+    border-right: 4px solid var(--border);
+    border-left: 4px solid var(--border);
+  }
+}
+
+@layer utilities {
+  /* visible focus ring for keyboard users */
+  .primary-focus {
+    @apply focus-visible:outline-outline focus:outline-hidden focus-visible:rounded-xs focus-visible:outline-2;
+  }
+
+  /* gradient text for tags / accent headings */
+  .main-text-gradient {
+    @apply from-primary-800 to-primary-600 dark:from-primary-400 dark:to-primary-200 bg-gradient-to-r bg-clip-text text-transparent;
+  }
+}

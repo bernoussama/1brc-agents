@@ -1,0 +1,206 @@
+---
+// src/components/UiCatalog/MotionCatalog.astro — DEV-ONLY. The "Motion" section of the UI catalog,
+// extracted from UiCatalog.astro so the demo of the owned animation catalog (styles/motion/index.css) owns
+// its own data + markup instead of enlarging the catalog monolith. Rendered by UiCatalog; 404s out of
+// prod with it. Root is a <section> so it slots into the catalog's flex-col-gap-14 flow unchanged.
+import Reveal from "@components/ui/reveal";
+
+// Mirrors the `--animate-*` list in styles/motion/index.css. Literal `group-hover:animate-*` strings so
+// Tailwind's scanner emits them (a class built by interpolation would be invisible to the compiler);
+// hover a tile to replay. ponytail: this is a second copy of the animation names — CSS keyframe names
+// can't be imported into TS, so a full showcase can't share one source. Add here when you add there.
+const motionClasses = [
+  "group-hover:animate-blurred-fade-in",
+  "group-hover:animate-fade-in",
+  "group-hover:animate-fade-out",
+  "group-hover:animate-slide-in-top",
+  "group-hover:animate-slide-in-bottom",
+  "group-hover:animate-slide-out-top",
+  "group-hover:animate-slide-out-bottom",
+  "group-hover:animate-zoom-in",
+  "group-hover:animate-zoom-out",
+  "group-hover:animate-rotate-90",
+  "group-hover:animate-rotate-180",
+  "group-hover:animate-rotate-360",
+  "group-hover:animate-flip-horizontal",
+  "group-hover:animate-flip-vertical",
+  "group-hover:animate-bouncing",
+  "group-hover:animate-swing",
+  "group-hover:animate-wobble",
+  "group-hover:animate-pulsing",
+  "group-hover:animate-shake",
+  "group-hover:animate-tada",
+  "group-hover:animate-jump",
+  "group-hover:animate-hang",
+  "group-hover:animate-roll-in",
+  "group-hover:animate-roll-out",
+  "group-hover:animate-float",
+  "group-hover:animate-sink",
+  "group-hover:animate-flash",
+  "group-hover:animate-jiggle",
+  "group-hover:animate-rubber-band",
+  "group-hover:animate-scale",
+  "group-hover:animate-slide-in-left",
+  "group-hover:animate-slide-in-right",
+  "group-hover:animate-slide-out-left",
+  "group-hover:animate-slide-out-right",
+  "group-hover:animate-spin-clockwise",
+  "group-hover:animate-spin-counter-clockwise",
+  "group-hover:animate-flip-x",
+  "group-hover:animate-flip-y",
+  "group-hover:animate-blink",
+  "group-hover:animate-pop",
+  "group-hover:animate-expand-horizontally",
+  "group-hover:animate-contract-horizontally",
+  "group-hover:animate-expand-vertically",
+  "group-hover:animate-contract-vertically",
+  "group-hover:animate-fade-in-up",
+  "group-hover:animate-fade-in-down",
+  "group-hover:animate-fade-in-left",
+  "group-hover:animate-fade-in-right",
+  "group-hover:animate-fade-out-up",
+  "group-hover:animate-fade-out-down",
+  "group-hover:animate-fade-out-left",
+  "group-hover:animate-fade-out-right",
+  "group-hover:animate-sway",
+  "group-hover:animate-flip-in-x",
+  "group-hover:animate-flip-in-y",
+  "group-hover:animate-flip-out-x",
+  "group-hover:animate-flip-out-y",
+  "group-hover:animate-rotate-in",
+  "group-hover:animate-rotate-out",
+  "group-hover:animate-slide-rotate-in",
+  "group-hover:animate-slide-rotate-out",
+  "group-hover:animate-heartbeat",
+  "group-hover:animate-horizontal-vibration",
+  "group-hover:animate-rotational-wave",
+  "group-hover:animate-skew",
+  "group-hover:animate-skew-right",
+  "group-hover:animate-vertical-bounce",
+  "group-hover:animate-horizontal-bounce",
+  "group-hover:animate-tilt",
+  "group-hover:animate-squeeze",
+  "group-hover:animate-slide-up-fade",
+  "group-hover:animate-bounce-fade-in",
+  "group-hover:animate-swing-drop-in",
+  "group-hover:animate-pulse-fade-in",
+  "group-hover:animate-impulse-rotation-right",
+  "group-hover:animate-impulse-rotation-left",
+  "group-hover:animate-dancing",
+  "group-hover:animate-jelly",
+  "group-hover:animate-wipe-in-up",
+  "group-hover:animate-wipe-in-down",
+  "group-hover:animate-wipe-in-left",
+  "group-hover:animate-wipe-in-right",
+] as const;
+---
+
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Motion <span class="text-base-500 text-sm">({motionClasses.length})</span></h2>
+  <p class="description">
+    Owned <code>animate-*</code> catalog — no dependency. Hover a tile to replay; tune with
+    <code>animate-duration-*</code>, <code>animate-delay-*</code>, <code>animate-bezier-*</code>,
+    <code>animate-iteration-count-*</code>. All honor <code>prefers-reduced-motion</code>.
+  </p>
+  <div class="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-3">
+    {
+      motionClasses.map((c) => (
+        <div class="group border-border bg-card flex cursor-pointer flex-col items-center gap-2 rounded-md border p-3">
+          <div class="grid size-14 place-items-center overflow-hidden">
+            <div class:list={["bg-primary size-8 rounded-sm", c]} />
+          </div>
+          <code class="text-muted-foreground w-full truncate text-center text-[10px]">
+            {c.replace("group-hover:animate-", "")}
+          </code>
+        </div>
+      ))
+    }
+  </div>
+
+  <p class="description mt-2">
+    Modifiers &amp; the <code>&lt;Reveal&gt;</code> primitive (scroll to trigger)
+  </p>
+  <div class="flex flex-wrap items-center gap-6">
+    <div class="flex flex-col items-center gap-2">
+      <div class="group bg-card border-border grid size-20 place-items-center rounded-md border">
+        <div
+          class="bg-primary group-hover:animate-tada group-hover:animate-duration-1000 group-hover:animate-bezier-back-out size-8 rounded-sm"
+        >
+        </div>
+      </div>
+      <code class="text-muted-foreground text-[10px]">tada · duration-1000 · bezier-back-out</code>
+    </div>
+    <Reveal
+      animation="fade-in-up"
+      class="bg-card border-border text-muted-foreground rounded-md border px-4 py-3 text-sm"
+    >
+      <code>&lt;Reveal&gt;</code> — native <code>view()</code> scroll timeline, zero-JS
+    </Reveal>
+    <Reveal
+      animation="blurred-fade-in"
+      range="gradual"
+      class="bg-card border-border text-muted-foreground rounded-md border px-4 py-3 text-sm"
+    >
+      <code>&lt;Reveal animation="blurred-fade-in" range="gradual"&gt;</code>
+    </Reveal>
+  </div>
+
+  <p class="description mt-2">
+    Scroll-driven — the scroll position is the playhead: keyframes scrubbed by the native CSS{" "}
+    <code>scroll()</code>/<code>view()</code> timelines, zero-JS. Chromium + Safari; in Firefox the scroll-only
+    shapes are inert (the <code>@supports</code> guard in <code>motion/index.css</code>).
+  </p>
+  <div class="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3">
+    <div class="border-border bg-card h-44 overflow-y-auto rounded-md border">
+      <div
+        class="animate-progress timeline-scroll bg-primary sticky top-0 h-1 origin-left motion-reduce:animate-none"
+      >
+      </div>
+      <p class="text-muted-foreground p-3 text-xs">
+        <code>animate-progress timeline-scroll origin-left</code> — reading-progress bar driven by the
+        nearest scroll container (this box — scroll it). For a page-level bar, put it on a fixed element
+        instead. To track a single article, name a timeline:{" "}
+        <code>view-timeline-name-[--article]</code> on the article,{" "}
+        <code>timeline-scope-[--article]</code> on a common ancestor,{" "}
+        <code>timeline-[--article]</code> on the bar. Gotcha worth knowing:{" "}
+        <code>overflow-hidden</code> creates a scroll container, so a <code>view()</code> timeline inside
+        one tracks that box (which never scrolls) and freezes — clip decorative frames with{" "}
+        <code>overflow-clip</code> instead, as the two demos beside this one do.
+      </p>
+    </div>
+    <div
+      class="border-border bg-card flex h-44 flex-col justify-between gap-2 rounded-md border p-3"
+    >
+      <div class="h-28 w-full overflow-clip rounded-sm">
+        <div
+          class="animate-parallax-up timeline-view animate-range-cover from-primary via-primary/40 to-primary -my-6 h-40 w-full bg-gradient-to-b motion-reduce:animate-none"
+        >
+        </div>
+      </div>
+      <code class="text-muted-foreground text-[10px]"
+        >parallax-up · timeline-view · range-cover</code
+      >
+    </div>
+    <div
+      class="border-border bg-card flex h-44 flex-col justify-between gap-2 rounded-md border p-3"
+    >
+      <div class="h-28 w-full overflow-clip rounded-sm">
+        <div
+          class="animate-ken-burns timeline-view animate-range-cover from-primary/40 to-primary size-full bg-gradient-to-tr motion-reduce:animate-none"
+        >
+        </div>
+      </div>
+      <code class="text-muted-foreground text-[10px]">ken-burns · timeline-view · range-cover</code>
+    </div>
+    <div
+      class="animate-fade-through timeline-view animate-range-cover border-border bg-card flex h-44 flex-col justify-center rounded-md border p-3 motion-reduce:animate-none"
+    >
+      <code class="text-muted-foreground text-[10px]"
+        >fade-through · timeline-view · range-cover</code
+      >
+      <p class="text-muted-foreground mt-1 text-xs">
+        Fades in entering the viewport, back out leaving it — watch this card while scrolling past.
+      </p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,44 @@
+---
+// src/components/ui/mega-menu/MegaMenuPanel.astro — MegaMenu compound part (see ../README.md).
+// Top-layer panel via the native Popover API (`popover="auto"`): hidden until its MegaMenuTrigger
+// (`popovertarget` = this panel's `id`) toggles it, with native light-dismiss + Escape. `id` is
+// required (the trigger references it). `align` tells the shared `_popover` controller which trigger
+// edge to anchor to (it sets `top`/`left` — the panel is `fixed`). `columns` sets width + column
+// count; below `sm` every panel stacks to one column and the max-width clamp keeps it inside the
+// viewport. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof megaMenuPanel> & { id: string; align?: "start" | "end" };
+
+export const megaMenuPanel = tv({
+  base: [
+    "bg-card text-card-foreground border-border fixed inset-auto z-50 m-0 rounded-md border p-2 shadow-md",
+    // `open:` (matches :popover-open), not a bare `grid` — an unconditional display utility is an
+    // author rule, so it would override the UA's closed-popover `display: none` and leave the
+    // closed panel painted on screen.
+    "open:grid max-w-[calc(100vw-0.5rem)] grid-cols-1 gap-1",
+  ],
+  variants: {
+    columns: {
+      1: "w-64",
+      2: "w-xl sm:grid-cols-2",
+      3: "w-3xl sm:grid-cols-3",
+    },
+  },
+  defaultVariants: { columns: 3 },
+});
+
+const { columns, align = "start", class: className, ...rest } = Astro.props;
+---
+
+<div
+  popover="auto"
+  data-slot="mega-menu-panel"
+  data-align={align}
+  class={megaMenuPanel({ columns, class: className })}
+  {...rest}
+>
+  <slot />
+</div>

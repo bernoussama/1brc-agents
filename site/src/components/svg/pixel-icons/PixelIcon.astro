@@ -1,0 +1,42 @@
+---
+// src/components/svg/pixel-icons/PixelIcon.astro — astro-boiler primitive (see ../../ui/README.md).
+// Renders one pixel-art glyph from PIXEL_ICONS. Unlike `svg/icons` (fixed 24×24, stroke-based), each
+// glyph keeps its own native viewBox, so the size variant sizes by HEIGHT + `w-auto` — that preserves
+// the aspect ratio of the non-square glyphs (youtube/email) instead of squashing them into a box.
+// Fill uses currentColor, so recolor with any `text-*` token; `crispEdges` keeps the pixels sharp.
+// Decorative by default (aria-hidden); pass `title` for an accessible name (role="img").
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+import { PIXEL_ICONS, type PixelIconName } from "./pixelIcons";
+
+type Props = Omit<HTMLAttributes<"svg">, "name"> &
+  VariantProps<typeof pixelIcon> & { name: PixelIconName; title?: string };
+
+export const pixelIcon = tv({
+  base: "inline-block w-auto shrink-0",
+  variants: {
+    // height-only, so non-square glyphs keep their aspect ratio via w-auto
+    size: { sm: "h-4", md: "h-5", lg: "h-6", xl: "h-8" },
+  },
+  defaultVariants: { size: "md" },
+});
+
+const { name, size, title, class: className, ...rest } = Astro.props;
+const { viewBox, body } = PIXEL_ICONS[name];
+---
+
+<svg
+  viewBox={viewBox}
+  fill="currentColor"
+  shape-rendering="crispEdges"
+  xmlns="http://www.w3.org/2000/svg"
+  class={pixelIcon({ size, class: className })}
+  data-slot="pixel-icon"
+  role={title ? "img" : undefined}
+  aria-hidden={title ? undefined : "true"}
+  {...rest}
+>
+  {title && <title>{title}</title>}
+  <Fragment set:html={body} />
+</svg>

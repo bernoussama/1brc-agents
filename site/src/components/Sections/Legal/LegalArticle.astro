@@ -1,0 +1,42 @@
+---
+// Shared renderer for the legal documents (Terms, Privacy). Layout-free section: the route
+// owns BaseLayout + SEO, reads the legalData record, and passes it in as `page` — so one
+// component serves both documents. Content is config-driven: edit
+// src/config/legalData.json.ts, not this component.
+//
+// ponytail: sections render as a heading + paragraphs only (no nested lists/tables). For richer
+// legal docs, promote legalData to a markdown content collection and render <Content /> here.
+import { type LegalPageProps } from "@config/types/configDataTypes";
+import { formatDate } from "@js/textUtils";
+
+interface Props {
+  page: LegalPageProps;
+}
+
+const { page } = Astro.props as Props;
+---
+
+<article class="site-container mx-auto max-w-3xl py-16 md:py-24">
+  <header class="border-border flex flex-col gap-3 border-b pb-8">
+    <h1 class="h1 text-balance"><span class="main-text-gradient">{page.title}</span></h1>
+    <p class="text-muted-foreground text-sm">
+      Last updated:{" "}
+      <time datetime={page.lastUpdated}>{formatDate(page.lastUpdated)}</time>
+    </p>
+  </header>
+
+  <p class="description mt-8 text-balance">{page.intro}</p>
+
+  <div class="mt-8 flex flex-col gap-8">
+    {
+      page.sections.map((section) => (
+        <section class="flex flex-col gap-3">
+          <h2 class="h3 text-foreground">{section.heading}</h2>
+          {section.body.map((paragraph) => (
+            <p class="text-foreground/90 leading-relaxed">{paragraph}</p>
+          ))}
+        </section>
+      ))
+    }
+  </div>
+</article>

@@ -1,0 +1,197 @@
+---
+// src/components/ui/searchbox/Searchbox.astro — astro-boiler primitive (see ../README.md).
+// Command palette: a trigger that opens the Dialog primitive (native <dialog>, rung 2) holding a
+// search input over a role="listbox" of <SearchboxItem>s. Typing filters items (substring match on
+// their text); ↑/↓ move the active item via aria-activedescendant, Enter activates it (a link
+// navigates, a button fires its handler), Esc closes (native). ⌘K / Ctrl+K opens it from anywhere.
+// `id` must be unique (it's the dialog id). Items are static; remote/grouped results are out of scope.
+import { Dialog, DialogTrigger } from "@components/ui/dialog";
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+// The palette's inner parts (trigger, dialog) reuse the Dialog/DialogTrigger recipes — this small
+// recipe is only the outer wrapper, so a consumer can merge layout overrides (block/inline) the
+// tailwind-merge way. Don't clone Dialog's parts into their own recipes here.
+export const searchbox = tv({ base: "inline-block" });
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof searchbox> & {
+    id: string;
+    label?: string;
+    placeholder?: string;
+    emptyText?: string;
+    shortcut?: string;
+  };
+
+const {
+  id,
+  label = "Search…",
+  placeholder = "Type a command or search…",
+  emptyText = "No results found",
+  shortcut = "⌘K",
+  class: className,
+  ...rest
+} = Astro.props;
+const listId = `${id}-list`;
+---
+
+<div data-slot="searchbox" class={searchbox({ class: className })} {...rest}>
+  <DialogTrigger
+    for={id}
+    variant="outline"
+    class="text-muted-foreground w-full min-w-64 justify-between gap-6 font-normal"
+  >
+    <span class="inline-flex items-center gap-2">
+      <svg
+        class="size-4 shrink-0"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      {label}
+    </span>
+    <kbd
+      class="bg-muted text-muted-foreground border-border rounded border px-1.5 font-mono text-xs"
+      >{shortcut}</kbd
+    >
+  </DialogTrigger>
+
+  <Dialog id={id} aria-label={label} class="max-w-xl gap-0 overflow-hidden p-0">
+    <div class="border-border flex items-center gap-2 border-b px-3">
+      <svg
+        class="text-muted-foreground size-4 shrink-0"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input
+        type="text"
+        role="combobox"
+        aria-expanded="true"
+        aria-controls={listId}
+        aria-autocomplete="list"
+        autocomplete="off"
+        placeholder={placeholder}
+        data-slot="searchbox-input"
+        class="text-foreground placeholder:text-muted-foreground h-12 w-full bg-transparent text-sm outline-none"
+      />
+    </div>
+    <div id={listId} role="listbox" data-slot="searchbox-list" class="max-h-80 overflow-auto p-2">
+      <slot />
+      <div
+        data-slot="searchbox-empty"
+        class="text-muted-foreground hidden px-3 py-6 text-center text-sm"
+      >
+        {emptyText}
+      </div>
+    </div>
+  </Dialog>
+</div>
+
+<script>
+  import { onReady } from "../_client";
+  import { createActiveDescendant, filterByText } from "../_listbox";
+
+  let uid = 0;
+  let shortcutBound = false;
+
+  // ponytail: ⌘K opens the FIRST searchbox on the page — enough for the common one-palette-per-app
+  // case. For multiple palettes, key each off a distinct shortcut / data attribute instead.
+  function bindShortcut() {
+    if (shortcutBound) return;
+    shortcutBound = true;
+    document.addEventListener("keydown", (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        const dialog = document.querySelector<HTMLDialogElement>(
+          '[data-slot="searchbox"] [data-slot="dialog"]',
+        );
+        if (dialog && !dialog.open) {
+          event.preventDefault();
+          dialog.showModal();
+        }
+      }
+    });
+  }
+
+  function wire(root: HTMLElement) {
+    const dialog = root.querySelector<HTMLDialogElement>('[data-slot="dialog"]');
+    const input = root.querySelector<HTMLInputElement>('[data-slot="searchbox-input"]');
+    const list = root.querySelector<HTMLElement>('[data-slot="searchbox-list"]');
+    const empty = root.querySelector<HTMLElement>('[data-slot="searchbox-empty"]');
+    if (!dialog || !input || !list) return;
+    const items = [...list.querySelectorAll<HTMLElement>('[data-slot="searchbox-item"]')];
+    items.forEach((it) => (it.id ||= `searchbox-item-${(uid += 1)}`));
+
+    const rover = createActiveDescendant(input, items);
+    const filter = () => {
+      filterByText(items, input.value, empty);
+      if (rover.active()?.hidden) rover.setActive(rover.visible()[0] ?? null);
+    };
+
+    input.addEventListener("input", () => {
+      filter();
+      rover.setActive(rover.visible()[0] ?? null);
+    });
+    input.addEventListener("keydown", (event) => {
+      const vis = rover.visible();
+      switch (event.key) {
+        case "ArrowDown":
+          event.preventDefault();
+          rover.move(1);
+          break;
+        case "ArrowUp":
+          event.preventDefault();
+          rover.move(-1);
+          break;
+        case "Home":
+          event.preventDefault();
+          rover.setActive(vis[0] ?? null);
+          break;
+        case "End":
+          event.preventDefault();
+          rover.setActive(vis[vis.length - 1] ?? null);
+          break;
+        case "Enter": {
+          const a = rover.active();
+          if (a) {
+            event.preventDefault();
+            a.click();
+          }
+          break;
+        }
+      }
+    });
+
+    for (const it of items) {
+      it.addEventListener("mousemove", () => rover.setActive(it));
+      it.addEventListener("click", () => dialog.close());
+    }
+
+    // Native <dialog> focuses the first focusable on showModal (our input), so no open hook is needed;
+    // just clear the query on close so the next open starts fresh.
+    dialog.addEventListener("close", () => {
+      input.value = "";
+      filter();
+      rover.setActive(null);
+    });
+  }
+
+  bindShortcut();
+  onReady('[data-slot="searchbox"]', wire);
+</script>

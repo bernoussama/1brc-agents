@@ -1,0 +1,25 @@
+---
+// src/components/ui/accordion/AccordionTrigger.astro — Accordion compound part (see ../README.md).
+// <summary> row: hides the native marker and renders a chevron the parent rotates when open.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+import Chevron from "../_Chevron.astro";
+
+type Props = HTMLAttributes<"summary"> & VariantProps<typeof accordionTrigger>;
+
+export const accordionTrigger = tv({
+  base: [
+    "text-foreground flex w-full cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium",
+    "outline-none hover:underline focus-visible:ring-3 focus-visible:ring-outline",
+    "[&::-webkit-details-marker]:hidden",
+  ],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<summary class={accordionTrigger({ class: className })} data-slot="accordion-trigger" {...rest}>
+  <slot />
+  <Chevron class="text-muted-foreground" />
+</summary>

@@ -1,0 +1,16 @@
+---
+// src/components/ui/card/CardTitle.astro — Card compound part (see ../README.md).
+// <h3>: a card sits below a page's h2 sections. Change the level with a wrapping heading if needed.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"h3"> & VariantProps<typeof cardTitle>;
+
+export const cardTitle = tv({
+  base: ["text-foreground text-lg leading-none font-medium"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<h3 class={cardTitle({ class: className })} data-slot="card-title" {...rest}><slot /></h3>

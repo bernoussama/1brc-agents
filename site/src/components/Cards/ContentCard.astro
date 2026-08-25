@@ -1,0 +1,80 @@
+---
+// src/components/Cards/ContentCard.astro — content-aware card (see ./README.md).
+//
+// The Figma "Article - Post Card" / "Project Card" (nodes 5:39, 14:41): the shared pixel-card LINK
+// shell (PixelCardLink — hover-lift <a> + ui/pixel-panel surface + thumbnail) with a content BODY: a
+// retro category badge, a Press Start 2P title, a clamped excerpt, optional tag pills (projects), and
+// a "READ →" / "VIEW →" link. Posts and projects share the shell; only the badge tone, the optional
+// tags, and the CTA word differ. The blog "More Quests" cards share the same PixelCardLink shell.
+//
+// Not built on ui/card: that primitive is a <div> with a 1px border, whereas this needs <a>/<article>
+// semantics and the pixel structure. Uses the ui/badge `pixel` variant + the pixel `PixelIcon`
+// (svg/pixel-icons); tokens only, so the light theme flips free.
+import { PixelIcon } from "@components/svg/pixel-icons";
+import { Badge, type BadgeVariant } from "@components/ui/badge";
+
+import PixelCardLink from "./PixelCardLink.astro";
+
+export interface ContentCardProps {
+  href: string;
+  image: ImageMetadata;
+  imageAlt: string;
+  badgeLabel: string;
+  /** Category tone from the ui/badge palette. */
+  badgeVariant?: BadgeVariant;
+  /** Colour override for tones with no semantic token (LORE = fixed maroon). */
+  badgeClass?: string;
+  title: string;
+  description: string;
+  /** Project tech tags; omit for posts. */
+  tags?: readonly string[];
+  /** Link verb — "Read" for posts, "View" for projects. */
+  cta?: string;
+}
+const {
+  href,
+  image,
+  imageAlt,
+  badgeLabel,
+  badgeVariant = "primary",
+  badgeClass,
+  title,
+  description,
+  tags,
+  cta = "Read",
+} = Astro.props as ContentCardProps;
+---
+
+<PixelCardLink href={href} image={image} imageAlt={imageAlt}>
+  <div class="flex flex-1 flex-col gap-3 p-4">
+    <div>
+      <Badge pixel variant={badgeVariant} class={badgeClass}>{badgeLabel}</Badge>
+    </div>
+
+    <h3 class="h3 text-card-foreground text-balance">{title}</h3>
+
+    <p class="text-muted-foreground line-clamp-3 text-sm">{description}</p>
+
+    {
+      tags && tags.length > 0 && (
+        <ul class="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <li class="bg-accent text-accent-foreground border-border border-2 px-2 py-0.5 text-xs font-bold uppercase">
+              {tag}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <span
+      class="text-info group-hover:text-success mt-auto inline-flex items-center gap-2 pt-1 text-sm font-bold uppercase"
+    >
+      {cta}
+      <PixelIcon
+        name="arrow-right"
+        class="size-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
+      />
+    </span>
+  </div>
+</PixelCardLink>

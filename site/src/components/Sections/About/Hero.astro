@@ -1,0 +1,58 @@
+---
+// src/components/Sections/About/Hero.astro — Figma "Hero" (node 5:280).
+//
+// The profile hero: the shared Global/HeroPanel (DEV 01 tag + H1) with a two-paragraph bio, the two
+// CTAs, and a retro "scoreboard" stats strip (CLASS / LVL / XP / STARS) passed through its slot. It
+// omits HeroPanel's `intro` because its body is the multi-paragraph bio, not a single line. Second
+// section, still near the fold → NO <Reveal>. Tokens only.
+//
+// COPY: the tag, H1, bio, and stats strip come from portfolioData (profile.* / stats.profile) —
+// buyer-editable; the strip's per-stat colours stay here (presentational).
+//
+// BUTTONS: the mock has no CTA here; the CTAs use `.pixel-btn` — the site's dependency-free port of
+// the CodePen "Pure CSS 8bit Button Style" (Maximuz/BdqXXN). VIEW PROJECTS links to /projects/;
+// GET IN TOUCH to /contact/.
+import HeroPanel from "@components/Sections/Global/HeroPanel.astro";
+import Scoreboard from "@components/Sections/Global/Scoreboard.astro";
+import portfolioData from "@config/portfolioData.json";
+
+const { tagline, heading, bio } = portfolioData.profile;
+
+// The strip sits on the theme-aware `bg-muted` (a light-blue scoreboard in light mode, the dark
+// #272939 panel in dark) — the same call the home Stats strip makes. It reuses the shared <Scoreboard>
+// shell, stacking until `lg` (four longer stats need the room). Each colour is a light/dark PAIR so it
+// reads on BOTH grounds: deepened green/pink for the light strip, the neon shades under `dark:` for the
+// dark one; the blue rides the flipping `text-info` (deep blue on light, airy primary-300 on dark).
+// Stat TEXT is portfolioData.stats.profile; the colours below pair by order (keep them aligned).
+const colors = [
+  "text-success-700 dark:text-success",
+  "text-info",
+  "text-secondary-700 dark:text-secondary",
+  "text-success-700 dark:text-success",
+];
+const strip = portfolioData.stats.profile.map((text, i) => ({
+  text,
+  color: colors[i] ?? "text-info",
+}));
+---
+
+<HeroPanel headingId="about-hero-heading" tagline={tagline} heading={heading}>
+  <div class="text-muted-foreground flex flex-col gap-4 text-base">
+    {bio.map((para) => <p>{para}</p>)}
+  </div>
+
+  <div class="flex flex-col gap-4 pt-1 sm:flex-row">
+    <a href="/projects/" class="pixel-btn pixel-btn--blue px-5 py-4 text-sm uppercase sm:text-base">
+      View Projects
+    </a>
+    <a href="/contact/" class="pixel-btn px-5 py-4 text-sm uppercase sm:text-base">
+      Get in Touch
+    </a>
+  </div>
+
+  <Scoreboard
+    stats={strip}
+    stackAt="lg"
+    class="bg-muted mt-2 w-full gap-2 p-4 text-xs whitespace-nowrap sm:text-sm lg:gap-4"
+  />
+</HeroPanel>

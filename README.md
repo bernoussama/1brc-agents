@@ -16,6 +16,9 @@ allowlist proxy.
 - `runs/<date>-<label>/` — published batches: results table, provenance,
   and per-configuration artifact bundles.
 - `release/` — builders and verifiers for a published batch.
+- `site/` — Astro project site (8-BitQuest theme) with the engineering blog.
+- `notes/` — draft write-ups (blog source lives in `notes/` and is published
+  via `site/src/data/blog/`).
 
 The full methodology is in [methodology.md](methodology.md). Roadmap and open
 questions are in [ROADMAP.md](ROADMAP.md). Operational detail for running

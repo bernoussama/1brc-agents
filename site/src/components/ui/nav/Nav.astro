@@ -1,0 +1,28 @@
+---
+// src/components/ui/nav/Nav.astro — astro-boiler primitive (see ../README.md).
+// Static navigation list (<nav> + <ul>). Compose NavItem / NavLink. Active state is the caller's
+// job via `aria-current="page"` on the link (route-driven, zero-JS — the platform models it). Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"nav"> & VariantProps<typeof nav>;
+
+export const nav = tv({
+  base: ["flex"],
+  variants: {
+    orientation: {
+      horizontal: "flex-row gap-1",
+      vertical: "flex-col gap-1",
+    },
+  },
+  defaultVariants: { orientation: "horizontal" },
+});
+
+const { orientation, class: className, ...rest } = Astro.props;
+---
+
+<nav data-slot="nav" {...rest}>
+  <ul class={nav({ orientation, class: className })}>
+    <slot />
+  </ul>
+</nav>

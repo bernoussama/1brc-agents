@@ -1,0 +1,22 @@
+---
+// src/components/ui/dialog/DialogClose.astro — Dialog compound part (see ../README.md).
+// Button that closes its nearest <dialog> (Dialog or Sheet). Defaults to the ghost Button look.
+// Wired by the shared `_dialog` controller via the data-dialog-close hook.
+import { button } from "@components/ui/button/Button.astro";
+import type { HTMLAttributes } from "astro/types";
+import type { VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"button"> & VariantProps<typeof button>;
+
+const { variant = "ghost", size, class: className, ...rest } = Astro.props;
+---
+
+<button
+  type="button"
+  data-dialog-close
+  data-slot="dialog-close"
+  class={button({ variant, size, class: className })}
+  {...rest}
+>
+  <slot />
+</button>

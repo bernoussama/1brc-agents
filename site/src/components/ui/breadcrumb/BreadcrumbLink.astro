@@ -1,0 +1,20 @@
+---
+// src/components/ui/breadcrumb/BreadcrumbLink.astro — Breadcrumb compound part (see ../README.md).
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"a"> & VariantProps<typeof breadcrumbLink> & { href?: string };
+
+export const breadcrumbLink = tv({
+  base: [
+    "rounded-xs outline-none hover:text-foreground transition-colors",
+    "focus-visible:ring-3 focus-visible:ring-outline",
+  ],
+});
+
+const { href, class: className, ...rest } = Astro.props;
+---
+
+<a href={href} class={breadcrumbLink({ class: className })} data-slot="breadcrumb-link" {...rest}>
+  <slot />
+</a>

@@ -1,0 +1,97 @@
+---
+// src/components/ui/input-number/InputNumber.astro — astro-boiler primitive (see ../README.md).
+// Native <input type="number"> flanked by decrement / increment steppers. Reuses the `input` field
+// look and the `button` look (ladder rung 2 — no new configs). The small bundled script drives
+// stepDown()/stepUp() (which honor native min/max/step), keeps the field in sync, and disables a
+// stepper once its bound is reached. Without JS it degrades to a plain number field with the OS
+// spinners. Give it an accessible name via an associated <Label> (`id`/`for`) or `aria-label`.
+import { button } from "@components/ui/button/Button.astro";
+import { input } from "@components/ui/input/Input.astro";
+import type { HTMLAttributes } from "astro/types";
+import type { VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"input"> & VariantProps<typeof input>;
+
+const { size = "md", state, class: className, ...rest } = Astro.props;
+const stepper = button({ variant: "outline", size, class: "aspect-square shrink-0 px-0" });
+---
+
+<div class="inline-flex items-center gap-2" data-slot="input-number">
+  <button type="button" data-slot="input-number-decrement" aria-label="Decrease" class={stepper}>
+    <svg
+      class="size-4"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 12h14"></path>
+    </svg>
+  </button>
+  <input
+    type="number"
+    inputmode="numeric"
+    data-slot="input-number-field"
+    class={input({ size, state, class: ["w-20 text-center", className] })}
+    {...rest}
+  />
+  <button type="button" data-slot="input-number-increment" aria-label="Increase" class={stepper}>
+    <svg
+      class="size-4"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 5v14M5 12h14"></path>
+    </svg>
+  </button>
+</div>
+
+<script>
+  import { onReady } from "../_client";
+
+  function wire(root: HTMLElement) {
+    const field = root.querySelector<HTMLInputElement>('[data-slot="input-number-field"]');
+    const dec = root.querySelector<HTMLButtonElement>('[data-slot="input-number-decrement"]');
+    const inc = root.querySelector<HTMLButtonElement>('[data-slot="input-number-increment"]');
+    if (!field) return;
+
+    const bound = (attr: "min" | "max", fallback: number) =>
+      field[attr] === "" ? fallback : Number(field[attr]);
+
+    const sync = () => {
+      const v = field.valueAsNumber;
+      const atMin = !Number.isNaN(v) && v <= bound("min", -Infinity);
+      const atMax = !Number.isNaN(v) && v >= bound("max", Infinity);
+      if (dec) dec.disabled = field.disabled || atMin;
+      if (inc) inc.disabled = field.disabled || atMax;
+    };
+
+    const step = (dir: 1 | -1) => {
+      if (field.disabled) return;
+      // A blank/invalid field has no number to step from — seed it at min (or 0) first.
+      if (Number.isNaN(field.valueAsNumber)) field.value = field.min || "0";
+      else if (dir > 0) field.stepUp();
+      else field.stepDown();
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+      sync();
+    };
+
+    dec?.addEventListener("click", () => step(-1));
+    inc?.addEventListener("click", () => step(1));
+    field.addEventListener("input", sync);
+    sync();
+  }
+
+  onReady('[data-slot="input-number"]', wire);
+</script>

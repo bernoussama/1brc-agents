@@ -1,0 +1,48 @@
+---
+// src/components/Sections/Global/CardGrid.astro
+//
+// The shared "section heading + responsive ContentCard grid" shell behind Latest Posts and Featured
+// Projects — identical markup, differing only by their data. Owns the ONE grid breakpoint config
+// (1 → sm:2 → lg:3) so the two sections can't drift, and the <Reveal> wrapper (below-the-fold,
+// auto-gated on siteSettings.useAnimations + prefers-reduced-motion). Give it a heading + the cards.
+//
+// Empty `items` renders a fallback panel rather than a heading over an empty <ul>, because the very
+// first thing a buyer does is delete the demo content (README → "Before you deploy") — which is what
+// /blog/ and /projects/ look like until they add their own. It keeps the heading, unlike
+// RelatedPosts, which drops out entirely: that strip is supplementary, whereas these ARE the page.
+import ContentCard, { type ContentCardProps } from "@components/Cards/ContentCard.astro";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import { Reveal } from "@components/ui/reveal";
+
+import SectionHeading from "./SectionHeading.astro";
+
+interface Props {
+  /** id shared by the heading and the section's `aria-labelledby`. */
+  headingId: string;
+  title: string;
+  items: readonly ContentCardProps[];
+}
+const { headingId, title, items } = Astro.props as Props;
+---
+
+<Reveal as="section" aria-labelledby={headingId} class="flex flex-col gap-6">
+  <SectionHeading id={headingId} title={title} />
+
+  {
+    items.length > 0 ? (
+      <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <li>
+            <ContentCard {...item} />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <PixelPanel class="p-6 text-center">
+        <p class="text-muted-foreground font-display text-xs uppercase">
+          No entries yet — new quests loading.
+        </p>
+      </PixelPanel>
+    )
+  }
+</Reveal>
