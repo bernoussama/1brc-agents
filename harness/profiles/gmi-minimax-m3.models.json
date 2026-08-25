@@ -17,6 +17,19 @@
             "supportsReasoningEffort": false,
             "maxTokensField": "max_tokens"
           }
+        },
+        {
+          "id": "MiniMaxAI/MiniMax-M2.7",
+          "name": "MiniMax M2.7 (GMI Serving)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 204800,
+          "maxTokens": 131072,
+          "compat": {
+            "thinkingFormat": "deepseek",
+            "supportsReasoningEffort": false,
+            "maxTokensField": "max_tokens"
+          }
         }
       ]
     }
