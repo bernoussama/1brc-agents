@@ -4,7 +4,7 @@ import { Legend } from "@/components/dither-kit/legend";
 import { Tooltip } from "@/components/dither-kit/tooltip";
 import { YAxis } from "@/components/dither-kit/y-axis";
 import { BarValueLabels } from "./BarValueLabels";
-import { formatMs } from "./format-ms";
+import { formatSecondsFromMs, formatYAxisSecondsFromMs } from "./format-seconds";
 import { WrappedXAxis } from "./WrappedXAxis";
 
 /** Cloud-agent Round A medians (lower is faster). */
@@ -23,7 +23,7 @@ const data = [
 ];
 
 const config = {
-  median: { label: "median_ms", color: "blue" as const },
+  median: { label: "median_s", color: "blue" as const },
 };
 
 /**
@@ -42,15 +42,15 @@ export default function CloudMedianBarChart() {
           margins={{ top: 36, bottom: 88 }}
         >
           <WrappedXAxis dataKey="model" maxTicks={11} tickMargin={6} />
-          <YAxis tickFormatter={(v) => String(Math.round(v))} />
+          <YAxis tickFormatter={formatYAxisSecondsFromMs} />
           <Legend />
-          <Tooltip labelKey="model" valueFormatter={formatMs} />
+          <Tooltip labelKey="model" valueFormatter={formatSecondsFromMs} />
           <Bar dataKey="median" variant="gradient" />
-          <BarValueLabels dataKey="median" valueFormatter={formatMs} />
+          <BarValueLabels dataKey="median" valueFormatter={formatSecondsFromMs} />
         </BarChart>
       </div>
       <figcaption className="font-mono text-muted-foreground text-xs leading-relaxed">
-        Cloud-agent Round A — median of five timed runs (ms). Lower is faster. Same host class; not
+        Cloud-agent Round A — median of five timed runs (seconds). Lower is faster. Same host class; not
         comparable to the laptop v0.5 batch.
       </figcaption>
     </figure>

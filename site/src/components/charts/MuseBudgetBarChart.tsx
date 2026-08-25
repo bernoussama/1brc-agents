@@ -4,7 +4,7 @@ import { Legend } from "@/components/dither-kit/legend";
 import { Tooltip } from "@/components/dither-kit/tooltip";
 import { YAxis } from "@/components/dither-kit/y-axis";
 import { BarValueLabels } from "./BarValueLabels";
-import { formatMs } from "./format-ms";
+import { formatSecondsFromMs, formatYAxisSecondsFromMs } from "./format-seconds";
 import { WrappedXAxis } from "./WrappedXAxis";
 
 /** Muse Spark free xhigh — early exit vs full budget on the same host class. */
@@ -14,7 +14,7 @@ const data = [
 ];
 
 const config = {
-  median: { label: "median_ms", color: "green" as const },
+  median: { label: "median_s", color: "green" as const },
 };
 
 /** Mount with `client:load` from MDX/Astro. */
@@ -30,16 +30,16 @@ export default function MuseBudgetBarChart() {
           margins={{ top: 36, bottom: 64 }}
         >
           <WrappedXAxis dataKey="run" maxTicks={2} tickMargin={6} />
-          <YAxis tickFormatter={(v) => String(Math.round(v))} />
+          <YAxis tickFormatter={formatYAxisSecondsFromMs} />
           <Legend />
-          <Tooltip labelKey="run" valueFormatter={formatMs} />
+          <Tooltip labelKey="run" valueFormatter={formatSecondsFromMs} />
           <Bar dataKey="median" variant="hatched" />
-          <BarValueLabels dataKey="median" valueFormatter={formatMs} />
+          <BarValueLabels dataKey="median" valueFormatter={formatSecondsFromMs} />
         </BarChart>
       </div>
       <figcaption className="font-mono text-muted-foreground text-xs leading-relaxed">
-        Same model and thinking (`xhigh`): spending the full budget improved the median from 8940.2
-        ms to 6500.8 ms.
+        Same model and thinking (`xhigh`): spending the full budget improved the median from 8.9s
+        to 6.5s.
       </figcaption>
     </figure>
   );
