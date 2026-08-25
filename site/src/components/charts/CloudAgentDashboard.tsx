@@ -8,7 +8,7 @@ import {
   formatYAxisMinutesFromSeconds,
 } from "./format-minutes";
 import { formatSecondsFromMs, formatYAxisSecondsFromMs } from "./format-seconds";
-import { formatUsd, formatUsdDetailed, formatYAxisUsd } from "./format-usd";
+import { formatUsd, formatYAxisUsd } from "./format-usd";
 
 const medianData = CLOUD_AGENT_RUNS.map(({ model, median }) => ({ model, median }));
 

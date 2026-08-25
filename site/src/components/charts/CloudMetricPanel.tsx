@@ -93,7 +93,7 @@ export function CloudMetricPanel({
         <h2 className="font-mono text-sm font-semibold text-foreground sm:text-base">{title}</h2>
         <p className="font-mono text-[11px] text-muted-foreground italic">{hint}</p>
       </div>
-      <div className="bg-card h-[22rem] w-full min-w-[16rem] p-1 sm:h-[24rem]">
+      <div className="border-foreground bg-card h-96 w-full min-w-64 border-2 border-solid p-2">
         <BarChart
           data={data}
           config={config}
