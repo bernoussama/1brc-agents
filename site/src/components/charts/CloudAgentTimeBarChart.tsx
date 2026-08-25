@@ -5,41 +5,45 @@ import { Tooltip } from "@/components/dither-kit/tooltip";
 import { YAxis } from "@/components/dither-kit/y-axis";
 import { BarValueLabels } from "./BarValueLabels";
 import { CLOUD_AGENT_RUNS, CLOUD_CHART_BAR_COUNT } from "./cloud-agent-runs";
-import { formatSecondsFromMs, formatYAxisSecondsFromMs } from "./format-seconds";
+import {
+  formatMinutesFromSeconds,
+  formatYAxisMinutesFromSeconds,
+} from "./format-minutes";
 import { WrappedXAxis } from "./WrappedXAxis";
 
-const data = CLOUD_AGENT_RUNS.map(({ model, median }) => ({ model, median }));
+const data = CLOUD_AGENT_RUNS.map(({ model, agentSeconds }) => ({
+  model,
+  agentSeconds,
+}));
 
 const config = {
-  median: { label: "median_s", color: "blue" as const },
+  agentSeconds: { label: "agent_time_m", color: "orange" as const },
 };
 
-/**
- * Dithered bar chart of cloud-agent Round A medians.
- * Mount with `client:load` from MDX/Astro.
- */
-export default function CloudMedianBarChart() {
+/** Agent wall-clock time per cloud-agent configuration. Mount with `client:load`. */
+export default function CloudAgentTimeBarChart() {
   return (
     <figure className="not-prose my-6 flex flex-col gap-3">
       <div className="border-foreground bg-card h-96 w-full border-2 border-solid p-2 sm:h-[28rem]">
         <BarChart
           data={data}
           config={config}
-          bloom="aura"
+          bloom="low"
           animate
           margins={{ top: 36, bottom: 88 }}
         >
           <WrappedXAxis dataKey="model" maxTicks={CLOUD_CHART_BAR_COUNT} tickMargin={6} />
-          <YAxis tickFormatter={formatYAxisSecondsFromMs} />
+          <YAxis tickFormatter={formatYAxisMinutesFromSeconds} />
           <Legend />
-          <Tooltip labelKey="model" valueFormatter={formatSecondsFromMs} />
-          <Bar dataKey="median" variant="gradient" />
-          <BarValueLabels dataKey="median" valueFormatter={formatSecondsFromMs} />
+          <Tooltip labelKey="model" valueFormatter={formatMinutesFromSeconds} />
+          <Bar dataKey="agentSeconds" variant="hatched" />
+          <BarValueLabels dataKey="agentSeconds" valueFormatter={formatMinutesFromSeconds} />
         </BarChart>
       </div>
       <figcaption className="font-mono text-muted-foreground text-xs leading-relaxed">
-        Cloud-agent Round A — median of five timed runs (seconds). Lower is faster. Same host class; not
-        comparable to the laptop v0.5 batch.
+        Agent wall time until the harness scored the submission (minutes). Budget cap was 120m on
+        this host class. MiniMax M2.7 max finished early; several Codex runs used nearly the full
+        budget.
       </figcaption>
     </figure>
   );
