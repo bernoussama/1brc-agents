@@ -3,6 +3,8 @@ import { BarChart } from "@/components/dither-kit/bar-chart";
 import { Legend } from "@/components/dither-kit/legend";
 import { Tooltip } from "@/components/dither-kit/tooltip";
 import { YAxis } from "@/components/dither-kit/y-axis";
+import { BarValueLabels } from "./BarValueLabels";
+import { formatMs } from "./format-ms";
 import { WrappedXAxis } from "./WrappedXAxis";
 
 /** Cloud-agent Round A medians (lower is faster). */
@@ -37,13 +39,14 @@ export default function CloudMedianBarChart() {
           config={config}
           bloom="aura"
           animate
-          margins={{ bottom: 88 }}
+          margins={{ top: 18, bottom: 88 }}
         >
           <WrappedXAxis dataKey="model" maxTicks={11} tickMargin={6} />
           <YAxis tickFormatter={(v) => String(Math.round(v))} />
           <Legend />
-          <Tooltip labelKey="model" />
+          <Tooltip labelKey="model" valueFormatter={formatMs} />
           <Bar dataKey="median" variant="gradient" />
+          <BarValueLabels dataKey="median" valueFormatter={formatMs} />
         </BarChart>
       </div>
       <figcaption className="font-mono text-muted-foreground text-xs leading-relaxed">

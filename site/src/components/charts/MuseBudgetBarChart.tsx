@@ -3,6 +3,8 @@ import { BarChart } from "@/components/dither-kit/bar-chart";
 import { Legend } from "@/components/dither-kit/legend";
 import { Tooltip } from "@/components/dither-kit/tooltip";
 import { YAxis } from "@/components/dither-kit/y-axis";
+import { BarValueLabels } from "./BarValueLabels";
+import { formatMs } from "./format-ms";
 import { WrappedXAxis } from "./WrappedXAxis";
 
 /** Muse Spark free xhigh — early exit vs full budget on the same host class. */
@@ -25,13 +27,14 @@ export default function MuseBudgetBarChart() {
           config={config}
           bloom="low"
           animate
-          margins={{ bottom: 64 }}
+          margins={{ top: 18, bottom: 64 }}
         >
           <WrappedXAxis dataKey="run" maxTicks={2} tickMargin={6} />
           <YAxis tickFormatter={(v) => String(Math.round(v))} />
           <Legend />
-          <Tooltip labelKey="run" />
+          <Tooltip labelKey="run" valueFormatter={formatMs} />
           <Bar dataKey="median" variant="hatched" />
+          <BarValueLabels dataKey="median" valueFormatter={formatMs} />
         </BarChart>
       </div>
       <figcaption className="font-mono text-muted-foreground text-xs leading-relaxed">
