@@ -10,7 +10,7 @@ export function BarValueLabels({
 }) {
   const ctx = useChartPart("BarValueLabels", "bar");
   const band = ctx.bands[dataKey];
-  if (!ctx.ready || !band) return null;
+  if (!ctx.ready || !band || !ctx.entranceDone) return null;
 
   const format = (value: number) =>
     valueFormatter ? valueFormatter(value) : value.toLocaleString();

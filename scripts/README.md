@@ -53,6 +53,8 @@ python3 scripts/capture_dashboard_chart_gifs.py
 ```
 
 Output: `artifacts/chart-gifs/{median-run-time,agent-wall-time,estimated-cost}.gif`.
-The page exposes `window.__replayDashboardCharts()` so capture can re-trigger
-the entrance animation after hydration.
-`costUsd` fields.
+
+The script loads `/charts/cloud-agent/?capture=1` (3s entrance animation), reloads
+once per panel, and captures frames synced to `requestAnimationFrame` so the bar
+grow wave is sampled smoothly. Value labels stay hidden until the entrance
+finishes, matching the live chart.

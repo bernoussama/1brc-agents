@@ -24,9 +24,15 @@ const costData = CLOUD_AGENT_RUNS.map((run) => ({
   metricsAvailable: run.metricsAvailable,
 }));
 
+function readCaptureMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).has("capture");
+}
+
 /** Three-up dashboard: median, agent wall time, estimated cost. Mount with `client:load`. */
 export default function CloudAgentDashboard() {
   const [replayToken, setReplayToken] = useState(0);
+  const captureMode = readCaptureMode();
 
   useEffect(() => {
     const win = window as Window & { __replayDashboardCharts?: () => void };
@@ -37,6 +43,8 @@ export default function CloudAgentDashboard() {
       delete win.__replayDashboardCharts;
     };
   }, []);
+
+  const animationDuration = captureMode ? 3000 : undefined;
 
   return (
     <div className="not-prose flex flex-col gap-8">
@@ -63,6 +71,7 @@ export default function CloudAgentDashboard() {
           bloom="aura"
           barVariant="gradient"
           replayToken={replayToken}
+          animationDuration={animationDuration}
         />
         <CloudMetricPanel
           title="Agent wall time"
@@ -76,6 +85,7 @@ export default function CloudAgentDashboard() {
           bloom="low"
           barVariant="hatched"
           replayToken={replayToken}
+          animationDuration={animationDuration}
         />
         <CloudMetricPanel
           title="Estimated cost"
@@ -90,6 +100,7 @@ export default function CloudAgentDashboard() {
           bloom="low"
           barVariant="hatched"
           replayToken={replayToken}
+          animationDuration={animationDuration}
         />
       </div>
 
