@@ -15,18 +15,15 @@ export function BarValueLabels({
   const format = (value: number) =>
     valueFormatter ? valueFormatter(value) : value.toLocaleString();
 
+  const minLabelY = 12;
+
   return (
-    <g
-      className="fill-foreground font-mono text-[9px] tabular-nums sm:text-[10px]"
-      style={{
-        opacity: ctx.entranceDone ? 1 : 0,
-        transition: "opacity 300ms ease",
-      }}
-    >
+    <g className="fill-current font-mono text-[9px] text-foreground tabular-nums sm:text-[10px]">
       {band.map((b, i) => {
         const value = b[1];
         const x = ctx.xCenter(i) ?? 0;
-        const y = ctx.y(value) - offset;
+        const barTop = ctx.y(value);
+        const y = Math.max(minLabelY, barTop - offset);
 
         return (
           <text
@@ -35,7 +32,7 @@ export function BarValueLabels({
             x={x}
             y={y}
             textAnchor="middle"
-            dominantBaseline="auto"
+            dominantBaseline="text-bottom"
             fill="currentColor"
           >
             {format(value)}

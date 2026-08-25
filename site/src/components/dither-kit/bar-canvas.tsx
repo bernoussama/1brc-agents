@@ -131,6 +131,7 @@ export function BarCanvas() {
     let animStart = 0
     let lastProg = -1
     let lastRevision = state.current.revision
+    let entranceReported = !animate
     let intensity = 0
     let needsFill = true
     let lastPaintSig = ""
@@ -154,9 +155,14 @@ export function BarCanvas() {
         lastRevision = s.revision
         animStart = 0 // re-play the wave on data change / replay
         lastProg = -1
+        entranceReported = false
       }
       if (!animStart) animStart = now
       const prog = animate ? Math.min(1, (now - animStart) / duration) : 1
+      if (prog >= 1 && !entranceReported) {
+        entranceReported = true
+        s.markEntranceDone()
+      }
 
       if (prog !== lastProg) {
         lastProg = prog

@@ -27,7 +27,7 @@ export default function MuseBudgetBarChart() {
           config={config}
           bloom="low"
           animate
-          margins={{ top: 18, bottom: 64 }}
+          margins={{ top: 36, bottom: 64 }}
         >
           <WrappedXAxis dataKey="run" maxTicks={2} tickMargin={6} />
           <YAxis tickFormatter={(v) => String(Math.round(v))} />

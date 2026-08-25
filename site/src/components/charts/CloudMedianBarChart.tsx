@@ -39,7 +39,7 @@ export default function CloudMedianBarChart() {
           config={config}
           bloom="aura"
           animate
-          margins={{ top: 18, bottom: 88 }}
+          margins={{ top: 36, bottom: 88 }}
         >
           <WrappedXAxis dataKey="model" maxTicks={11} tickMargin={6} />
           <YAxis tickFormatter={(v) => String(Math.round(v))} />
