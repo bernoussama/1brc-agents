@@ -13,6 +13,7 @@
           "contextWindow": 1048576,
           "maxTokens": 131072,
           "compat": {
+            "thinkingFormat": "openrouter",
             "supportsReasoningEffort": true
           }
         }
