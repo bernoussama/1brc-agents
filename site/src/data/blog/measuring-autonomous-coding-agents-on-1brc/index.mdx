@@ -13,6 +13,7 @@ draft: false
 import CloudMedianBarChart from "../../../components/charts/CloudMedianBarChart.tsx";
 import CloudAgentTimeBarChart from "../../../components/charts/CloudAgentTimeBarChart.tsx";
 import CloudTokenUsageBarChart from "../../../components/charts/CloudTokenUsageBarChart.tsx";
+import CloudCostBarChart from "../../../components/charts/CloudCostBarChart.tsx";
 import MuseBudgetBarChart from "../../../components/charts/MuseBudgetBarChart.tsx";
 
 *Draft. Not a formal release. The published laptop batch and later cloud-agent
@@ -104,6 +105,8 @@ laptop medians.
 <CloudAgentTimeBarChart client:load />
 
 <CloudTokenUsageBarChart client:load />
+
+<CloudCostBarChart client:load />
 
 Same-model thinking level moved the needle hard for Sol on this host: medium
 landed at 3174.4 ms, high at 1311.4 ms. Ox Alpha moved the other way relative

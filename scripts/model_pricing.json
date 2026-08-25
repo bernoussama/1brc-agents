@@ -1,0 +1,79 @@
+{
+  "$schema": "./model_pricing.schema.json",
+  "currency": "USD",
+  "unit": "per_million_tokens",
+  "sources": {
+    "openai-chatgpt-enterprise-2026-08": "https://help.openai.com/en/articles/20001415-chatgpt-rate-card-enterprise-token-based-pricing",
+    "openrouter-api-2026-08-25": "https://openrouter.ai/api/v1/models",
+    "minimax-paygo-2026-08": "https://platform.minimax.io/docs/guides/pricing-paygo",
+    "opencode-zen-free-note": "notes/opencode-zen-free-to-pi.md — free models bill $0; list rates from OpenRouter meta/muse-spark-1.2-contributor"
+  },
+  "models": {
+    "openai-codex/gpt-5.6-sol": {
+      "label": "GPT-5.6 Sol (Codex OAuth)",
+      "source": "openai-chatgpt-enterprise-2026-08",
+      "input": 5.0,
+      "output": 30.0,
+      "cacheRead": 0.5,
+      "cacheWrite": 0.0
+    },
+    "openai-codex/gpt-5.6-luna": {
+      "label": "GPT-5.6 Luna (Codex OAuth)",
+      "source": "openai-chatgpt-enterprise-2026-08",
+      "input": 0.2,
+      "output": 1.2,
+      "cacheRead": 0.02,
+      "cacheWrite": 0.0
+    },
+    "openrouter/minimax/minimax-m3": {
+      "label": "MiniMax M3 (OpenRouter list)",
+      "source": "openrouter-api-2026-08-25",
+      "input": 0.3,
+      "output": 1.2,
+      "cacheRead": 0.06,
+      "cacheWrite": 0.0
+    },
+    "openrouter/minimax/minimax-m3:free": {
+      "label": "MiniMax M3 :free (OpenRouter preview — billed $0)",
+      "source": "openrouter-api-2026-08-25",
+      "input": 0.0,
+      "output": 0.0,
+      "cacheRead": 0.0,
+      "cacheWrite": 0.0,
+      "estimateFrom": "openrouter/minimax/minimax-m3"
+    },
+    "openrouter/stealth/ox-alpha": {
+      "label": "Ox Alpha stealth preview (OpenRouter — billed $0)",
+      "source": "openrouter-api-2026-08-25",
+      "input": 0.0,
+      "output": 0.0,
+      "cacheRead": 0.0,
+      "cacheWrite": 0.0
+    },
+    "gmi/MiniMaxAI/MiniMax-M2.7": {
+      "label": "MiniMax M2.7 (GMI Serving; MiniMax paygo list)",
+      "source": "minimax-paygo-2026-08",
+      "input": 0.3,
+      "output": 1.2,
+      "cacheRead": 0.06,
+      "cacheWrite": 0.375
+    },
+    "opencode/muse-spark-1.2-contributor-free": {
+      "label": "Muse Spark free (OpenCode Zen — billed $0)",
+      "source": "opencode-zen-free-note",
+      "input": 0.0,
+      "output": 0.0,
+      "cacheRead": 0.0,
+      "cacheWrite": 0.0,
+      "estimateFrom": "openrouter/meta/muse-spark-1.2-contributor"
+    },
+    "openrouter/meta/muse-spark-1.2-contributor": {
+      "label": "Muse Spark 1.2 Contributor (OpenRouter list)",
+      "source": "openrouter-api-2026-08-25",
+      "input": 0.1,
+      "output": 0.2,
+      "cacheRead": 0.002,
+      "cacheWrite": 0.0
+    }
+  }
+}
