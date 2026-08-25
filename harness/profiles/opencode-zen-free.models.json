@@ -78,6 +78,26 @@
             "supportsStore": false,
             "supportsDeveloperRole": false
           }
+        },
+        {
+          "id": "muse-spark-1.2-contributor-free",
+          "name": "Muse Spark 1.2 Contributor Free (OpenCode Zen)",
+          "api": "openai-responses",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 131072,
+          "thinkingLevelMap": {
+            "minimal": "minimal",
+            "low": "low",
+            "medium": "medium",
+            "high": "high",
+            "xhigh": "xhigh",
+            "max": "xhigh"
+          },
+          "compat": {
+            "supportsDeveloperRole": false
+          }
         }
       ]
     }

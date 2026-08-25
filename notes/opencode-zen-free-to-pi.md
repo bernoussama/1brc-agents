@@ -11,7 +11,7 @@ on 2026-08-25.
    - `x-preview-f-free` — **Ox Alpha Free (Unlimited)** (replaces `ox-alpha-free`)
    - `hy3-free`, `big-pickle`, `mimo-v2.5-free`
    - `nemotron-3-ultra-free`, `nemotron-3.5-lightning-free`
-   - `muse-spark-1.2-contributor-free` (flaky 500s when probed)
+   - `muse-spark-1.2-contributor-free` (Chat Completions 500s; use Responses API)
 3. Every free model’s API URL is the OpenAI-compatible Zen gateway:
    `https://opencode.ai/zen/v1` (same host the paid Zen catalog uses).
 4. OpenCode’s own TUI/CLI still prefers `/connect` → OpenCode Zen → paste an
@@ -54,8 +54,19 @@ Profiles:
 
 - `harness/profiles/opencode-ox-alpha.sh` → `x-preview-f-free`, `THINKING=max`
 - `harness/profiles/opencode-hy3-free-high.sh` → `hy3-free`, `THINKING=high`
+- `harness/profiles/opencode-muse-spark-free-xhigh.sh` →
+  `muse-spark-1.2-contributor-free`, `THINKING=xhigh` (Responses API)
 - Shared catalog: `harness/profiles/opencode-zen-free.models.json`
-  (provider id `opencode-zen-free`, `apiKey: ""`, `AUTH_MODE=none`)
+  (provider id `opencode-zen-free`, `apiKey: " "`, `AUTH_MODE=none`)
+
+### Muse Spark free specifics
+
+`POST /zen/v1/chat/completions` for `muse-spark-1.2-contributor-free` returns
+HTTP 500 consistently. `POST /zen/v1/responses` works with `cost: 0`.
+
+Maximum reasoning is `reasoning.effort: "xhigh"` (not `"max"`, which 400s).
+In the shared catalog the Muse entry sets `"api": "openai-responses"` and
+maps `max` → `xhigh` so pi’s `--thinking xhigh` (or `max`) is valid.
 
 `AUTH_MODE=none` (in `harness/lib/auth.sh`) skips injecting host secrets.
 
