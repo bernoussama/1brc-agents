@@ -19,7 +19,6 @@ const data = [
   { model: "Muse Spark free xhigh (r2)", median: 6500.8 },
   { model: "MiniMax M2.7 max", median: 6562.3 },
   { model: "ox-alpha max", median: 7256.5 },
-  { model: "MiniMax M3 max", median: 12225.6 },
 ];
 
 const config = {
@@ -41,7 +40,7 @@ export default function CloudMedianBarChart() {
           animate
           margins={{ top: 36, bottom: 88 }}
         >
-          <WrappedXAxis dataKey="model" maxTicks={11} tickMargin={6} />
+          <WrappedXAxis dataKey="model" maxTicks={10} tickMargin={6} />
           <YAxis tickFormatter={formatYAxisSecondsFromMs} />
           <Legend />
           <Tooltip labelKey="model" valueFormatter={formatSecondsFromMs} />
