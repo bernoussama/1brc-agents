@@ -24,11 +24,6 @@ const costData = CLOUD_AGENT_RUNS.map((run) => ({
   metricsAvailable: run.metricsAvailable,
 }));
 
-function readCaptureMode(): boolean {
-  if (typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).has("capture");
-}
-
 type CapturePanel = "median-run-time" | "agent-wall-time" | "estimated-cost";
 
 function readCapturePanel(): CapturePanel | null {
@@ -49,7 +44,6 @@ function readCapturePanel(): CapturePanel | null {
 /** Three-up dashboard: median, agent wall time, estimated cost. Mount with `client:load`. */
 export default function CloudAgentDashboard() {
   const [replayToken, setReplayToken] = useState(0);
-  const captureMode = readCaptureMode();
   const capturePanel = readCapturePanel();
 
   useEffect(() => {
@@ -70,7 +64,6 @@ export default function CloudAgentDashboard() {
     };
   }, []);
 
-  const animationDuration = captureMode ? 3000 : undefined;
   const showHeader = !capturePanel;
   const showFooter = !capturePanel;
 
@@ -153,7 +146,6 @@ export default function CloudAgentDashboard() {
             bloom={panel.bloom}
             barVariant={panel.barVariant}
             replayToken={replayToken}
-            animationDuration={animationDuration}
           />
         ))}
       </div>

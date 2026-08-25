@@ -17,8 +17,8 @@ except ImportError:
 OUT = Path("/workspace/artifacts/chart-videos")
 RAW = OUT / "raw"
 BASE_URL = "http://localhost:4321/charts/cloud-agent/"
-# 3s entrance animation + 1.5s hold on the finished chart.
-RECORD_MS = 5000
+# Default 900ms entrance animation + ~1s hold on the finished chart.
+RECORD_MS = 3500
 VIEWPORT = {"width": 960, "height": 640}
 
 PANELS: list[tuple[str, str]] = [

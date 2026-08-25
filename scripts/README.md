@@ -54,5 +54,5 @@ python3 scripts/capture_dashboard_chart_videos.py
 
 Output: `artifacts/chart-videos/{median-run-time,agent-wall-time,estimated-cost}.mp4`.
 
-Each panel loads at `?capture=1&panel=<slug>` with a 3s entrance animation. Playwright
-records real-time video (not frame-by-frame GIF sampling) of the single chart panel.
+Each panel loads at `?capture=1&panel=<slug>` using the same 900ms entrance animation
+as the live site. Playwright records real-time video of the single chart panel.
