@@ -282,5 +282,9 @@ html.chart-capture main {
 
 html.chart-capture .site-container {
   max-width: none !important;
-  padding: 1rem !important;
+  padding: 2rem !important;
+}
+
+html.chart-capture .chart-capture-panel svg text {
+  font-size: 14px !important;
 }

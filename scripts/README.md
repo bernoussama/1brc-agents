@@ -52,7 +52,7 @@ cd site && npm run dev -- --host 127.0.0.1 --port 4321
 python3 scripts/capture_dashboard_chart_videos.py
 ```
 
-Output: `artifacts/chart-videos/{median-run-time,agent-wall-time,estimated-cost}.mp4`.
+Output: `artifacts/chart-videos/{median-run-time,agent-wall-time,estimated-cost}.mp4` (1920×1080).
 
 Each panel loads at `?capture=1&panel=<slug>` using the same 900ms entrance animation
-as the live site. Playwright records real-time video of the single chart panel.
+as the live site. Playwright records real-time video at 1920×1080 with a larger chart layout.

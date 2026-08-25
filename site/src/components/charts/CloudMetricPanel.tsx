@@ -29,6 +29,7 @@ export type CloudMetricPanelProps = {
   barVariant?: AreaVariant;
   replayToken?: number;
   animationDuration?: number;
+  captureLayout?: boolean;
 };
 
 function MetricTooltip({
@@ -86,6 +87,7 @@ export function CloudMetricPanel({
   barVariant = "gradient",
   replayToken = 0,
   animationDuration,
+  captureLayout = false,
 }: CloudMetricPanelProps) {
   const config = {
     [dataKey]: { label: seriesLabel, color },
@@ -94,10 +96,32 @@ export function CloudMetricPanel({
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="text-center">
-        <h2 className="font-mono text-sm font-semibold text-foreground sm:text-base">{title}</h2>
-        <p className="font-mono text-[11px] text-muted-foreground italic">{hint}</p>
+        <h2
+          className={
+            captureLayout
+              ? "font-mono text-2xl font-semibold text-foreground"
+              : "font-mono text-sm font-semibold text-foreground sm:text-base"
+          }
+        >
+          {title}
+        </h2>
+        <p
+          className={
+            captureLayout
+              ? "font-mono text-base text-muted-foreground italic"
+              : "font-mono text-[11px] text-muted-foreground italic"
+          }
+        >
+          {hint}
+        </p>
       </div>
-      <div className="border-foreground bg-card h-96 w-full min-w-64 border-2 border-solid p-2">
+      <div
+        className={
+          captureLayout
+            ? "chart-capture-panel border-foreground bg-card h-[34rem] w-full border-2 border-solid p-4"
+            : "border-foreground bg-card h-96 w-full min-w-64 border-2 border-solid p-2"
+        }
+      >
         <BarChart
           data={data}
           config={config}
@@ -105,10 +129,19 @@ export function CloudMetricPanel({
           animate
           replayToken={replayToken}
           animationDuration={animationDuration}
-          margins={{ top: 28, bottom: 72, left: 40, right: 8 }}
+          margins={
+            captureLayout
+              ? { top: 40, bottom: 96, left: 56, right: 16 }
+              : { top: 28, bottom: 72, left: 40, right: 8 }
+          }
         >
           <Grid horizontal />
-          <WrappedXAxis dataKey="model" maxTicks={CLOUD_CHART_BAR_COUNT} tickMargin={4} lineHeight={10} />
+          <WrappedXAxis
+            dataKey="model"
+            maxTicks={CLOUD_CHART_BAR_COUNT}
+            tickMargin={captureLayout ? 8 : 4}
+            lineHeight={captureLayout ? 14 : 10}
+          />
           <YAxis tickFormatter={yAxisFormatter} tickCount={4} />
           <MetricTooltip
             naAware={naAware}

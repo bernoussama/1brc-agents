@@ -19,7 +19,8 @@ RAW = OUT / "raw"
 BASE_URL = "http://localhost:4321/charts/cloud-agent/"
 # Default 900ms entrance animation + ~1s hold on the finished chart.
 RECORD_MS = 3500
-VIEWPORT = {"width": 960, "height": 640}
+# 1920×1080 recording — matches a full-HD browser window.
+VIEWPORT = {"width": 1920, "height": 1080}
 
 PANELS: list[tuple[str, str]] = [
     ("median-run-time", "Median run time"),
@@ -42,6 +43,10 @@ def to_mp4(webm_path: Path, mp4_path: Path) -> None:
             str(webm_path),
             "-c:v",
             "libx264",
+            "-crf",
+            "17",
+            "-preset",
+            "slow",
             "-pix_fmt",
             "yuv420p",
             "-movflags",
@@ -59,7 +64,7 @@ async def capture_panel(browser, slug: str) -> Path:
 
     context = await browser.new_context(
         viewport=VIEWPORT,
-        device_scale_factor=2,
+        device_scale_factor=1,
         color_scheme="dark",
         reduced_motion="no-preference",
         record_video_dir=str(RAW),

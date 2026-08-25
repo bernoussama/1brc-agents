@@ -117,7 +117,7 @@ export default function CloudAgentDashboard() {
     : panels;
 
   return (
-    <div className={capturePanel ? "not-prose flex min-h-[24rem] items-center justify-center p-4" : "not-prose flex flex-col gap-8"}>
+    <div className={capturePanel ? "not-prose flex min-h-screen w-full items-center justify-center p-10" : "not-prose flex flex-col gap-8"}>
       {showHeader ? (
         <header className="flex flex-col gap-2 text-center">
           <h1 className="font-mono text-xl font-semibold text-foreground sm:text-2xl">
@@ -130,7 +130,7 @@ export default function CloudAgentDashboard() {
         </header>
       ) : null}
 
-      <div className={capturePanel ? "w-full max-w-3xl" : "grid grid-cols-1 gap-8 xl:grid-cols-3 xl:gap-4"}>
+      <div className={capturePanel ? "w-full max-w-[88rem]" : "grid grid-cols-1 gap-8 xl:grid-cols-3 xl:gap-4"}>
         {visiblePanels.map((panel) => (
           <CloudMetricPanel
             key={panel.slug}
@@ -146,6 +146,7 @@ export default function CloudAgentDashboard() {
             bloom={panel.bloom}
             barVariant={panel.barVariant}
             replayToken={replayToken}
+            captureLayout={capturePanel !== null}
           />
         ))}
       </div>
