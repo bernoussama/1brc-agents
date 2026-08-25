@@ -269,3 +269,18 @@
     @apply from-primary-800 to-primary-600 dark:from-primary-400 dark:to-primary-200 bg-gradient-to-r bg-clip-text text-transparent;
   }
 }
+
+/* Playwright chart capture — hide site chrome when recording a single panel. */
+html.chart-capture header,
+html.chart-capture footer {
+  display: none !important;
+}
+
+html.chart-capture main {
+  padding: 0 !important;
+}
+
+html.chart-capture .site-container {
+  max-width: none !important;
+  padding: 1rem !important;
+}

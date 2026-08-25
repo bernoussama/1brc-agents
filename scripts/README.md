@@ -40,21 +40,19 @@ After changing pricing or adding sessions, re-run the script and update
 `site/src/components/charts/cloud-agent-runs.ts` with the new `tokens` and
 `costUsd` values.
 
-## Dashboard chart GIFs
+## Dashboard chart videos
 
-Capture the dither-kit bar entrance animations from `/charts/cloud-agent/`:
+Record the dither-kit bar entrance animations from `/charts/cloud-agent/` as MP4:
 
 ```bash
 # Start the site dev server first (port 4321)
 cd site && npm run dev -- --host 127.0.0.1 --port 4321
 
 # Requires: pip install playwright && playwright install chromium, ffmpeg
-python3 scripts/capture_dashboard_chart_gifs.py
+python3 scripts/capture_dashboard_chart_videos.py
 ```
 
-Output: `artifacts/chart-gifs/{median-run-time,agent-wall-time,estimated-cost}.gif`.
+Output: `artifacts/chart-videos/{median-run-time,agent-wall-time,estimated-cost}.mp4`.
 
-The script loads `/charts/cloud-agent/?capture=1` (3s entrance animation), reloads
-once per panel, and captures frames synced to `requestAnimationFrame` so the bar
-grow wave is sampled smoothly. Value labels stay hidden until the entrance
-finishes, matching the live chart.
+Each panel loads at `?capture=1&panel=<slug>` with a 3s entrance animation. Playwright
+records real-time video (not frame-by-frame GIF sampling) of the single chart panel.
