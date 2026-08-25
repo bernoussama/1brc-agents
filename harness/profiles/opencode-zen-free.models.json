@@ -1,0 +1,85 @@
+{
+  "providers": {
+    "opencode-zen-free": {
+      "baseUrl": "https://opencode.ai/zen/v1",
+      "api": "openai-completions",
+      "apiKey": " ",
+      "models": [
+        {
+          "id": "x-preview-f-free",
+          "name": "Ox Alpha Free Unlimited (OpenCode Zen)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1000000,
+          "maxTokens": 131072,
+          "compat": {
+            "supportsReasoningEffort": true,
+            "supportsStore": false,
+            "supportsDeveloperRole": false
+          }
+        },
+        {
+          "id": "hy3-free",
+          "name": "Hy3 Free (OpenCode Zen)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 190000,
+          "maxTokens": 64000,
+          "compat": {
+            "supportsReasoningEffort": true,
+            "supportsStore": false,
+            "supportsDeveloperRole": false
+          }
+        },
+        {
+          "id": "big-pickle",
+          "name": "Big Pickle (OpenCode Zen free)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 200000,
+          "maxTokens": 32000,
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false
+          }
+        },
+        {
+          "id": "mimo-v2.5-free",
+          "name": "MiMo V2.5 Free (OpenCode Zen)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 200000,
+          "maxTokens": 32000,
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false
+          }
+        },
+        {
+          "id": "nemotron-3-ultra-free",
+          "name": "Nemotron 3 Ultra Free (OpenCode Zen)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1000000,
+          "maxTokens": 128000,
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false
+          }
+        },
+        {
+          "id": "nemotron-3.5-lightning-free",
+          "name": "Nemotron 3.5 Lightning Free (OpenCode Zen)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 262144,
+          "maxTokens": 262144,
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false
+          }
+        }
+      ]
+    }
+  }
+}
