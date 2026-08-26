@@ -3,6 +3,7 @@ import {
   CLOUD_AGENT_RUNS,
   cloudMetricBarValue,
 } from "./cloud-agent-runs";
+import { CloudCostVsMedianScatter } from "./CloudCostVsMedianScatter";
 import { CloudMetricPanel } from "./CloudMetricPanel";
 import {
   formatMinutesFromSeconds,
@@ -24,7 +25,11 @@ const costData = CLOUD_AGENT_RUNS.map((run) => ({
   metricsAvailable: run.metricsAvailable,
 }));
 
-type CapturePanel = "median-run-time" | "agent-wall-time" | "estimated-cost";
+type CapturePanel =
+  | "median-run-time"
+  | "agent-wall-time"
+  | "estimated-cost"
+  | "cost-vs-median";
 
 function readCapturePanel(): CapturePanel | null {
   if (typeof window === "undefined") return null;
@@ -34,7 +39,8 @@ function readCapturePanel(): CapturePanel | null {
   if (
     panel === "median-run-time" ||
     panel === "agent-wall-time" ||
-    panel === "estimated-cost"
+    panel === "estimated-cost" ||
+    panel === "cost-vs-median"
   ) {
     return panel;
   }
@@ -112,6 +118,8 @@ export default function CloudAgentDashboard() {
     },
   ];
 
+  const showBars = !capturePanel || capturePanel !== "cost-vs-median";
+  const showScatter = !capturePanel || capturePanel === "cost-vs-median";
   const visiblePanels = capturePanel
     ? panels.filter((panel) => panel.slug === capturePanel)
     : panels;
@@ -130,25 +138,33 @@ export default function CloudAgentDashboard() {
         </header>
       ) : null}
 
-      <div className={capturePanel ? "w-full max-w-3xl" : "grid grid-cols-1 gap-8 xl:grid-cols-3 xl:gap-4"}>
-        {visiblePanels.map((panel) => (
-          <CloudMetricPanel
-            key={panel.slug}
-            title={panel.title}
-            hint={panel.hint}
-            dataKey={panel.dataKey}
-            seriesLabel={panel.seriesLabel}
-            color={panel.color}
-            data={panel.data}
-            valueFormatter={panel.valueFormatter}
-            yAxisFormatter={panel.yAxisFormatter}
-            naAware={panel.naAware}
-            bloom={panel.bloom}
-            barVariant={panel.barVariant}
-            replayToken={replayToken}
-          />
-        ))}
-      </div>
+      {showBars && visiblePanels.length > 0 ? (
+        <div className={capturePanel ? "w-full max-w-3xl" : "grid grid-cols-1 gap-8 xl:grid-cols-3 xl:gap-4"}>
+          {visiblePanels.map((panel) => (
+            <CloudMetricPanel
+              key={panel.slug}
+              title={panel.title}
+              hint={panel.hint}
+              dataKey={panel.dataKey}
+              seriesLabel={panel.seriesLabel}
+              color={panel.color}
+              data={panel.data}
+              valueFormatter={panel.valueFormatter}
+              yAxisFormatter={panel.yAxisFormatter}
+              naAware={panel.naAware}
+              bloom={panel.bloom}
+              barVariant={panel.barVariant}
+              replayToken={replayToken}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      {showScatter ? (
+        <div className={capturePanel ? "w-full max-w-5xl" : "w-full"}>
+          <CloudCostVsMedianScatter replayToken={replayToken} />
+        </div>
+      ) : null}
 
       {showFooter ? (
         <footer className="font-mono text-[10px] text-muted-foreground sm:text-xs">

@@ -26,6 +26,7 @@ PANELS: list[tuple[str, str]] = [
     ("median-run-time", "Median run time"),
     ("agent-wall-time", "Agent wall time"),
     ("estimated-cost", "Estimated cost"),
+    ("cost-vs-median", "Cost vs median run time"),
 ]
 
 INIT_SCRIPT = (
@@ -99,18 +100,30 @@ async def capture_panel(browser, slug: str, title: str) -> Path:
 
     url = f"{BASE_URL}?capture=1&panel={slug}"
     await page.goto(url, wait_until="commit")
-    await page.wait_for_selector("canvas", state="attached", timeout=15_000)
     await page.wait_for_selector("h2", state="visible", timeout=15_000)
 
-    # Confirm horizontal before recording continues (models on left).
-    await page.wait_for_function(
-        """() => {
-          const t = [...document.querySelectorAll('svg text')]
-            .find((el) => (el.getAttribute('text-anchor') === 'end') && (el.textContent || '').includes('gpt'));
-          return !!t;
-        }""",
-        timeout=10_000,
-    )
+    if slug == "cost-vs-median":
+        await page.wait_for_selector("svg circle", state="attached", timeout=15_000)
+        await page.wait_for_function(
+            """() => {
+              const t = [...document.querySelectorAll('svg text')]
+                .find((el) => (el.textContent || '').includes('gpt-5.6-sol'));
+              return !!t;
+            }""",
+            timeout=10_000,
+        )
+    else:
+        await page.wait_for_selector("canvas", state="attached", timeout=15_000)
+        # Confirm horizontal before recording continues (models on left).
+        await page.wait_for_function(
+            """() => {
+              const t = [...document.querySelectorAll('svg text')]
+                .find((el) => (el.getAttribute('text-anchor') === 'end') && (el.textContent || '').includes('gpt'));
+              return !!t;
+            }""",
+            timeout=10_000,
+        )
+
     await page.evaluate(ENLARGE_TEXT_JS)
     await page.wait_for_timeout(RECORD_MS // 2)
     await page.evaluate(ENLARGE_TEXT_JS)
@@ -127,10 +140,12 @@ async def capture_panel(browser, slug: str, title: str) -> Path:
     to_mp4(webm_path, mp4_path)
     webm_path.unlink(missing_ok=True)
 
-    # Also write a distinctly named copy so stale downloads aren't confused.
-    named = OUT / f"{slug}-horizontal.mp4"
-    named.write_bytes(mp4_path.read_bytes())
-    print(f"{title}: horizontal confirmed → {mp4_path}")
+    if slug != "cost-vs-median":
+        named = OUT / f"{slug}-horizontal.mp4"
+        named.write_bytes(mp4_path.read_bytes())
+        print(f"{title}: horizontal confirmed → {mp4_path}")
+    else:
+        print(f"{title}: scatter confirmed → {mp4_path}")
     return mp4_path
 
 
