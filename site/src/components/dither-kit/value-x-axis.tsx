@@ -16,7 +16,7 @@ export function ValueXAxis({
   const y = ctx.plot.height + tickMargin
 
   return (
-    <g className="fill-current font-mono text-[10px] text-muted-foreground">
+    <g className="fill-current font-mono text-[12px] text-muted-foreground">
       {ctx.y.ticks(tickCount).map((t) => (
         <text
           key={t}

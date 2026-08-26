@@ -106,14 +106,14 @@ export function CloudMetricPanel({
           layout="horizontal"
           replayToken={replayToken}
           animationDuration={animationDuration}
-          margins={{ top: 12, bottom: 28, left: 220, right: 56 }}
+          margins={{ top: 12, bottom: 32, left: 260, right: 64 }}
         >
           <Grid horizontal />
           <CategoryYAxis
             dataKey="model"
             maxTicks={CLOUD_CHART_BAR_COUNT}
-            tickMargin={8}
-            lineHeight={11}
+            tickMargin={10}
+            lineHeight={13}
             maxLines={2}
           />
           <ValueXAxis tickFormatter={yAxisFormatter} tickCount={4} />

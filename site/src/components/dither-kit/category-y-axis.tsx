@@ -1,4 +1,4 @@
-import { maxCharsForWidth, wrapText } from "@/lib/wrap-text"
+import { wrapText } from "@/lib/wrap-text"
 import { useChartPart } from "./chart-context"
 
 /** Category labels along the left for horizontal bar charts. */
@@ -6,7 +6,7 @@ export function CategoryYAxis({
   dataKey,
   tickMargin = 8,
   maxTicks,
-  lineHeight = 11,
+  lineHeight = 13,
   maxLines = 2,
 }: {
   dataKey?: string
@@ -20,12 +20,12 @@ export function CategoryYAxis({
 
   const step = Math.max(1, Math.ceil(ctx.dataLength / (maxTicks ?? ctx.dataLength)))
   // Leave a few px of breathing room inside the left margin so glyphs don't
-  // kiss the SVG edge (mono width is approximate).
-  const labelBudget = Math.max(40, ctx.margins.left - tickMargin - 10)
-  const maxChars = Math.max(8, maxCharsForWidth(labelBudget))
+  // kiss the SVG edge (mono width is approximate at 12px ≈ 8px/glyph).
+  const labelBudget = Math.max(40, ctx.margins.left - tickMargin - 12)
+  const maxChars = Math.max(8, Math.floor(labelBudget / 8))
 
   return (
-    <g className="fill-current font-mono text-[10px] text-muted-foreground">
+    <g className="fill-current font-mono text-[12px] text-muted-foreground">
       {ctx.data.map((row, i) => {
         if (i % step !== 0) return null
         const raw = dataKey ? row[dataKey] : i

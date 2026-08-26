@@ -19,7 +19,7 @@ export function BarValueLabels({
   const horizontal = ctx.layout === "horizontal";
 
   return (
-    <g className="fill-current font-mono text-[9px] text-foreground tabular-nums sm:text-[10px]">
+    <g className="fill-current font-mono text-[11px] text-foreground tabular-nums sm:text-[12px]">
       {band.map((b, i) => {
         const value = b[1];
         if (horizontal) {
