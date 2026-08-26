@@ -19,17 +19,14 @@ type PlacedLabel = {
   textX: number;
   textY: number;
   anchor: "start" | "end";
-  /** When set, draw a callout from the point into the right label rail. */
-  railX: number | null;
 };
 
-const MARGINS = { top: 28, right: 188, bottom: 48, left: 56 };
+const MARGINS = { top: 28, right: 160, bottom: 48, left: 56 };
 const POINT_R = 5;
-const LABEL_GAP = 10;
-const LABEL_LINE = 15;
+const LABEL_GAP = 8;
+const LABEL_LINE = 13;
 const TICK_COUNT = 5;
-/** Models at/above this cost keep an inline label; cheaper ones use the right rail. */
-const INLINE_COST_FLOOR = 5;
+const CHAR_W = 6.8;
 
 function withCost(run: CloudAgentRun): run is CloudAgentRun & { costUsd: number } {
   return run.metricsAvailable && run.costUsd != null;
@@ -43,10 +40,43 @@ function buildPoints(): CostPoint[] {
   }));
 }
 
-/**
- * High-cost points get inline labels; the dense cheap cluster uses a right-side
- * rail with leader lines so names stay readable.
- */
+function labelWidth(model: string): number {
+  return Math.min(model.length * CHAR_W, 170);
+}
+
+function labelBounds(label: Pick<PlacedLabel, "textX" | "textY" | "anchor" | "model">) {
+  const w = labelWidth(label.model);
+  const left = label.anchor === "start" ? label.textX : label.textX - w;
+  const right = label.anchor === "start" ? label.textX + w : label.textX;
+  return {
+    left,
+    right,
+    top: label.textY - LABEL_LINE / 2,
+    bottom: label.textY + LABEL_LINE / 2,
+  };
+}
+
+function labelsOverlap(a: PlacedLabel, b: PlacedLabel): boolean {
+  const A = labelBounds(a);
+  const B = labelBounds(b);
+  return A.left < B.right + 3 && B.left < A.right + 3 && A.top < B.bottom && B.top < A.bottom;
+}
+
+/** Offsets tried in order — stay near the point, prefer right / above. */
+const OFFSETS: Array<{ dx: number; dy: number; anchor: "start" | "end" }> = [
+  { dx: LABEL_GAP, dy: -2, anchor: "start" },
+  { dx: LABEL_GAP, dy: -LABEL_LINE, anchor: "start" },
+  { dx: LABEL_GAP, dy: LABEL_LINE - 2, anchor: "start" },
+  { dx: -LABEL_GAP, dy: -2, anchor: "end" },
+  { dx: -LABEL_GAP, dy: -LABEL_LINE, anchor: "end" },
+  { dx: -LABEL_GAP, dy: LABEL_LINE - 2, anchor: "end" },
+  { dx: LABEL_GAP, dy: -LABEL_LINE * 2, anchor: "start" },
+  { dx: LABEL_GAP, dy: LABEL_LINE * 2 - 2, anchor: "start" },
+  { dx: -LABEL_GAP, dy: -LABEL_LINE * 2, anchor: "end" },
+  { dx: -LABEL_GAP, dy: LABEL_LINE * 2 - 2, anchor: "end" },
+];
+
+/** Place each label next to its point; nudge only enough to clear neighbors. */
 function placeLabels(
   points: CostPoint[],
   xOf: (v: number) => number,
@@ -54,54 +84,54 @@ function placeLabels(
   plotWidth: number,
   plotHeight: number,
 ): PlacedLabel[] {
-  const inline: PlacedLabel[] = [];
-  const railCandidates: CostPoint[] = [];
+  // Isolated (high cost) first so the dense baseline cluster yields around them.
+  const ordered = [...points].sort((a, b) => b.costUsd - a.costUsd || a.median - b.median);
+  const placed: PlacedLabel[] = [];
 
-  for (const point of points) {
+  for (const point of ordered) {
     const x = xOf(point.median);
     const y = yOf(point.costUsd);
-    if (point.costUsd >= INLINE_COST_FLOOR) {
-      const preferRight = x < plotWidth * 0.7;
-      inline.push({
+    let best: PlacedLabel | null = null;
+    let bestScore = Number.POSITIVE_INFINITY;
+
+    for (const offset of OFFSETS) {
+      let textX = x + offset.dx;
+      let textY = y + offset.dy;
+      let anchor = offset.anchor;
+
+      // Keep text inside the plot + right gutter.
+      if (anchor === "start" && textX + labelWidth(point.model) > plotWidth + MARGINS.right - 6) {
+        anchor = "end";
+        textX = x - LABEL_GAP;
+      }
+      if (anchor === "end" && textX - labelWidth(point.model) < -4) {
+        anchor = "start";
+        textX = x + LABEL_GAP;
+      }
+      textY = Math.max(LABEL_LINE / 2, Math.min(plotHeight - 2, textY));
+
+      const candidate: PlacedLabel = {
         model: point.model,
         x,
         y,
-        textX: preferRight ? x + LABEL_GAP : x - LABEL_GAP,
-        textY: Math.max(LABEL_LINE, y - 2),
-        anchor: preferRight ? "start" : "end",
-        railX: null,
-      });
-    } else {
-      railCandidates.push(point);
+        textX,
+        textY,
+        anchor,
+      };
+      const conflicts = placed.filter((other) => labelsOverlap(candidate, other)).length;
+      const dist = Math.hypot(textX - x, textY - y);
+      const score = conflicts * 1000 + dist;
+      if (score < bestScore) {
+        bestScore = score;
+        best = candidate;
+        if (conflicts === 0) break;
+      }
     }
+
+    if (best) placed.push(best);
   }
 
-  // Top → bottom by cost so the rail order matches the vertical point order.
-  const railSorted = [...railCandidates].sort(
-    (a, b) => b.costUsd - a.costUsd || a.median - b.median,
-  );
-  const railX = plotWidth + 14;
-  const textX = railX + 8;
-  const needed = Math.max(0, (railSorted.length - 1) * LABEL_LINE);
-  const span = Math.max(needed, plotHeight * 0.55);
-  const startY = Math.max(LABEL_LINE, (plotHeight - span) / 2);
-
-  const rail: PlacedLabel[] = railSorted.map((point, i) => {
-    const x = xOf(point.median);
-    const y = yOf(point.costUsd);
-    const textY = Math.min(plotHeight - 4, startY + i * (span / Math.max(1, railSorted.length - 1)));
-    return {
-      model: point.model,
-      x,
-      y,
-      textX,
-      textY,
-      anchor: "start" as const,
-      railX,
-    };
-  });
-
-  return [...inline, ...rail];
+  return placed;
 }
 
 export type CloudCostVsMedianScatterProps = {
@@ -233,15 +263,6 @@ export function CloudCostVsMedianScatter({
                     return (
                       <g key={label.model}>
                         <title>{title}</title>
-                        {label.railX != null ? (
-                          <path
-                            d={`M ${label.x + POINT_R} ${label.y} L ${label.railX} ${label.textY} L ${label.textX - 2} ${label.textY}`}
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={1}
-                            className="stroke-muted-foreground/50"
-                          />
-                        ) : null}
                         <circle
                           cx={label.x}
                           cy={label.y}
