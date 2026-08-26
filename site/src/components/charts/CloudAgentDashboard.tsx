@@ -124,8 +124,8 @@ export default function CloudAgentDashboard() {
             Cloud-agent Round A — scored configurations
           </h1>
           <p className="font-mono text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            Xeon 4 CPU / 16 GiB · 120m budget · Codex OAuth · OpenRouter · GMI Serving · OpenCode Zen
-            free · Cursor proxy
+            Xeon 4 CPU / 16 GiB · 120m budget · GPT-5.6 Sol · MiniMax M3 · Grok 4.6 · ox-alpha ·
+            GPT-5.6 Luna · Muse Spark · MiniMax M2.7
           </p>
         </header>
       ) : null}
