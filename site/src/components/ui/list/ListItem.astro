@@ -1,0 +1,33 @@
+---
+// src/components/ui/list/ListItem.astro — List compound part (see ../README.md).
+// Plain <li>. Drop an icon in the `icon` slot (the Preline "checked list" pattern) and the item
+// switches to a flex row — flex is applied only then because it would eat a disc/decimal marker.
+// The `icon` variant is internal (purely slot-driven) and omitted from Props: exposing it would
+// let `icon={false}` silently swallow a provided slot. The icon wrapper defaults to
+// `text-primary`; recolor by classing the icon itself. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"li"> & Omit<VariantProps<typeof listItem>, "icon">;
+
+export const listItem = tv({
+  base: [],
+  variants: {
+    icon: { true: "flex items-center gap-x-2" },
+  },
+});
+
+const { class: className, ...rest } = Astro.props;
+const hasIcon = Astro.slots.has("icon");
+---
+
+<li class={listItem({ icon: hasIcon, class: className })} data-slot="list-item" {...rest}>
+  {
+    hasIcon && (
+      <span class="text-primary shrink-0" aria-hidden="true">
+        <slot name="icon" />
+      </span>
+    )
+  }
+  <slot />
+</li>

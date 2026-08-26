@@ -3,31 +3,31 @@
 #
 # This deliberately preserves the trace, submission/work tree, score files,
 # manifest, budget metadata, and any reports or expected-output snapshots.
-# The target must be one direct child of this repository's runs/ directory.
+# The target must be one direct child of this repository's .sessions/ directory.
 
 set -euo pipefail
 
 if [ "$#" -ne 1 ]; then
-  echo "usage: cleanup_run.sh <runs/session-directory>" >&2
+  echo "usage: cleanup_run.sh <.sessions/session-directory>" >&2
   exit 2
 fi
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
-RUNS_ROOT="$ROOT/runs"
+SESSIONS_ROOT="$ROOT/.sessions"
 TARGET_ARG="$1"
 
 [ -d "$TARGET_ARG" ] || {
-  echo "run directory does not exist: $TARGET_ARG" >&2
+  echo "session directory does not exist: $TARGET_ARG" >&2
   exit 1
 }
 
 TARGET="$(cd "$TARGET_ARG" && pwd -P)"
-[ "$TARGET" != "$RUNS_ROOT" ] || {
-  echo "refusing to clean the runs root itself" >&2
+[ "$TARGET" != "$SESSIONS_ROOT" ] || {
+  echo "refusing to clean the .sessions root itself" >&2
   exit 1
 }
-[ "$(dirname "$TARGET")" = "$RUNS_ROOT" ] || {
-  echo "run directory must be a direct child of $RUNS_ROOT: $TARGET" >&2
+[ "$(dirname "$TARGET")" = "$SESSIONS_ROOT" ] || {
+  echo "session directory must be a direct child of $SESSIONS_ROOT: $TARGET" >&2
   exit 1
 }
 
@@ -63,7 +63,7 @@ removed_bytes=0
   remove_path measurements-dev.txt
 
   printf 'removed_bytes=%s\n' "$removed_bytes"
-  printf 'preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots\n'
+  printf 'preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots run_session.frozen.sh\n'
   printf 'finished_utc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 } > "$LOG"
 

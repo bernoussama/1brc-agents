@@ -1,0 +1,34 @@
+---
+// src/components/ui/_Chevron.astro — shared internal partial, not a primitive (see README.md).
+// The one disclosure/select chevron glyph, deduped from its six call sites (Accordion, Select,
+// ComboBox, AdvancedSelect, Dropdown, MegaMenu). Owns the glyph, size, and rotation-transition
+// classes; color, positioning, and the open-state rotation selector stay at each call site — the
+// selector genuinely differs per host (`[&[aria-expanded=true]_svg]`, `[&[open]_summary_svg]`,
+// `[button[aria-expanded=true]_&]`, or none for the static native Select). Decorative
+// (aria-hidden); inherits currentColor.
+import type { HTMLAttributes } from "astro/types";
+import { tv } from "tailwind-variants";
+
+type Props = HTMLAttributes<"svg">;
+
+export const chevron = tv({
+  base: "size-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none",
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<svg
+  class={chevron({ class: className })}
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  {...rest}
+>
+  <path d="m6 9 6 6 6-6"></path>
+</svg>

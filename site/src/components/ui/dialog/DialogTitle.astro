@@ -1,0 +1,16 @@
+---
+// src/components/ui/dialog/DialogTitle.astro — Dialog compound part (see ../README.md).
+// Give it an `id` and point the Dialog's `aria-labelledby` at it so the title names the dialog.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"h2"> & VariantProps<typeof dialogTitle>;
+
+export const dialogTitle = tv({
+  base: ["text-foreground text-lg leading-none font-medium"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<h2 class={dialogTitle({ class: className })} data-slot="dialog-title" {...rest}><slot /></h2>

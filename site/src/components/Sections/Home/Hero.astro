@@ -1,0 +1,23 @@
+---
+// src/components/Sections/Home/Hero.astro — Figma "Header - Hero Panel" (node 5:4).
+//
+// The home hero: the shared Global/HeroPanel (PLAYER 1 tag + H1 + intro) plus the two CTAs —
+// READ BLOG (blue pixel button) + SAY HI (pink) — passed through its slot. Above the fold, so no
+// scroll-reveal (a scroll-timeline element already in view renders mid-progress). Tokens only.
+//
+// Copy (tag, H1, intro) comes from portfolioData.home — the buyer-editable home introduction. The
+// READ BLOG / SAY HI CTAs point at the real /blog/ and /contact/ routes.
+import HeroPanel from "@components/Sections/Global/HeroPanel.astro";
+import portfolioData from "@config/portfolioData.json";
+
+const { tagline, heading, intro } = portfolioData.home;
+---
+
+<HeroPanel headingId="hero-heading" tagline={tagline} heading={heading} intro={intro}>
+  <div class="flex flex-col gap-4 pt-2 sm:flex-row">
+    <a href="/blog/" class="pixel-btn pixel-btn--blue px-5 py-4 text-sm uppercase sm:text-base">
+      Read Blog
+    </a>
+    <a href="/contact/" class="pixel-btn px-5 py-4 text-sm uppercase sm:text-base"> Say Hi </a>
+  </div>
+</HeroPanel>

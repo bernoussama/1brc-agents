@@ -1,0 +1,75 @@
+---
+// src/components/Sections/About/Achievements.astro — Figma "Achievements Section" (node 25:124).
+//
+// Data-only section: the shared heading + 1/2/3-col card grid live in <CardGrid>; this file supplies
+// the six achievement cards. Same ContentCard shell as Project Log — only the tag (all UNLOCKED) and
+// copy differ. Below the fold → the <Reveal> inside CardGrid.
+//
+// CONTENT: the mock's demo achievements (meaningful, typed local). All UNLOCKED → success tone.
+// hrefs are placeholder anchors (achievements have no detail route) — kept as "#" so the card is
+// still a single focusable link with its title as the accessible name. Thumbnails spread from the
+// shared `demoThumbs` (mirrors Project Log) — placeholder art to swap for real badges.
+import { type ContentCardProps } from "@components/Cards/ContentCard.astro";
+import CardGrid from "@components/Sections/Global/CardGrid.astro";
+
+import { demoThumbs } from "./demoThumbs";
+
+const achievements: readonly ContentCardProps[] = [
+  {
+    ...demoThumbs.cliQuest,
+    title: "First Pull Request",
+    description: "Submitted a code change to an open-source repository.",
+    href: "#",
+    badgeLabel: "Unlocked",
+    badgeVariant: "success",
+    cta: "View",
+  },
+  {
+    ...demoThumbs.retroChat,
+    title: "Code Reviewer",
+    description: "Reviewed 100+ pull requests and improved code quality.",
+    href: "#",
+    badgeLabel: "Unlocked",
+    badgeVariant: "success",
+    cta: "View",
+  },
+  {
+    ...demoThumbs.cssGrid,
+    title: "100 Day Streak",
+    description: "Committed code every day for 100 days straight.",
+    href: "#",
+    badgeLabel: "Unlocked",
+    badgeVariant: "success",
+    cta: "View",
+  },
+  {
+    ...demoThumbs.retroDeploy,
+    title: "Open Source Contributor",
+    description: "Maintained an open-source project with 1k+ stars.",
+    href: "#",
+    badgeLabel: "Unlocked",
+    badgeVariant: "success",
+    cta: "View",
+  },
+  {
+    ...demoThumbs.pixelArt,
+    title: "Bug Squasher",
+    description: "Resolved 50+ critical production issues.",
+    href: "#",
+    badgeLabel: "Unlocked",
+    badgeVariant: "success",
+    cta: "View",
+  },
+  {
+    ...demoThumbs.floppyDisk,
+    title: "Pixel Perfect",
+    description: "Delivered a UI component library with 100% test coverage.",
+    href: "#",
+    badgeLabel: "Unlocked",
+    badgeVariant: "success",
+    cta: "View",
+  },
+];
+---
+
+<CardGrid headingId="achievements-heading" title="Achievements Unlocked" items={achievements} />

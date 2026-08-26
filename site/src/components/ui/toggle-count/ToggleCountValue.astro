@@ -1,0 +1,29 @@
+---
+// src/components/ui/toggle-count/ToggleCountValue.astro — ToggleCount compound part (see ../README.md).
+// A value that swaps between `min` (toggle off) and `max` (toggle on). `for` must match the linked
+// ToggleCount's `id`. Renders `min` by default so it's correct before hydration. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"span"> &
+  VariantProps<typeof toggleCountValue> & {
+    for: string;
+    min: string | number;
+    max: string | number;
+  };
+
+export const toggleCountValue = tv({
+  base: ["tabular-nums"],
+});
+
+const { for: target, min, max, class: className, ...rest } = Astro.props;
+---
+
+<span
+  data-slot="toggle-count-value"
+  data-toggle-count={target}
+  data-min={String(min)}
+  data-max={String(max)}
+  class={toggleCountValue({ class: className })}
+  {...rest}>{String(min)}</span
+>

@@ -1,0 +1,37 @@
+---
+// src/components/ui/card/Card.astro — astro-boiler primitive (see ../README.md).
+// Compound root; pair with CardImage / CardHeader (Title/Description/Action) / CardContent / CardFooter.
+// `variant` sets elevation, `size` retunes every part's padding at once. `overflow-hidden` clips a
+// CardImage to the card radius (top/bottom/overlay all just work). Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof card>;
+
+export const card = tv({
+  base: [
+    "bg-card text-card-foreground border-border flex flex-col overflow-hidden rounded-lg border",
+  ],
+  variants: {
+    variant: {
+      default: "shadow-sm",
+      elevated: "shadow-lg",
+      outline: "shadow-none",
+      interactive: "shadow-sm transition-shadow hover:shadow-lg",
+    },
+    // size sets --card-p; the parts read it (p-[var(--card-p,1.5rem)]), so one knob repads header /
+    // content / footer at once. Parts fall back to 1.5rem (= p-6) when standalone, and a per-part
+    // padding override still wins cleanly (same-element merge) since size never touches the parts.
+    size: {
+      sm: "[--card-p:1rem]",
+      md: "",
+      lg: "[--card-p:2rem]",
+    },
+  },
+  defaultVariants: { variant: "default", size: "md" },
+});
+
+const { variant, size, class: className, ...rest } = Astro.props;
+---
+
+<div class={card({ variant, size, class: className })} data-slot="card" {...rest}><slot /></div>

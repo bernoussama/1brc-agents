@@ -1,0 +1,245 @@
+---
+// src/components/UiCatalog/Tier3Catalog.astro — DEV-ONLY. The "Tier 3" section of the UI catalog
+// (heavier, native-first interaction: Select, Checkbox/Radio/Switch, Dropdown, Dialog, Sheet,
+// Table), extracted from UiCatalog.astro so each tier owns its own demo markup instead of enlarging
+// the catalog monolith. Rendered by UiCatalog; 404s out of prod with it. Emits a run of top-level
+// nodes (leading tier header included) so it slots into the catalog's flex-col-gap-14 flow unchanged.
+import Badge from "@components/ui/badge";
+import Checkbox from "@components/ui/checkbox";
+import {
+  Dialog,
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@components/ui/dialog";
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@components/ui/dropdown";
+import Label from "@components/ui/label";
+import Radio from "@components/ui/radio";
+import Select from "@components/ui/select";
+import Separator from "@components/ui/separator";
+import { Sheet, SheetClose, SheetTrigger } from "@components/ui/sheet";
+import Switch from "@components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@components/ui/table";
+
+const sizes = ["sm", "md", "lg"] as const;
+const states = ["default", "error", "success"] as const;
+---
+
+{/* ── Tier 3 ───────────────────────────────────────────────────────────── */}
+<header class="flex flex-col gap-1">
+  <h2 class="h2">Tier 3</h2>
+  <p class="description">
+    Heavier interaction, native-first — &lt;dialog&gt;, &lt;details&gt;, native inputs.
+  </p>
+</header>
+
+{/* Select */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Select</h2>
+  <div class="grid max-w-3xl gap-6 sm:grid-cols-3">
+    {
+      states.map((state) => (
+        <div class="flex flex-col gap-4">
+          {sizes.map((size) => (
+            <Select size={size} state={state} aria-label={`${state} ${size} select`}>
+              <option value="">
+                {state}/{size}
+              </option>
+              <option value="a">Apple</option>
+              <option value="b">Banana</option>
+              <option value="c">Cherry</option>
+            </Select>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+  <Select class="max-w-xs" disabled aria-label="disabled select">
+    <option>disabled</option>
+  </Select>
+</section>
+
+<Separator />
+
+{
+  /* Checkbox / Radio — `id` + `<Label for>` association (clicking the label toggles the input).
+    Switch carries its own <label> root, so it just takes an aria-label. */
+}
+<section class="flex flex-col gap-6">
+  <h2 class="h3">Checkbox, Radio &amp; Switch</h2>
+  <div class="flex flex-wrap items-start gap-10">
+    <div class="flex flex-col gap-3">
+      <span class="text-muted-foreground text-sm font-medium">Checkbox</span>
+      <div class="flex items-center gap-2">
+        <Checkbox id="cb-1" checked />
+        <Label for="cb-1" size="sm">Checked</Label>
+      </div>
+      <div class="flex items-center gap-2">
+        <Checkbox id="cb-2" />
+        <Label for="cb-2" size="sm">Unchecked</Label>
+      </div>
+      <div class="flex items-center gap-2">
+        <Checkbox id="cb-3" disabled checked />
+        <Label for="cb-3" size="sm">Disabled</Label>
+      </div>
+    </div>
+    <fieldset class="flex flex-col gap-3">
+      <legend class="text-muted-foreground text-sm font-medium">Radio (shared name)</legend>
+      <div class="flex items-center gap-2">
+        <Radio id="rd-1" name="demo-radio" checked />
+        <Label for="rd-1" size="sm">Option one</Label>
+      </div>
+      <div class="flex items-center gap-2">
+        <Radio id="rd-2" name="demo-radio" />
+        <Label for="rd-2" size="sm">Option two</Label>
+      </div>
+      <div class="flex items-center gap-2">
+        <Radio id="rd-3" name="demo-radio" disabled />
+        <Label for="rd-3" size="sm">Disabled</Label>
+      </div>
+    </fieldset>
+    <div class="flex flex-col gap-3">
+      <span class="text-muted-foreground text-sm font-medium">Switch</span>
+      <Switch aria-label="On switch" checked />
+      <Switch aria-label="Off switch" />
+      <Switch aria-label="Disabled switch" disabled checked />
+    </div>
+  </div>
+</section>
+
+<Separator />
+
+{/* Dropdown */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Dropdown</h2>
+  <div class="flex flex-wrap items-start gap-4">
+    <Dropdown>
+      <DropdownTrigger for="dd-start" size="sm">Menu (start)</DropdownTrigger>
+      <DropdownMenu id="dd-start">
+        <DropdownItem href="#dropdown">Profile</DropdownItem>
+        <DropdownItem href="#dropdown">Settings</DropdownItem>
+        <Separator class="my-1" />
+        <DropdownItem>Sign out</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+    <Dropdown class="ml-auto">
+      <DropdownTrigger for="dd-end" size="sm" variant="ghost">Menu (end)</DropdownTrigger>
+      <DropdownMenu id="dd-end" align="end">
+        <DropdownItem href="#dropdown">Edit</DropdownItem>
+        <DropdownItem href="#dropdown">Duplicate</DropdownItem>
+        <DropdownItem disabled>Archive (disabled)</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  </div>
+</section>
+
+<Separator />
+
+{/* Dialog */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Dialog</h2>
+  <DialogTrigger for="demo-dialog">Open dialog</DialogTrigger>
+  <Dialog id="demo-dialog" aria-labelledby="demo-dialog-title" aria-describedby="demo-dialog-desc">
+    <DialogHeader>
+      <DialogTitle id="demo-dialog-title">Delete project</DialogTitle>
+      <DialogDescription id="demo-dialog-desc">
+        This permanently removes the project and its data. Click the backdrop, press Escape, or use
+        a button below to close.
+      </DialogDescription>
+    </DialogHeader>
+    <DialogFooter>
+      <DialogClose>Cancel</DialogClose>
+      <DialogClose variant="primary">Delete</DialogClose>
+    </DialogFooter>
+  </Dialog>
+</section>
+
+<Separator />
+
+{/* Sheet */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Sheet</h2>
+  <div class="flex flex-wrap items-center gap-3">
+    {
+      (["right", "left", "top", "bottom"] as const).map((side) => (
+        <SheetTrigger for={`demo-sheet-${side}`} variant="outline" size="sm">
+          Open {side}
+        </SheetTrigger>
+      ))
+    }
+  </div>
+  {
+    (["right", "left", "top", "bottom"] as const).map((side) => (
+      <Sheet id={`demo-sheet-${side}`} side={side} aria-label={`${side} sheet`}>
+        <DialogHeader>
+          <DialogTitle>Sheet ({side})</DialogTitle>
+          <DialogDescription>
+            A native &lt;dialog&gt; pinned to the {side} edge — same open/close controller as
+            Dialog.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <SheetClose>Close</SheetClose>
+        </DialogFooter>
+      </Sheet>
+    ))
+  }
+</section>
+
+<Separator />
+
+{/* Table */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Table</h2>
+  <Table>
+    <TableCaption>A list of recent invoices.</TableCaption>
+    <TableHeader>
+      <TableRow>
+        <TableHead scope="col">Invoice</TableHead>
+        <TableHead scope="col">Status</TableHead>
+        <TableHead scope="col">Method</TableHead>
+        <TableHead scope="col" class="text-right">Amount</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {
+        [
+          ["INV-001", "Paid", "Credit Card", "$250.00"],
+          ["INV-002", "Pending", "PayPal", "$150.00"],
+          ["INV-003", "Unpaid", "Bank Transfer", "$350.00"],
+        ].map(([id, status, method, amount]) => (
+          <TableRow>
+            <TableCell class="font-medium">{id}</TableCell>
+            <TableCell>
+              <Badge
+                variant={status === "Paid" ? "success" : status === "Pending" ? "warning" : "error"}
+              >
+                {status}
+              </Badge>
+            </TableCell>
+            <TableCell>{method}</TableCell>
+            <TableCell class="text-right">{amount}</TableCell>
+          </TableRow>
+        ))
+      }
+    </TableBody>
+    <TableFooter>
+      <TableRow>
+        <TableCell colspan={3}>Total</TableCell>
+        <TableCell class="text-right">$750.00</TableCell>
+      </TableRow>
+    </TableFooter>
+  </Table>
+</section>

@@ -25,4 +25,10 @@ prepare_auth "$TEST_DIR/env-run"
 test "${AUTH_DOCKER_ARGS[0]}" = -e
 test "${AUTH_DOCKER_ARGS[1]}" = API_KEY=test-api-key
 
+AUTH_MODE=none
+unset AUTH_ENV AUTH_VAL
+prepare_auth "$TEST_DIR/none-run"
+test "${#AUTH_DOCKER_ARGS[@]}" -eq 0
+test ! -f "$TEST_DIR/none-run/pi-home/.pi/agent/auth.json"
+
 echo "auth tests: ok"

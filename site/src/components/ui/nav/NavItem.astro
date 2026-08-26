@@ -1,0 +1,17 @@
+---
+// src/components/ui/nav/NavItem.astro — Nav compound part (see ../README.md).
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"li"> & VariantProps<typeof navItem>;
+
+export const navItem = tv({
+  base: ["inline-flex items-center"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<li class={navItem({ class: className })} data-slot="nav-item" {...rest}>
+  <slot />
+</li>

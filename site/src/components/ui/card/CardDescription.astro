@@ -1,0 +1,15 @@
+---
+// src/components/ui/card/CardDescription.astro — Card compound part (see ../README.md).
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"p"> & VariantProps<typeof cardDescription>;
+
+export const cardDescription = tv({
+  base: ["text-muted-foreground text-sm"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<p class={cardDescription({ class: className })} data-slot="card-description" {...rest}><slot /></p>

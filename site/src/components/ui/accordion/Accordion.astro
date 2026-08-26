@@ -1,0 +1,20 @@
+---
+// src/components/ui/accordion/Accordion.astro — astro-boiler primitive (see ../README.md).
+// Zero-JS disclosure group on native <details>/<summary>. Compose AccordionItem /
+// AccordionTrigger / AccordionContent. For "one open at a time", give every AccordionItem the same
+// `name` (native exclusive-accordion behavior). Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof accordion>;
+
+export const accordion = tv({
+  base: ["border-border w-full border-t"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={accordion({ class: className })} data-slot="accordion" {...rest}>
+  <slot />
+</div>

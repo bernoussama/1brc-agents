@@ -1,0 +1,384 @@
+/**
+ * * Motion catalog — the template's owned animation vocabulary.
+ *
+ * A dependency-free port of `tailwind-animations` (Tailwind v4 CSS-first), adapted to
+ * astro-boiler's conventions. We OWN this rather than adding the package: same rung as the
+ * Marquee keyframes in `tailwind-theme.css` — a keyframe library is content, not infrastructure,
+ * and the template's ethos is self-contained + vendor-free (see AGENTS.md: motion is owned).
+ *
+ * Upstream: tailwind-animations © Miguel Ángel Durán (@midudev) & community — MIT.
+ * https://tailwind-animations.com · https://github.com/midudev/tailwind-animations
+ * Ported verbatim except: (1) `--animate-pulse` dropped — identical to Tailwind's built-in
+ * `animate-pulse` (used by Skeleton); (2) a global `prefers-reduced-motion` guard added at the
+ * bottom (the upstream ships none — non-negotiable a11y here); (3) an owned scroll-driven
+ * extension — keyframes shaped for timeline scrubbing (`progress`, `parallax-*`, `ken-burns`,
+ * `fade-through`, `wipe-in-*`), named-timeline utilities, and a `@supports` fallback guard.
+ *
+ * Every `--animate-*` becomes an `animate-*` utility (e.g. `animate-fade-in-up`), tunable with the
+ * modifier utilities below (`animate-duration-*`, `animate-delay-*`, `animate-bezier-*`,
+ * `animate-iteration-count-*`, `animate-range-*`, `timeline-view` …). Class names match the website
+ * so its docs apply 1:1. The Marquee's `--animate-marquee*` stays in `tailwind-theme.css`.
+ *
+ * This file is the entry + tunable vocabulary: value tokens, the `--animate-*` shorthands, the
+ * modifier `@utility`s, and the reduced-motion guard. The ~80 `@keyframes` those shorthands
+ * reference are the bulk of the catalog, so they live in the sibling `./keyframes.css`, imported
+ * below (kept in `@theme` there so Tailwind still tree-shakes them).
+ *
+ * Imported (once) from `global.css` (`@import "./motion/index.css"`) after Tailwind + the theme file.
+ */
+
+@import "./keyframes.css";
+
+@theme inline {
+  /* Animation Delay Values — `tw-anim-` prefix avoids clashing with Tailwind's transition `delay-*` */
+  --tw-anim-delay-none: 0ms;
+  --tw-anim-delay-0: 0ms;
+  --tw-anim-delay-100: 100ms;
+  --tw-anim-delay-150: 150ms;
+  --tw-anim-delay-200: 200ms;
+  --tw-anim-delay-250: 250ms;
+  --tw-anim-delay-300: 300ms;
+  --tw-anim-delay-400: 400ms;
+  --tw-anim-delay-500: 500ms;
+  --tw-anim-delay-700: 700ms;
+  --tw-anim-delay-800: 800ms;
+  --tw-anim-delay-900: 900ms;
+  --tw-anim-delay-1000: 1000ms;
+
+  /* Animation Duration Values */
+  --tw-anim-duration-none: 0ms;
+  --tw-anim-duration-slower: 500ms;
+  --tw-anim-duration-slow: 400ms;
+  --tw-anim-duration-normal: 300ms;
+  --tw-anim-duration-fast: 200ms;
+  --tw-anim-duration-faster: 100ms;
+  --tw-anim-duration-0: 0ms;
+  --tw-anim-duration-100: 100ms;
+  --tw-anim-duration-150: 150ms;
+  --tw-anim-duration-200: 200ms;
+  --tw-anim-duration-250: 250ms;
+  --tw-anim-duration-300: 300ms;
+  --tw-anim-duration-400: 400ms;
+  --tw-anim-duration-500: 500ms;
+  --tw-anim-duration-700: 700ms;
+  --tw-anim-duration-800: 800ms;
+  --tw-anim-duration-900: 900ms;
+  --tw-anim-duration-1000: 1000ms;
+
+  /* Animation Iteration Count Values */
+  --tw-anim-iteration-count-none: 0;
+  --tw-anim-iteration-count-once: 1;
+  --tw-anim-iteration-count-twice: 2;
+  --tw-anim-iteration-count-thrice: 3;
+  --tw-anim-iteration-count-infinite: infinite;
+
+  /* Animation Fill Mode Values */
+  --tw-anim-fill-mode-none: none;
+  --tw-anim-fill-mode-forwards: forwards;
+  --tw-anim-fill-mode-backwards: backwards;
+  --tw-anim-fill-mode-both: both;
+
+  /* Animation Steps Values */
+  --tw-anim-steps-none: 0;
+  --tw-anim-steps-retro: 8;
+  --tw-anim-steps-normal: 16;
+  --tw-anim-steps-modern: 24;
+
+  /* Animation Cubic Bezier Values */
+  --tw-anim-bezier-sine-in: cubic-bezier(0.12, 0, 0.39, 0);
+  --tw-anim-bezier-sine-out: cubic-bezier(0.39, 0.575, 0.565, 1);
+  --tw-anim-bezier-sine-in-out: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+  --tw-anim-bezier-quad-in: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  --tw-anim-bezier-quad-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --tw-anim-bezier-quad-in-out: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  --tw-anim-bezier-cubic-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  --tw-anim-bezier-cubic-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --tw-anim-bezier-cubic-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --tw-anim-bezier-quart-in: cubic-bezier(0.895, 0.03, 0.685, 0.22);
+  --tw-anim-bezier-quart-out: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --tw-anim-bezier-quart-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --tw-anim-bezier-quint-in: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+  --tw-anim-bezier-quint-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --tw-anim-bezier-quint-in-out: cubic-bezier(0.86, 0, 0.07, 1);
+  --tw-anim-bezier-expo-in: cubic-bezier(0.95, 0.05, 0.795, 0.035);
+  --tw-anim-bezier-expo-out: cubic-bezier(0.19, 1, 0.22, 1);
+  --tw-anim-bezier-expo-in-out: cubic-bezier(1, 0, 0, 1);
+  --tw-anim-bezier-circ-in: cubic-bezier(0.6, 0.04, 0.98, 0.335);
+  --tw-anim-bezier-circ-out: cubic-bezier(0.075, 0.82, 0.165, 1);
+  --tw-anim-bezier-circ-in-out: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+  --tw-anim-bezier-back-in: cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  --tw-anim-bezier-back-out: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --tw-anim-bezier-back-in-out: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Animation Range Values */
+  --tw-anim-range-normal: normal;
+  --tw-anim-range-cover: cover;
+  --tw-anim-range-contain: contain;
+  --tw-anim-range-entry: entry;
+  --tw-anim-range-exit: exit;
+  --tw-anim-range-gradual: 10% 90%;
+  --tw-anim-range-moderate: 20% 80%;
+  --tw-anim-range-brisk: 30% 70%;
+  --tw-anim-range-rapid: 40% 60%;
+
+  /* Timeline Values (native scroll-driven animation — powers <Reveal>) */
+  --tw-timeline-none: none;
+  --tw-timeline-auto: auto;
+  --tw-timeline-scroll: scroll();
+  --tw-timeline-scroll-x: scroll(x);
+  --tw-timeline-scroll-y: scroll(y);
+  --tw-timeline-scroll-block: scroll(block);
+  --tw-timeline-scroll-inline: scroll(inline);
+  --tw-timeline-view: view();
+  --tw-timeline-view-x: view(x);
+  --tw-timeline-view-y: view(y);
+  --tw-timeline-view-block: view(block);
+  --tw-timeline-view-inline: view(inline);
+
+  /* Scroll/View Timeline Axis Values */
+  --tw-scroll-timeline-axis-block: block;
+  --tw-scroll-timeline-axis-inline: inline;
+  --tw-scroll-timeline-axis-x: x;
+  --tw-scroll-timeline-axis-y: y;
+  --tw-view-timeline-axis-block: block;
+  --tw-view-timeline-axis-inline: inline;
+  --tw-view-timeline-axis-x: x;
+  --tw-view-timeline-axis-y: y;
+
+  /* ============================================
+     Predefined Animations  (→ `animate-<name>` utilities)
+     ============================================ */
+
+  --animate-blurred-fade-in: blurred-fade-in 0.9s ease-in-out both;
+  --animate-fade-in: fade-in 0.6s ease-in both;
+  --animate-fade-out: fade-out 0.6s ease-out both;
+  --animate-slide-in-top: slide-in-top 0.6s ease-out both;
+  --animate-slide-in-bottom: slide-in-bottom 0.6s ease-out both;
+  --animate-slide-out-top: slide-out-top 0.6s ease-out both;
+  --animate-slide-out-bottom: slide-out-bottom 0.6s ease-out both;
+  --animate-zoom-in: zoom-in 0.6s ease-out both;
+  --animate-zoom-out: zoom-out 0.6s ease-out both;
+  --animate-rotate-90: rotate-90 1s ease-in-out both;
+  --animate-rotate-180: rotate-180 1s ease-in-out both;
+  --animate-rotate-360: rotate-360 1s linear both;
+  --animate-flip-horizontal: flip-horizontal 1s ease-in-out both;
+  --animate-flip-vertical: flip-vertical 1s ease-in-out both;
+  --animate-bouncing: bouncing 1s ease-in-out both;
+  --animate-swing: swing 1s ease-in-out both;
+  --animate-wobble: wobble 1s ease-in-out both;
+  --animate-pulsing: pulsing 1s ease-in-out both;
+  --animate-shake: shake 0.5s ease-in-out both;
+  --animate-tada: tada 1s ease-in-out both;
+  --animate-jump: jump 1s ease-in-out both;
+  --animate-hang: hang 1s ease-in-out both;
+  --animate-roll-in: roll-in 1s ease-in-out both;
+  --animate-roll-out: roll-out 1s ease-in-out both;
+  --animate-float: float 1s ease-in-out both;
+  --animate-sink: sink 1s ease-in-out both;
+  --animate-flash: flash 1s ease-in-out both;
+  --animate-jiggle: jiggle 0.5s ease-in-out both;
+  --animate-rubber-band: rubber-band 1s ease-in-out both;
+  --animate-scale: scale 0.6s ease-out both;
+  --animate-slide-in-left: slide-in-left 0.6s ease-out both;
+  --animate-slide-in-right: slide-in-right 0.6s ease-out both;
+  --animate-slide-out-left: slide-out-left 0.6s ease-out both;
+  --animate-slide-out-right: slide-out-right 0.6s ease-out both;
+  --animate-spin-clockwise: spin-clockwise 0.6s linear both;
+  --animate-spin-counter-clockwise: spin-counter-clockwise 0.6s linear both;
+  --animate-flip-x: flip-x 0.6s ease-out both;
+  --animate-flip-y: flip-y 0.6s ease-out both;
+  --animate-blink: blink 0.5s both;
+  --animate-pop: pop 0.6s ease-out both;
+  --animate-expand-horizontally: expand-horizontally 0.6s ease-out both;
+  --animate-contract-horizontally: contract-horizontally 0.6s ease-out both;
+  --animate-expand-vertically: expand-vertically 0.6s ease-out both;
+  --animate-contract-vertically: contract-vertically 0.6s ease-out both;
+  --animate-fade-in-up: fade-in-up 0.6s ease-in-out both;
+  --animate-fade-in-down: fade-in-down 0.6s ease-in-out both;
+  --animate-fade-in-left: fade-in-left 0.6s ease-in-out both;
+  --animate-fade-in-right: fade-in-right 0.6s ease-in-out both;
+  --animate-fade-out-up: fade-out-up 0.6s ease-out both;
+  --animate-fade-out-down: fade-out-down 0.6s ease-out both;
+  --animate-fade-out-left: fade-out-left 0.6s ease-out both;
+  --animate-fade-out-right: fade-out-right 0.6s ease-out both;
+  --animate-sway: sway 0.6s ease-out both;
+  --animate-flip-in-x: flip-in-x 0.6s ease-out both;
+  --animate-flip-in-y: flip-in-y 0.6s ease-out both;
+  --animate-flip-out-x: flip-out-x 0.6s ease-out both;
+  --animate-flip-out-y: flip-out-y 0.6s ease-out both;
+  --animate-rotate-in: rotate-in 0.6s ease-out both;
+  --animate-rotate-out: rotate-out 0.6s ease-out both;
+  --animate-slide-rotate-in: slide-rotate-in 0.6s ease-out both;
+  --animate-slide-rotate-out: slide-rotate-out 0.6s ease-out both;
+  --animate-heartbeat: heartbeat 0.6s ease-out both;
+  --animate-horizontal-vibration: horizontal-vibration 0.3s linear infinite both;
+  --animate-rotational-wave: rotational-wave 2s ease-in-out infinite both;
+  --animate-skew: skew 0.5s ease-in-out both;
+  --animate-skew-right: skew-right 0.5s ease-in-out both;
+  --animate-vertical-bounce: vertical-bounce 0.6s ease-in-out both;
+  --animate-horizontal-bounce: horizontal-bounce 0.6s ease-in-out both;
+  --animate-tilt: tilt 0.6s ease-in-out both;
+  --animate-squeeze: squeeze 0.6s ease-in-out both;
+  --animate-slide-up-fade: slide-up-fade 0.6s ease-out both;
+  --animate-bounce-fade-in: bounce-fade-in 0.6s ease-out both;
+  --animate-swing-drop-in: swing-drop-in 0.6s ease-out both;
+  --animate-pulse-fade-in: pulse-fade-in 0.6s ease-out both;
+  --animate-impulse-rotation-right: impulse-rotation-right 1s ease-in-out both;
+  --animate-impulse-rotation-left: impulse-rotation-left 1s ease-in-out both;
+  --animate-dancing: dancing 1s ease-in-out both;
+  --animate-jelly: jelly 1s ease-out forwards;
+  /* NOTE: upstream `--animate-pulse` is intentionally omitted — it is identical to Tailwind's
+     built-in `animate-pulse` (used by the Skeleton primitive). Use `animate-pulse` directly. */
+
+  /* ---- Scroll-driven extension (ours, not upstream) — designed for `timeline-*` scrubbing.
+     `linear` on purpose: a scrubbed animation should map scroll progress 1:1 (the "easing" is the
+     user's scroll). Duration is inert once a timeline is attached; it only matters for the
+     time-based fallback. Anything driven by `timeline-*` must also carry
+     `motion-reduce:animate-none` — the reduced-motion guard below zeroes *time*, which cannot
+     stop a scroll-progressed animation. Scroll-only entries (non-identity end state) are listed
+     in the `@supports` guard at the bottom. */
+  --animate-progress: progress 1s linear both;
+  --animate-parallax-up: parallax-up 1s linear both;
+  --animate-parallax-down: parallax-down 1s linear both;
+  --animate-ken-burns: ken-burns 1s linear both;
+  --animate-fade-through: fade-through 1s linear both;
+  --animate-wipe-in-up: wipe-in-up 0.6s ease-out both;
+  --animate-wipe-in-down: wipe-in-down 0.6s ease-out both;
+  --animate-wipe-in-left: wipe-in-left 0.6s ease-out both;
+  --animate-wipe-in-right: wipe-in-right 0.6s ease-out both;
+}
+
+/* ============================================
+   Modifier utilities — tune any `animate-*` (names match tailwind-animations.com docs 1:1)
+   ============================================ */
+
+@utility animate-delay-* {
+  animation-delay: calc(--value(integer) * 1ms);
+  animation-delay: --value(--tw-anim-delay-*, [duration], [*]);
+}
+
+@utility animate-duration-* {
+  animation-duration: calc(--value(integer) * 1ms);
+  animation-duration: --value(--tw-anim-duration-*, [duration], [*]);
+}
+
+@utility animate-iteration-count-* {
+  animation-iteration-count: --value(--tw-anim-iteration-count-*, number, [number], [*]);
+}
+
+@utility animate-fill-mode-* {
+  animation-fill-mode: --value(--tw-anim-fill-mode-*, [*]);
+}
+
+@utility animate-steps-* {
+  animation-timing-function: steps(--value(--tw-anim-steps-*, integer, [integer]));
+}
+
+@utility animate-ease {
+  animation-timing-function: ease;
+}
+@utility animate-ease-in {
+  animation-timing-function: ease-in;
+}
+@utility animate-ease-out {
+  animation-timing-function: ease-out;
+}
+@utility animate-ease-in-out {
+  animation-timing-function: ease-in-out;
+}
+@utility animate-linear {
+  animation-timing-function: linear;
+}
+
+@utility animate-bezier-* {
+  animation-timing-function: --value(--tw-anim-bezier-*, [*]);
+}
+
+@utility animate-direction-normal {
+  animation-direction: normal;
+}
+@utility animate-direction-reverse {
+  animation-direction: reverse;
+}
+@utility animate-direction-alternate {
+  animation-direction: alternate;
+}
+@utility animate-direction-alternate-reverse {
+  animation-direction: alternate-reverse;
+}
+
+@utility animate-play-running {
+  animation-play-state: running;
+}
+@utility animate-play-paused {
+  animation-play-state: paused;
+}
+
+@utility timeline-* {
+  animation-timeline: --value(--tw-timeline-*, [ident], [*]) !important;
+}
+
+@utility scroll-timeline-axis-* {
+  scroll-timeline-axis: --value(--tw-scroll-timeline-axis-*, [ident], [*]);
+}
+
+@utility view-timeline-axis-* {
+  view-timeline-axis: --value(--tw-view-timeline-axis-*, [ident], [*]);
+}
+
+/* Named timelines (ours, not upstream) — drive an animation from ANOTHER element's scroll/visibility.
+   Declare on the tracked element (`view-timeline-name-[--article]`), hoist with
+   `timeline-scope-[--article]` on a common ancestor, consume anywhere in that scope with the existing
+   `timeline-[--article]`. Canonical use: a fixed reading-progress bar tracking an article. */
+@utility scroll-timeline-name-* {
+  scroll-timeline-name: --value([ident], [*]);
+}
+
+@utility view-timeline-name-* {
+  view-timeline-name: --value([ident], [*]);
+}
+
+@utility timeline-scope-* {
+  timeline-scope: --value([ident], [*]);
+}
+
+@utility animate-range-* {
+  animation-range: --value(--tw-anim-range-*, [*]);
+}
+
+/* ============================================
+   Scroll-timeline support guard — where scroll timelines are unsupported (Firefox), an
+   `animation-timeline` declaration is dropped and the animation runs once, time-based. That is fine
+   for entrances (they end at identity — content ends visible; this is <Reveal>'s documented
+   degradation) but NOT for the scroll-only shapes: a played-once parallax leaves content offset and
+   fade-through ends invisible. So those are inert here instead. `progress` is exempt — its identity
+   end state (a full bar) is exactly what `animation: none` would render anyway.
+   ponytail: substring match so variant-prefixed uses (`md:animate-parallax-up`) are covered; the
+   ceiling is a false positive on any future class *containing* one of these names. Add new
+   scroll-only animations to this list.
+   ============================================ */
+@supports not (animation-timeline: view()) {
+  [class*="animate-parallax-up"],
+  [class*="animate-parallax-down"],
+  [class*="animate-ken-burns"],
+  [class*="animate-fade-through"] {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   Reduced-motion guard — NOT in the upstream library; added here because a11y is non-negotiable.
+   Near-zero (not `none`) durations so `animationend`/`transitionend` listeners still fire; also
+   neutralizes `scroll-behavior: smooth` (set on <html> in global.css). This is the single global
+   source for reduced-motion resets — individual primitives keep their `motion-reduce:` for clarity.
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

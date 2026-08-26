@@ -1,0 +1,36 @@
+---
+title: "1BRC-Agents"
+cardTitle: "1BRC-Agents Benchmark"
+description: "Pinned-sandbox eval where coding agents optimize the One Billion Row Challenge fully autonomously."
+tagline: "Lock a model in a Docker box with a billion temperatures. Score the binary it leaves behind."
+status: "in-progress"
+moduleId: "#01_1BRC"
+order: 1
+thumbnail: "../../../assets/images/demo/project-1brc-agents.png"
+thumbnailAlt: "Pixel-art CLI quest thumbnail representing the 1BRC-Agents harness"
+tech: ["Docker", "pi", "Bash", "Python", "C"]
+specs:
+  - { label: "Task", value: "1BRC Round A" }
+  - { label: "Judge", value: "Median of 5" }
+  - { label: "Sandbox", value: "Pinned image" }
+  - { label: "Network", value: "API allowlist" }
+features:
+  - lead: "Frozen verifier"
+    text: "Byte-exact output match on a held-out 1B-row volume after warmup."
+  - lead: "Headless agent loop"
+    text: "program.md plus one goal message; no human steering mid-run."
+  - lead: "Public traces"
+    text: "Manifests, events.jsonl, and submissions published per configuration."
+archCaption: "[Compile → Verify → Measure → Replace]"
+challenge:
+  title: "Threat: Soft Autonomy"
+  body: "Models invent candidates but leak the budget — sleeping, trusting wall clocks, or emitting a tool-less stop while a background shell is supposed to keep working."
+solution:
+  title: "Remedy: Harness Clocks"
+  body: "1brc-remaining-time, 1brc-resources, and 1brc-bounded make the budget and cgroup quota first-class. Scoring only sees the binary left on disk."
+---
+
+1BRC-Agents adapts the Prime Intellect autonomous-research harness pattern to a
+CPU systems task. Agents iterate against a 10M-row development file inside a
+pinned sandbox; after the agent exits, the same container scores the submission
+on the held-out billion-row dataset.

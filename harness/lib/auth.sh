@@ -36,8 +36,13 @@ prepare_auth() {
       [ -n "$AUTH_VAL" ] || { echo "missing host credential in \$$AUTH_ENV" >&2; return 1; }
       AUTH_DOCKER_ARGS=(-e "${AUTH_ENV}=${AUTH_VAL}")
       ;;
+    none)
+      # Keyless providers (e.g. OpenCode Zen free models). No host secret is
+      # injected; models.json must not send a non-empty Authorization bearer.
+      AUTH_DOCKER_ARGS=()
+      ;;
     *)
-      echo "profile must set AUTH_MODE=file or AUTH_MODE=env" >&2
+      echo "profile must set AUTH_MODE=file, AUTH_MODE=env, or AUTH_MODE=none" >&2
       return 1
       ;;
   esac

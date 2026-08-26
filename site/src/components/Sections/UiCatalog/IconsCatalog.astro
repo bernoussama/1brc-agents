@@ -1,0 +1,34 @@
+---
+// src/components/UiCatalog/IconsCatalog.astro — DEV-ONLY. The "Icons" section of the UI catalog
+// (the full <Icon> set ported from Figma "Stratis UI Icons"), extracted from UiCatalog.astro so the
+// grid owns its own markup instead of enlarging the catalog monolith. Rendered by UiCatalog; 404s
+// out of prod with it. Root is a <section> so it slots into the catalog's flex-col-gap-14 flow unchanged.
+import { Icon, iconNames } from "@components/svg/icons";
+---
+
+{/* Icons — ported from Figma "Stratis UI Icons" (General set) */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Icons <span class="text-base-500 text-sm">({iconNames.length})</span></h2>
+  <p class="description">
+    currentColor + <code>size-*</code> — recolor with any <code>text-*</code> token.
+  </p>
+  <div class="flex flex-wrap gap-4">
+    <Icon name="heart" class="text-primary" size="lg" />
+    <Icon name="settings" class="text-success" size="lg" />
+    <Icon name="trash-01" class="text-error" size="lg" />
+    <Icon name="search-01" class="text-muted-foreground" size="lg" />
+  </div>
+  <div class="text-muted-foreground grid grid-cols-[repeat(auto-fill,minmax(5rem,1fr))] gap-2">
+    {
+      iconNames.map((n) => (
+        <div
+          class="border-border flex flex-col items-center gap-1.5 rounded-md border p-2 text-center"
+          title={n}
+        >
+          <Icon name={n} size="lg" />
+          <span class="text-base-500 w-full truncate text-[10px]">{n}</span>
+        </div>
+      ))
+    }
+  </div>
+</section>

@@ -1,0 +1,41 @@
+---
+// src/components/Sections/Global/HeroPanel.astro — the shared page-hero panel (Figma "Hero Panel").
+//
+// Every page opens with the same shell: a pixel Badge tag, the page H1, an optional intro line, and
+// page-specific extras (CTAs, bio, a Scoreboard). Extracted so the five page heroes — Home, About,
+// Contact, Blog, Projects — can't drift: the panel classes, the aria wiring, and the intro
+// paragraph's tokens live here in ONE place (the same move Scoreboard/CardGrid made). Above the fold
+// on every page, so NO <Reveal>. Tokens only, so the light theme flips for free.
+//
+// The three simple heroes (Contact/Blog/Projects) pass just tagline + heading + intro. Home and
+// About pass their CTAs / bio / Scoreboard through the default <slot>; About omits `intro` because
+// its body is a multi-paragraph bio, not a single line.
+import { Badge } from "@components/ui/badge";
+import { PixelPanel } from "@components/ui/pixel-panel";
+
+interface Props {
+  /** the bracketed retro tag rendered in the pixel Badge (e.g. "Player 1", "Mission Control"). */
+  tagline: string;
+  heading: string;
+  /** id the panel's `aria-labelledby` points at; also the H1's id. Unique per page. */
+  headingId: string;
+  /** single intro paragraph; omit when the page supplies its own body via the slot (About's bio). */
+  intro?: string;
+}
+const { tagline, heading, headingId, intro } = Astro.props as Props;
+---
+
+<PixelPanel
+  as="section"
+  elevated
+  aria-labelledby={headingId}
+  class="flex flex-col items-start gap-4 p-6 sm:p-8 md:p-9"
+>
+  <Badge pixel variant="info">{tagline}</Badge>
+
+  <h1 id={headingId} class="h1 text-info text-balance">{heading}</h1>
+
+  {intro && <p class="text-muted-foreground max-w-3xl text-base text-balance">{intro}</p>}
+
+  <slot />
+</PixelPanel>

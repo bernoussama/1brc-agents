@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-RESOURCE_TOOL="$ROOT/sandbox/tools/resources.py"
-BOUNDED_TOOL="$ROOT/sandbox/tools/1brc-bounded"
+RESOURCE_TOOL="$ROOT/task/tools/resources.py"
+BOUNDED_TOOL="$ROOT/task/tools/1brc-bounded"
 
 RESULT="$(ONEBRC_CPU_QUOTA=6 ONEBRC_MEMORY_LIMIT=16g python3 "$RESOURCE_TOOL")"
 python3 - "$RESULT" <<'PY'
@@ -40,7 +40,7 @@ grep -Fq -- "1brc-resources" "$ROOT/harness/run_session.sh"
 grep -Fq -- "1brc-bounded" "$ROOT/harness/run_session.sh"
 grep -Fq -- "EXPERIMENT_MAX_SEC" "$ROOT/harness/run_session.sh"
 grep -Fq -- "stopping unwrapped agent command" "$ROOT/harness/run_session.sh"
-grep -Fq -- "1brc-resources" "$ROOT/sandbox/program.md"
-grep -Fq -- "1brc-bounded" "$ROOT/sandbox/program.md"
+grep -Fq -- "1brc-resources" "$ROOT/task/program.md"
+grep -Fq -- "1brc-bounded" "$ROOT/task/program.md"
 
 echo "resource telemetry and bounded cleanup: ok"

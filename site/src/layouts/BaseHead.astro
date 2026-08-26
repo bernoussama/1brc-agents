@@ -1,0 +1,142 @@
+---
+/**
+ * <head> contents: meta, SEO/OG/Twitter tags, JSON-LD structured data, theme bootstrap,
+ * and the view-transitions router. Native tags only — no SEO dependency.
+ * SEO is owned, not vendored — see AGENTS.md.
+ */
+import siteData from "@config/siteData.json";
+import { siteLocale, siteSettings } from "@config/siteSettings.json";
+import pressStart2p from "@fontsource/press-start-2p/files/press-start-2p-latin-400-normal.woff2";
+import spaceMono from "@fontsource/space-mono/files/space-mono-latin-400-normal.woff2";
+import { getSiteSchema, type SeoProps, serializeJsonLd } from "@js/schema";
+import { ClientRouter } from "astro:transitions";
+
+interface Props extends SeoProps {
+  title: string;
+  description: string;
+  image?: ImageMetadata;
+  noindex?: boolean;
+}
+
+const { title, description, image, noindex = false, schema, article } = Astro.props as Props;
+
+// resolve canonical + social image to absolute URLs (Astro.site is set in astro.config.mjs)
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const socialImage = new URL(image?.src ?? siteData.defaultImage.src, Astro.site);
+const imageAlt = image ? title : siteData.defaultImage.alt;
+// og:image dims — real dims for a bundled image, else the 1200×630 OG convention (defaultImage should match)
+const imageWidth = image?.width ?? 1200;
+const imageHeight = image?.height ?? 630;
+
+// OG locale wants `language_TERRITORY` (underscore); siteLocale holds BCP-47 (`en-US`)
+const ogLocale = siteLocale.replace("-", "_");
+
+// Structured data: a site-level graph (Organization + WebSite) on every page, plus any
+// page-specific nodes (Article, BreadcrumbList) passed via `schema`. See @js/schema.
+const siteNodes = getSiteSchema({
+  name: siteData.name,
+  url: canonicalURL.href,
+  description: siteData.description,
+  inLanguage: siteLocale,
+  // ponytail: placeholder logo = the default OG image; swap for a real brand logo before deploy.
+  logo: new URL(siteData.defaultImage.src, canonicalURL).href,
+  sameAs: siteData.sameAs,
+});
+const jsonLd = serializeJsonLd([...siteNodes, ...(schema ?? [])]);
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="generator" content={Astro.generator} />
+
+<!-- preload the two above-the-fold faces (pixel headings + mono body) for faster first paint -->
+<link rel="preload" href={pressStart2p} as="font" type="font/woff2" crossorigin="anonymous" />
+<link rel="preload" href={spaceMono} as="font" type="font/woff2" crossorigin="anonymous" />
+
+<!-- favicons (replace the defaults in /public) -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title={`${siteData.name} — Blog`}
+  href="/rss.xml"
+/>
+
+<!-- SEO -->
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalURL} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<!-- Open Graph -->
+<meta property="og:type" content={article ? "article" : "website"} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:site_name" content={siteData.name} />
+<meta property="og:locale" content={ogLocale} />
+<meta property="og:image" content={socialImage} />
+<meta property="og:image:alt" content={imageAlt} />
+<meta property="og:image:width" content={`${imageWidth}`} />
+<meta property="og:image:height" content={`${imageHeight}`} />
+
+{
+  article && (
+    <>
+      <meta property="article:published_time" content={article.published.toISOString()} />
+      {article.modified && (
+        <meta property="article:modified_time" content={article.modified.toISOString()} />
+      )}
+      {article.author && <meta property="article:author" content={article.author} />}
+    </>
+  )
+}
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={socialImage} />
+<meta name="twitter:image:alt" content={imageAlt} />
+{siteData.author.twitter && <meta name="twitter:creator" content={`@${siteData.author.twitter}`} />}
+
+<!-- structured data (schema.org JSON-LD) — is:inline: raw data block, not a processed script -->
+{jsonLd && <script type="application/ld+json" is:inline set:html={jsonLd} />}
+
+<!-- Set theme before paint to avoid a flash of the wrong color theme -->
+<script is:inline>
+  // A saved pick (from the ThemeToggle primitive) wins; otherwise the site follows the device color
+  // scheme. Kept INLINE and pre-paint on purpose — moving it to a bundled <script> reintroduces a
+  // flash of the wrong theme (see CLAUDE.md). ThemeToggle writes localStorage "colorTheme".
+  // Reads localStorage defensively: accessing it throws in a sandboxed iframe or when site data is
+  // blocked, and this runs pre-paint at the top level — an unguarded throw would also skip the
+  // listeners below. Degrade to the device preference (the pre-toggle behavior) instead.
+  function savedTheme() {
+    try {
+      return localStorage.getItem("colorTheme"); // "light" | "dark" | null
+    } catch {
+      return null;
+    }
+  }
+
+  function initTheme() {
+    const saved = savedTheme();
+    const dark = saved
+      ? saved === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.classList.toggle("dark", dark);
+  }
+
+  initTheme();
+  // follow live OS / browser color-scheme changes — but only while the user hasn't pinned a choice
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (!savedTheme()) initTheme();
+  });
+  // re-run after view-transition navigations
+  document.addEventListener("astro:after-swap", initTheme);
+</script>
+
+{siteSettings.useViewTransitions && <ClientRouter fallback="none" />}

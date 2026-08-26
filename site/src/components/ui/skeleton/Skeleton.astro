@@ -1,0 +1,16 @@
+---
+// src/components/ui/skeleton/Skeleton.astro — astro-boiler primitive (see ../README.md).
+// Decorative loading placeholder; size it via the consumer's `class`. Respects motion-reduce.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof skeleton>;
+
+export const skeleton = tv({
+  base: ["bg-muted animate-pulse rounded-md motion-reduce:animate-none"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={skeleton({ class: className })} data-slot="skeleton" aria-hidden="true" {...rest}></div>

@@ -1,0 +1,34 @@
+---
+// src/components/ui/textarea/Textarea.astro — astro-boiler primitive (see ../README.md).
+// Native <textarea>; mirrors Input's size + validation `state`. `peer` for sibling label/message.
+//
+// A textarea's value is its CONTENT, not a `value` attribute. So `value` is accepted as a prop and
+// written as content via `set:text`, mirroring `<Input value={…} />`. Two reasons not to take it as
+// children instead: `set:text` keeps call sites out of a whitespace trap (children spread over
+// several lines put those newlines *inside* the element, where they become part of the submitted
+// value), and it leaves exactly one way to set the value.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+import { fieldBase, fieldState } from "../_field";
+
+type Props = HTMLAttributes<"textarea"> & VariantProps<typeof textarea>;
+
+export const textarea = tv({
+  base: [...fieldBase, "min-h-20 py-2"],
+  variants: {
+    size: { sm: "px-2 text-sm", md: "px-3 text-base", lg: "px-4 text-lg" },
+    state: fieldState,
+  },
+  defaultVariants: { size: "md", state: "default" },
+});
+
+const { size, state, class: className, value, ...rest } = Astro.props;
+---
+
+<textarea
+  class={textarea({ size, state, class: className })}
+  data-slot="textarea"
+  {...rest}
+  set:text={value ?? ""}
+/>

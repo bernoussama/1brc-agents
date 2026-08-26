@@ -20,7 +20,10 @@ function envInteger(name, fallback, minimum, maximum) {
 
 const PORT = envInteger("PROXY_PORT", 3128, 1, 65535);
 const CONNECT_TIMEOUT_MS = envInteger("PROXY_CONNECT_TIMEOUT_MS", 10000, 100, 300000);
-const IDLE_TIMEOUT_MS = envInteger("PROXY_IDLE_TIMEOUT_MS", 120000, 1000, 3600000);
+// 0 disables idle timeouts. A 2-minute default previously killed live Cursor
+// CONNECT tunnels while the model thought or ran local tools, which then
+// surfaced to pi as errorMessage "terminated".
+const IDLE_TIMEOUT_MS = envInteger("PROXY_IDLE_TIMEOUT_MS", 0, 0, 14400000);
 const MAX_CONNECTIONS = envInteger("PROXY_MAX_CONNECTIONS", 256, 1, 10000);
 // Optional fixed TCP bridge for a host-local model service. This is deliberately
 // an exact host/port mapping; it is not a general CONNECT or port-forwarding
@@ -70,6 +73,14 @@ function log(entry) {
   process.stdout.write(`${JSON.stringify(entry)}\n`);
 }
 
+function applyIdleTimeout(socket, onIdle) {
+  if (IDLE_TIMEOUT_MS > 0) {
+    socket.setTimeout(IDLE_TIMEOUT_MS, onIdle);
+  } else {
+    socket.setTimeout(0);
+  }
+}
+
 function createProxyServer() {
   const server = http.createServer((req, res) => {
     // Plain HTTP is denied outright — HTTPS only via CONNECT.
@@ -78,13 +89,17 @@ function createProxyServer() {
   });
 
   server.maxConnections = MAX_CONNECTIONS;
-  server.requestTimeout = IDLE_TIMEOUT_MS;
-  server.headersTimeout = IDLE_TIMEOUT_MS;
-  server.keepAliveTimeout = IDLE_TIMEOUT_MS;
-
-  server.on("connection", (socket) => {
-    socket.setTimeout(IDLE_TIMEOUT_MS, () => socket.destroy());
-  });
+  if (IDLE_TIMEOUT_MS > 0) {
+    server.requestTimeout = IDLE_TIMEOUT_MS;
+    server.headersTimeout = IDLE_TIMEOUT_MS;
+    server.keepAliveTimeout = IDLE_TIMEOUT_MS;
+    server.on("connection", (socket) => {
+      socket.setTimeout(IDLE_TIMEOUT_MS, () => socket.destroy());
+    });
+  } else {
+    server.requestTimeout = 0;
+    server.headersTimeout = 0;
+  }
 
   server.on("clientError", (error, socket) => {
     log({ type: "error", err: String(error && error.code || error) });
@@ -120,8 +135,8 @@ function createProxyServer() {
 
     upstream.once("connect", () => {
       if (closed) return;
-      upstream.setTimeout(IDLE_TIMEOUT_MS, () => closeBoth("upstream_idle_timeout"));
-      clientSocket.setTimeout(IDLE_TIMEOUT_MS, () => closeBoth("client_idle_timeout"));
+      applyIdleTimeout(upstream, () => closeBoth("upstream_idle_timeout"));
+      applyIdleTimeout(clientSocket, () => closeBoth("client_idle_timeout"));
       clientSocket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
       if (head.length) upstream.write(head);
       upstream.pipe(clientSocket);
@@ -164,8 +179,8 @@ function createLocalForwardServer() {
     upstream.setTimeout(CONNECT_TIMEOUT_MS, () => closeBoth("upstream_timeout"));
     upstream.once("connect", () => {
       if (closed) return;
-      upstream.setTimeout(IDLE_TIMEOUT_MS, () => closeBoth("upstream_idle_timeout"));
-      clientSocket.setTimeout(IDLE_TIMEOUT_MS, () => closeBoth("client_idle_timeout"));
+      applyIdleTimeout(upstream, () => closeBoth("upstream_idle_timeout"));
+      applyIdleTimeout(clientSocket, () => closeBoth("client_idle_timeout"));
       upstream.pipe(clientSocket);
       clientSocket.pipe(upstream);
     });
@@ -176,9 +191,11 @@ function createLocalForwardServer() {
   });
 
   server.maxConnections = MAX_CONNECTIONS;
-  server.on("connection", (socket) => {
-    socket.setTimeout(IDLE_TIMEOUT_MS, () => socket.destroy());
-  });
+  if (IDLE_TIMEOUT_MS > 0) {
+    server.on("connection", (socket) => {
+      socket.setTimeout(IDLE_TIMEOUT_MS, () => socket.destroy());
+    });
+  }
   return server;
 }
 
@@ -188,6 +205,7 @@ if (require.main === module) {
     type: "start",
     port: PORT,
     max_connections: MAX_CONNECTIONS,
+    idle_timeout_ms: IDLE_TIMEOUT_MS,
     allow: ALLOW,
   }));
 

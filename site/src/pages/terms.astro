@@ -1,0 +1,14 @@
+---
+// Terms & Conditions (/terms). Thin route shell: owns BaseLayout + SEO; content lives in
+// @config/legalData and renders through the shared Sections/Legal/LegalArticle.
+import LegalArticle from "@components/Sections/Legal/LegalArticle.astro";
+import legalData from "@config/legalData.json";
+import siteData from "@config/siteData.json";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const page = legalData.terms;
+---
+
+<BaseLayout title={`${page.title} — ${siteData.name}`} description={page.description}>
+  <LegalArticle page={page} />
+</BaseLayout>

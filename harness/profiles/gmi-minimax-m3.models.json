@@ -1,0 +1,37 @@
+{
+  "providers": {
+    "gmi": {
+      "baseUrl": "https://api.gmi-serving.com/v1",
+      "api": "openai-completions",
+      "apiKey": "!printenv GMI_API_KEY",
+      "models": [
+        {
+          "id": "MiniMaxAI/MiniMax-M3",
+          "name": "MiniMax M3 (GMI Serving)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1048576,
+          "maxTokens": 131072,
+          "compat": {
+            "thinkingFormat": "deepseek",
+            "supportsReasoningEffort": false,
+            "maxTokensField": "max_tokens"
+          }
+        },
+        {
+          "id": "MiniMaxAI/MiniMax-M2.7",
+          "name": "MiniMax M2.7 (GMI Serving)",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 204800,
+          "maxTokens": 131072,
+          "compat": {
+            "thinkingFormat": "deepseek",
+            "supportsReasoningEffort": false,
+            "maxTokensField": "max_tokens"
+          }
+        }
+      ]
+    }
+  }
+}
