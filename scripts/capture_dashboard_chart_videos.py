@@ -17,8 +17,8 @@ except ImportError:
 OUT = Path("/workspace/artifacts/chart-videos")
 RAW = OUT / "raw"
 BASE_URL = "http://localhost:4321/charts/cloud-agent/"
-# Default 900ms entrance animation + ~1s hold on the finished chart.
-RECORD_MS = 3500
+# Default 900ms entrance animation + hold on the finished chart.
+RECORD_MS = 4000
 # 1920×1080 recording — matches a full-HD browser window.
 VIEWPORT = {"width": 1920, "height": 1080}
 
@@ -34,29 +34,28 @@ INIT_SCRIPT = (
 )
 
 # Capture-only type scale for 1920×1080 recordings (does not change the live site).
-# Applied via inline styles so it beats Tailwind utilities.
 ENLARGE_TEXT_JS = """() => {
   const bump = (el, size) => el && el.style.setProperty('font-size', size, 'important');
-  bump(document.querySelector('h2'), '56px');
-  bump(document.querySelector('h2 + p'), '28px');
+  bump(document.querySelector('h2'), '48px');
+  bump(document.querySelector('h2 + p'), '22px');
   document.querySelectorAll('svg text, svg tspan').forEach((el) => {
-    el.style.setProperty('font-size', '22px', 'important');
+    el.style.setProperty('font-size', '18px', 'important');
   });
-  // Scale the panel to fill more of the 1080p frame without changing site CSS.
   const root = document.querySelector('.not-prose');
   if (root) {
     root.style.setProperty('width', '100%', 'important');
     root.style.setProperty('max-width', '100%', 'important');
-    root.style.setProperty('zoom', '1.55', 'important');
-  }
-  const panel = document.querySelector('.border-foreground.bg-card');
-  if (panel) {
-    panel.style.setProperty('height', '36rem', 'important');
+    root.style.setProperty('padding', '2rem 3rem', 'important');
+    root.style.setProperty('zoom', '1.35', 'important');
   }
   const wrap = document.querySelector('.not-prose > div');
   if (wrap) {
-    wrap.style.setProperty('max-width', '72rem', 'important');
+    wrap.style.setProperty('max-width', '80rem', 'important');
     wrap.style.setProperty('width', '100%', 'important');
+  }
+  const panel = document.querySelector('.border-foreground.bg-card');
+  if (panel) {
+    panel.style.setProperty('height', '40rem', 'important');
   }
 }"""
 
