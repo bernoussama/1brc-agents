@@ -37,21 +37,26 @@ INIT_SCRIPT = (
 # Applied via inline styles so it beats Tailwind utilities.
 ENLARGE_TEXT_JS = """() => {
   const bump = (el, size) => el && el.style.setProperty('font-size', size, 'important');
-  bump(document.querySelector('h2'), '64px');
-  bump(document.querySelector('h2 + p'), '32px');
+  bump(document.querySelector('h2'), '56px');
+  bump(document.querySelector('h2 + p'), '28px');
   document.querySelectorAll('svg text, svg tspan').forEach((el) => {
-    el.style.setProperty('font-size', '32px', 'important');
+    el.style.setProperty('font-size', '22px', 'important');
   });
   // Scale the panel to fill more of the 1080p frame without changing site CSS.
   const root = document.querySelector('.not-prose');
   if (root) {
     root.style.setProperty('width', '100%', 'important');
     root.style.setProperty('max-width', '100%', 'important');
-    root.style.setProperty('zoom', '1.85', 'important');
+    root.style.setProperty('zoom', '1.55', 'important');
   }
   const panel = document.querySelector('.border-foreground.bg-card');
   if (panel) {
-    panel.style.setProperty('height', '28rem', 'important');
+    panel.style.setProperty('height', '36rem', 'important');
+  }
+  const wrap = document.querySelector('.not-prose > div');
+  if (wrap) {
+    wrap.style.setProperty('max-width', '72rem', 'important');
+    wrap.style.setProperty('width', '100%', 'important');
   }
 }"""
 
