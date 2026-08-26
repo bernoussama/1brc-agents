@@ -7,6 +7,7 @@ import { seedOfColor } from "./palette"
 import {
   buildBandScale,
   buildXScale,
+  buildXValueScale,
   buildYScale,
   computeBands,
   indexAtBand,
@@ -17,6 +18,9 @@ import type { Dimensions } from "./use-chart-dimensions"
 
 /** Which chart root a part is composed under — drives the boundary guards. */
 export type ChartType = "area" | "bar" | "line" | "pie" | "radar"
+
+/** Bar category axis orientation — vertical columns vs horizontal rows. */
+export type BarLayout = "vertical" | "horizontal"
 
 export type ChartConfig = Record<string, { label?: string; color: DitherColor }>
 
@@ -44,6 +48,8 @@ export type SeriesSpec = {
 
 export type ChartContextValue = {
   chartType: ChartType // which root this part is under
+  /** Bar charts only — categories on X (vertical) or Y (horizontal). */
+  layout: BarLayout
   config: ChartConfig
   configKeys: string[] // series order — drives stacking + legend
   data: Row[]
@@ -54,16 +60,16 @@ export type ChartContextValue = {
   plot: { width: number; height: number } // inner drawing area
   ready: boolean // true once measured (width > 0)
 
-  xCenter: (index: number) => number // category centre px within the plot
-  bandwidth: number // category slot width (0 for point/area scales)
-  indexAtX: (px: number) => number // nearest category for a pointer x
+  xCenter: (index: number) => number // category centre along the category axis
+  bandwidth: number // category slot size (0 for point/area scales)
+  indexAtX: (px: number) => number // nearest category for a pointer along the category axis
   // Bar geometry in plot px — one source of truth for the canvas + click rects.
   barSlot: (
     index: number,
     seriesIndex: number,
     seriesCount: number
-  ) => { x: number; width: number }
-  y: ScaleLinear<number, number> // value → px within the plot
+  ) => { x: number; width: number; y: number; height: number }
+  y: ScaleLinear<number, number> // value → px (vertical bars: Y; horizontal: X)
   bands: Record<string, [number, number][]> // per-series [y0, y1] per row
   max: number
   min: number // most-negative value (0 when nothing dips below the baseline)
@@ -191,6 +197,7 @@ export function useChartController({
   bloomOnHover = false,
   defaultSelectedDataKey = null,
   onSelectionChange,
+  layout = "vertical",
 }: {
   chartType: ChartType
   data: Row[]
@@ -207,6 +214,7 @@ export function useChartController({
   bloomOnHover?: boolean
   defaultSelectedDataKey?: string | null
   onSelectionChange?: (key: string | null) => void
+  layout?: BarLayout
 }): ChartContextValue {
   // This object becomes the ChartContext value, so its identity — and the
   // identity of every function/object it carries — must stay stable across
@@ -300,6 +308,9 @@ export function useChartController({
   )
 
   const isBar = chartType === "bar"
+  const horizontal = isBar && layout === "horizontal"
+  // Category band runs along X for vertical bars, along Y for horizontal.
+  const categorySpan = horizontal ? plotHeight : plotWidth
   // The d3 scale factories are memoized so `y` keeps a stable identity: the
   // canvas `targets` memo (cartesian-canvas / bar-canvas) deps on ctx.y, and
   // xCenter/indexAtX/barSlot below close over these.
@@ -307,42 +318,62 @@ export function useChartController({
     () => buildXScale(data.length, plotWidth),
     [data.length, plotWidth]
   )
-  const xBand = useMemo(
-    () => buildBandScale(data.length, plotWidth),
-    [data.length, plotWidth]
+  const categoryBand = useMemo(
+    () => buildBandScale(data.length, categorySpan),
+    [data.length, categorySpan]
   )
-  const bandwidth = isBar ? xBand.bandwidth() : 0
+  const bandwidth = isBar ? categoryBand.bandwidth() : 0
   const xCenter = useCallback(
     (i: number) =>
-      isBar ? (xBand(i) ?? 0) + xBand.bandwidth() / 2 : (xPoint(i) ?? 0),
-    [isBar, xBand, xPoint]
+      isBar
+        ? (categoryBand(i) ?? 0) + categoryBand.bandwidth() / 2
+        : (xPoint(i) ?? 0),
+    [isBar, categoryBand, xPoint]
   )
   const indexAtX = useCallback(
     (px: number) =>
       isBar
-        ? indexAtBand(px, data.length, plotWidth)
+        ? indexAtBand(px, data.length, categorySpan)
         : nearestIndex(px, data.length, plotWidth),
-    [isBar, data.length, plotWidth]
+    [isBar, data.length, categorySpan, plotWidth]
   )
   const stacked = stackType === "stacked" || stackType === "percent"
   const barSlot = useCallback(
     (i: number, si: number, n: number) => {
       const center = xCenter(i)
+      if (horizontal) {
+        if (stacked) {
+          const h = bandwidth * 0.9
+          return { x: 0, width: 0, y: center - h / 2, height: h }
+        }
+        const slot = bandwidth / Math.max(n, 1)
+        return {
+          x: 0,
+          width: 0,
+          y: center - bandwidth / 2 + si * slot + slot * 0.08,
+          height: slot * 0.84,
+        }
+      }
       if (stacked) {
         const w = bandwidth * 0.9
-        return { x: center - w / 2, width: w }
+        return { x: center - w / 2, width: w, y: 0, height: 0 }
       }
       const slot = bandwidth / Math.max(n, 1)
       return {
         x: center - bandwidth / 2 + si * slot + slot * 0.08,
         width: slot * 0.84,
+        y: 0,
+        height: 0,
       }
     },
-    [xCenter, stacked, bandwidth]
+    [xCenter, stacked, bandwidth, horizontal]
   )
   const y = useMemo(
-    () => buildYScale(min, max, plotHeight),
-    [min, max, plotHeight]
+    () =>
+      horizontal
+        ? buildXValueScale(min, max, plotWidth)
+        : buildYScale(min, max, plotHeight),
+    [horizontal, min, max, plotWidth, plotHeight]
   )
 
   // Stable so `common` and the value stay stable; re-created only on config.
@@ -369,6 +400,9 @@ export function useChartController({
     tooltipTop: (() => {
       const floor = mTop + 44
       if (hoverIndex == null) return floor
+      if (horizontal) {
+        return Math.max(floor, mTop + xCenter(hoverIndex))
+      }
       let minY = Number.POSITIVE_INFINITY
       for (const key of configKeys) {
         const b = bands[key]?.[hoverIndex]
@@ -410,6 +444,8 @@ export function useChartController({
     bands,
     y,
     data,
+    horizontal,
+    xCenter,
   ])
 
   // Memoized: this is the ChartContext value. A fresh object here would
@@ -420,6 +456,7 @@ export function useChartController({
   return useMemo<ChartContextValue>(
     () => ({
       chartType,
+      layout: horizontal ? "horizontal" : "vertical",
       config,
       configKeys,
       data,
@@ -463,6 +500,7 @@ export function useChartController({
     }),
     [
       chartType,
+      horizontal,
       config,
       configKeys,
       data,

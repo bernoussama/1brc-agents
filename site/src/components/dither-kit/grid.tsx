@@ -11,23 +11,34 @@ export function Grid({
 }) {
   const ctx = useChartPart("Grid")
   if (!ctx.ready) return null
-  const { width } = ctx.plot
+  const { width, height } = ctx.plot
+  const valueOnX = ctx.layout === "horizontal"
 
   return (
     <g className="stroke-border" strokeDasharray={strokeDasharray}>
       {horizontal &&
-        ctx.y
-          .ticks(4)
-          .map((t) => (
-            <line
-              key={`h-${t}`}
-              x1={0}
-              x2={width}
-              y1={ctx.y(t)}
-              y2={ctx.y(t)}
-            />
-          ))}
+        (valueOnX
+          ? // Horizontal bars: "horizontal" still means value gridlines — drawn vertical.
+            ctx.y.ticks(4).map((t) => (
+              <line
+                key={`v-val-${t}`}
+                x1={ctx.y(t)}
+                x2={ctx.y(t)}
+                y1={0}
+                y2={height}
+              />
+            ))
+          : ctx.y.ticks(4).map((t) => (
+              <line
+                key={`h-${t}`}
+                x1={0}
+                x2={width}
+                y1={ctx.y(t)}
+                y2={ctx.y(t)}
+              />
+            )))}
       {vertical &&
+        !valueOnX &&
         ctx.data.map((_, i) => (
           <line
             // biome-ignore lint/suspicious/noArrayIndexKey: index is the stable x position
@@ -35,7 +46,7 @@ export function Grid({
             x1={ctx.xCenter(i) ?? 0}
             x2={ctx.xCenter(i) ?? 0}
             y1={0}
-            y2={ctx.plot.height}
+            y2={height}
           />
         ))}
     </g>

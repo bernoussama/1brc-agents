@@ -94,6 +94,51 @@ export function paintColumn(
   }
 }
 
+/**
+ * Fill one backing-canvas row `y` from column `left` to `right` with the
+ * ordered-dither scatter — solid at the baseline (left for positive bars),
+ * dissolving toward the value tip — then cap the tip with a soft border.
+ * Horizontal counterpart to {@link paintColumn}.
+ */
+export function paintRow(
+  octx: CanvasRenderingContext2D,
+  y: number,
+  left: number,
+  right: number,
+  seed: Seed,
+  { variant, intensity, dim, stacked, sparse = 0 }: PaintOpts
+) {
+  const l = Math.round(left)
+  const r = Math.round(right)
+  const depth = r - l
+  if (depth <= 0) {
+    octx.fillStyle = rgb(seed.fill, 1, BORDER_ALPHA * dim)
+    octx.fillRect(l, y, 1, 1)
+    return
+  }
+  const bias = (variant === "dotted" ? 0.12 : 0) + (stacked ? 0.2 : 0) - sparse
+  for (let x = l; x < r; x++) {
+    // Dense at the baseline (left), thinning toward the tip (right).
+    let density = 1 - (x - l) / depth
+    if (stacked) density = 0.5 + 0.5 * density
+    if (variant === "hatched" && ((x + y) & 3) >= 2) continue
+    const lit =
+      variant === "solid" ||
+      density > BAYER[y & 3][x & 3] - 0.1 * intensity - bias
+    if (variant === "dotted" && !lit) continue
+    const k = (0.3 + density * 0.7) * (1 + 0.22 * intensity)
+    const alpha = clamp01((lit ? k : k * OFF_TIER) * dim)
+    octx.fillStyle = rgb(seed.fill, 1, alpha)
+    octx.fillRect(x, y, 1, 1)
+  }
+  octx.fillStyle = rgb(seed.fill, 1, BORDER_ALPHA * dim)
+  octx.fillRect(r - 1, y, 1, 1)
+  if (depth > 1) {
+    octx.fillStyle = rgb(seed.fill, 1, BORDER_ALPHA * 0.5 * dim)
+    octx.fillRect(r - 2, y, 1, 1)
+  }
+}
+
 /** Linear-resample a per-index fraction array to `cols` columns. */
 export function resample(src: number[], cols: number): number[] {
   const out = new Array<number>(cols)

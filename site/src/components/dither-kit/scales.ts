@@ -101,6 +101,19 @@ export function buildYScale(min: number, max: number, plotHeight: number) {
     .range([plotHeight, 0])
 }
 
+/**
+ * value → horizontal pixel for horizontal bar charts. Zero stays at the left
+ * edge for positive-only data; diverging domains place zero inside the plot.
+ */
+export function buildXValueScale(min: number, max: number, plotWidth: number) {
+  const lo = Math.min(0, min)
+  const hi = Math.max(0, max)
+  return scaleLinear()
+    .domain([lo, hi === lo ? lo + 1 : hi])
+    .nice()
+    .range([0, plotWidth])
+}
+
 /** Index of the row nearest a horizontal pixel offset within the plot. */
 export function nearestIndex(px: number, length: number, plotWidth: number) {
   if (length <= 1 || plotWidth <= 0) return 0

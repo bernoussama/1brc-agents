@@ -8,10 +8,11 @@ import {
   clamp01,
   easeOutCubic,
   paintColumn,
+  paintRow,
   prefersReducedMotion,
 } from "./dither-paint"
 
-type Bars = { top: number[]; base: number[] } // per data index, in backing rows
+type Bars = { tip: number[]; base: number[] } // per data index, in backing cells along the value axis
 
 // Fraction of the timeline spent staggering bar starts — the rest is each bar's
 // own grow window, so the rise sweeps across the chart as a wave.
@@ -20,9 +21,12 @@ const STAGGER = 0.55
 /**
  * Dither canvas for bar charts. Each category owns a band; grouped series split
  * it into side-by-side bars, stacked series share its full width and pile in y.
- * Every bar is filled with the shared {@link paintColumn} ordered dither. Bars
- * grow up from their base in a staggered left-to-right wave (eased), and the
- * hovered category lifts while the rest dim.
+ * Every bar is filled with the shared ordered dither. Bars grow from their base
+ * toward the value in a staggered wave (eased), and the hovered category lifts
+ * while the rest dim.
+ *
+ * Vertical layout: categories on X, values on Y, grow upward.
+ * Horizontal layout: categories on Y, values on X, grow rightward.
  */
 export function BarCanvas() {
   const ctx = useChart()
@@ -32,29 +36,25 @@ export function BarCanvas() {
   const { width, height } = ctx.plot
   const { cols, rows } = backingSize(width, height)
   const { ready, configKeys, bands, y } = ctx
+  const horizontal = ctx.layout === "horizontal"
 
-  // Memoized: per-series bar tops/bases (backing rows) over the data indices.
-  // The canvas re-renders on every hover/cursor tick, so pin this map to the
-  // exact ctx fields it reads plus the backing geometry — a bar hover must not
-  // rebuild every band's geometry.
+  // Memoized: per-series tip/base along the value axis in backing cells.
   const targets = useMemo(() => {
     const out: Record<string, Bars> = {}
     if (!ready) return out
-    const h = height || 1
+    const span = horizontal ? width || 1 : height || 1
+    const cells = horizontal ? cols : rows
     for (const key of configKeys) {
       const band = bands[key]
       if (!band) continue
       out[key] = {
-        top: band.map((b) => (y(b[1]) / h) * (rows - 1)),
-        base: band.map((b) => (y(b[0]) / h) * (rows - 1)),
+        tip: band.map((b) => (y(b[1]) / span) * (cells - 1)),
+        base: band.map((b) => (y(b[0]) / span) * (cells - 1)),
       }
     }
     return out
-  }, [ready, configKeys, bands, y, height, rows])
+  }, [ready, configKeys, bands, y, height, width, rows, cols, horizontal])
 
-  // The RAF loop reads these through refs so it always sees the latest values;
-  // refs are written in an effect (never during render) — mutating a ref
-  // mid-render tears under Strict Mode / concurrent rendering.
   const state = useRef(ctx)
   const targetsRef = useRef(targets)
   useEffect(() => {
@@ -80,8 +80,9 @@ export function BarCanvas() {
     const animate = state.current.animate && !reduce
     const duration = state.current.animationDuration
     const fx = cols / Math.max(width, 1)
+    const fy = rows / Math.max(height, 1)
+    const isHorizontal = state.current.layout === "horizontal"
 
-    // Eased grow factor for bar `i` at global progress `prog`.
     const barProgress = (i: number, len: number, prog: number) => {
       if (!animate) return 1
       const start = len > 1 ? (i / (len - 1)) * STAGGER : 0
@@ -102,26 +103,39 @@ export function BarCanvas() {
         const selDim = emphasis !== null && emphasis !== key ? 0.3 : 1
         for (let i = 0; i < s.dataLength; i++) {
           const bp = barProgress(i, s.dataLength, prog)
-          const base = t.base[i] ?? rows - 1
-          const grown = base + ((t.top[i] ?? base) - base) * bp
-          // Bars grow from the zero baseline toward the value. Positive values
-          // sit above the baseline (smaller pixel), negative ones below it —
-          // paintColumn wants the higher edge first, so order the pair.
-          const top = Math.min(grown, base)
-          const bottom = Math.max(grown, base)
+          const base = t.base[i] ?? (isHorizontal ? 0 : rows - 1)
+          const grown = base + ((t.tip[i] ?? base) - base) * bp
           const active = s.hoverIndex === i
           const hoverDim =
             s.hoverIndex != null && !active && s.isMouseInChart ? 0.5 : 1
           const slot = s.barSlot(i, si, keys.length)
-          const c0 = Math.round(slot.x * fx)
-          const c1 = Math.round((slot.x + slot.width) * fx)
-          for (let x = c0; x < c1; x++) {
-            paintColumn(c, x, top, bottom, seed, {
-              variant,
-              intensity: intensity + (active ? 0.4 : 0),
-              dim: selDim * hoverDim,
-              stacked,
-            })
+
+          if (isHorizontal) {
+            const left = Math.min(grown, base)
+            const right = Math.max(grown, base)
+            const r0 = Math.round(slot.y * fy)
+            const r1 = Math.round((slot.y + slot.height) * fy)
+            for (let row = r0; row < r1; row++) {
+              paintRow(c, row, left, right, seed, {
+                variant,
+                intensity: intensity + (active ? 0.4 : 0),
+                dim: selDim * hoverDim,
+                stacked,
+              })
+            }
+          } else {
+            const top = Math.min(grown, base)
+            const bottom = Math.max(grown, base)
+            const c0 = Math.round(slot.x * fx)
+            const c1 = Math.round((slot.x + slot.width) * fx)
+            for (let x = c0; x < c1; x++) {
+              paintColumn(c, x, top, bottom, seed, {
+                variant,
+                intensity: intensity + (active ? 0.4 : 0),
+                dim: selDim * hoverDim,
+                stacked,
+              })
+            }
           }
         }
       })
@@ -153,7 +167,7 @@ export function BarCanvas() {
       }
       if (s.revision !== lastRevision) {
         lastRevision = s.revision
-        animStart = 0 // re-play the wave on data change / replay
+        animStart = 0
         lastProg = -1
         entranceReported = false
       }
@@ -183,8 +197,7 @@ export function BarCanvas() {
         needsFill = true
       } else intensity = itTarget
 
-      // Live tweak repaint (variant, stacking) without replaying the wave.
-      const paintSig = `${s.stackType}|${s.configKeys
+      const paintSig = `${s.layout}|${s.stackType}|${s.configKeys
         .map((k) => s.seriesSpecs[k]?.variant ?? "")
         .join(",")}`
       if (paintSig !== lastPaintSig) {
@@ -199,7 +212,7 @@ export function BarCanvas() {
 
     raf = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(raf)
-  }, [cols, rows, width])
+  }, [cols, rows, width, height, horizontal])
 
   const bloomActive = ctx.bloomOnHover
     ? ctx.isMouseInChart || ctx.hovered

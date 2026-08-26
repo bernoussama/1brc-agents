@@ -39,6 +39,8 @@ export type CartesianChartProps<TData extends Row> = {
   animate?: boolean
   animationDuration?: number
   replayToken?: number // change to re-play the entrance without remounting
+  /** Bar charts: categories on X (default) or Y (horizontal bars). */
+  layout?: "vertical" | "horizontal"
   /** Set false for a decorative sparkline: keeps the hover lift but no scrub
    * crosshair / tooltip. */
   interactive?: boolean
@@ -84,6 +86,7 @@ export function CartesianRoot<TData extends Row>({
   animate = true,
   animationDuration = 900,
   replayToken = 0,
+  layout = "vertical",
   interactive = true,
   markerIndex = null,
   hovered = false,
@@ -116,6 +119,7 @@ export function CartesianRoot<TData extends Row>({
     bloomOnHover,
     defaultSelectedDataKey,
     onSelectionChange,
+    layout,
   })
 
   const backChildren: ReactNode[] = []
@@ -128,12 +132,15 @@ export function CartesianRoot<TData extends Row>({
     else svgChildren.push(child)
   })
 
-  const onMove = (clientX: number) => {
+  const onMove = (clientX: number, clientY: number) => {
     const el = ref.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const px = clientX - rect.left - margins.left
-    const index = ctx.indexAtX(px)
+    const alongCategory =
+      layout === "horizontal"
+        ? clientY - rect.top - margins.top
+        : clientX - rect.left - margins.left
+    const index = ctx.indexAtX(alongCategory)
     ctx.setHoverIndex(index)
     ctx.setCursorX(clientX - rect.left)
     onHoverChange?.(index)
@@ -146,7 +153,9 @@ export function CartesianRoot<TData extends Row>({
           ref={ref}
           className={cn("relative h-full w-full", className)}
           onPointerEnter={() => ctx.setMouseInChart(true)}
-          onPointerMove={interactive ? (e) => onMove(e.clientX) : undefined}
+          onPointerMove={
+            interactive ? (e) => onMove(e.clientX, e.clientY) : undefined
+          }
           onPointerLeave={() => {
             ctx.setMouseInChart(false)
             ctx.setHoverIndex(null)

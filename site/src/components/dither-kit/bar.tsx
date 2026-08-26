@@ -56,17 +56,33 @@ export function Bar({
       {isClickable &&
         band.map((b, i) => {
           const slot = ctx.barSlot(i, si, n)
-          const top = ctx.y(b[1])
+          const tip = ctx.y(b[1])
           const base = ctx.y(b[0])
+          if (ctx.layout === "horizontal") {
+            return (
+              // biome-ignore lint/a11y/noStaticElementInteractions: progressive enhancement; the Legend offers the same toggle accessibly
+              <rect
+                // biome-ignore lint/suspicious/noArrayIndexKey: index is the stable category position
+                key={i}
+                x={Math.min(tip, base)}
+                y={slot.y}
+                width={Math.abs(tip - base)}
+                height={slot.height}
+                fill="transparent"
+                style={{ cursor: "pointer" }}
+                onClick={onClick}
+              />
+            )
+          }
           return (
             // biome-ignore lint/a11y/noStaticElementInteractions: progressive enhancement; the Legend offers the same toggle accessibly
             <rect
               // biome-ignore lint/suspicious/noArrayIndexKey: index is the stable category position
               key={i}
               x={slot.x}
-              y={Math.min(top, base)}
+              y={Math.min(tip, base)}
               width={slot.width}
-              height={Math.abs(base - top)}
+              height={Math.abs(base - tip)}
               fill="transparent"
               style={{ cursor: "pointer" }}
               onClick={onClick}
