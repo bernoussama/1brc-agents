@@ -7,20 +7,22 @@ export function CategoryYAxis({
   tickMargin = 8,
   maxTicks,
   lineHeight = 11,
+  maxLines = 2,
 }: {
   dataKey?: string
   tickMargin?: number
   maxTicks?: number
   lineHeight?: number
+  maxLines?: number
 }) {
   const ctx = useChartPart("CategoryYAxis", "bar")
   if (!ctx.ready) return null
 
   const step = Math.max(1, Math.ceil(ctx.dataLength / (maxTicks ?? ctx.dataLength)))
-  const maxChars = Math.max(
-    8,
-    maxCharsForWidth(Math.max(48, ctx.margins.left - tickMargin))
-  )
+  // Leave a few px of breathing room inside the left margin so glyphs don't
+  // kiss the SVG edge (mono width is approximate).
+  const labelBudget = Math.max(40, ctx.margins.left - tickMargin - 10)
+  const maxChars = Math.max(8, maxCharsForWidth(labelBudget))
 
   return (
     <g className="fill-current font-mono text-[10px] text-muted-foreground">
@@ -28,7 +30,7 @@ export function CategoryYAxis({
         if (i % step !== 0) return null
         const raw = dataKey ? row[dataKey] : i
         const label = String(raw ?? "")
-        const lines = wrapText(label, maxChars)
+        const lines = fitLines(wrapText(label, maxChars), maxLines, maxChars)
         const y = ctx.xCenter(i) ?? 0
         const startY = y - ((lines.length - 1) * lineHeight) / 2
 
@@ -57,4 +59,14 @@ export function CategoryYAxis({
       })}
     </g>
   )
+}
+
+/** Cap wrapped lines and ellipsize the last line when the label is too long. */
+function fitLines(lines: string[], maxLines: number, maxChars: number): string[] {
+  if (lines.length <= maxLines) return lines
+  const kept = lines.slice(0, maxLines)
+  const last = kept[maxLines - 1] ?? ""
+  const room = Math.max(1, maxChars - 1)
+  kept[maxLines - 1] = `${last.slice(0, room).trimEnd()}…`
+  return kept
 }
