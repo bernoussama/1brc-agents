@@ -36,26 +36,24 @@ INIT_SCRIPT = (
 # Capture-only layout for 1080p — keep full model labels in frame.
 ENLARGE_TEXT_JS = """() => {
   const bump = (el, size) => el && el.style.setProperty('font-size', size, 'important');
-  bump(document.querySelector('h2'), '44px');
-  bump(document.querySelector('h2 + p'), '20px');
-  document.querySelectorAll('svg text, svg tspan').forEach((el) => {
-    el.style.setProperty('font-size', '16px', 'important');
-  });
+  bump(document.querySelector('h2'), '40px');
+  bump(document.querySelector('h2 + p'), '18px');
+  // Do NOT enlarge axis/value label fonts — that overflows the left margin.
   const root = document.querySelector('.not-prose');
   if (root) {
     root.style.setProperty('width', '100%', 'important');
     root.style.setProperty('max-width', '100%', 'important');
-    root.style.setProperty('padding', '1.5rem 2.5rem', 'important');
-    root.style.setProperty('zoom', '1.25', 'important');
+    root.style.setProperty('padding', '1.25rem 2rem', 'important');
+    root.style.setProperty('zoom', '1.15', 'important');
   }
   const wrap = document.querySelector('.not-prose > div');
   if (wrap) {
-    wrap.style.setProperty('max-width', '88rem', 'important');
+    wrap.style.setProperty('max-width', '96rem', 'important');
     wrap.style.setProperty('width', '100%', 'important');
   }
   const panel = document.querySelector('.border-foreground.bg-card');
   if (panel) {
-    panel.style.setProperty('height', '42rem', 'important');
+    panel.style.setProperty('height', '46rem', 'important');
   }
 }"""
 

@@ -39,8 +39,9 @@ export function wrapText(text: string, maxChars: number): string[] {
   return out.length > 0 ? out : [text]
 }
 
-/** Approximate monospace glyph width at 10px (matches dither-kit XAxis). */
-export const MONO_10PX_CHAR_WIDTH = 6;
+/** Approximate monospace glyph width at 10px (matches dither-kit XAxis).
+ * Slightly padded so labels don't kiss the SVG edge. */
+export const MONO_10PX_CHAR_WIDTH = 7;
 
 export function maxCharsForWidth(widthPx: number): number {
   return Math.max(4, Math.floor(widthPx / MONO_10PX_CHAR_WIDTH));

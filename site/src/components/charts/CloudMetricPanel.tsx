@@ -106,7 +106,7 @@ export function CloudMetricPanel({
           layout="horizontal"
           replayToken={replayToken}
           animationDuration={animationDuration}
-          margins={{ top: 12, bottom: 28, left: 168, right: 56 }}
+          margins={{ top: 12, bottom: 28, left: 220, right: 56 }}
         >
           <Grid horizontal />
           <CategoryYAxis
