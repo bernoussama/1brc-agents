@@ -15,11 +15,11 @@ except ImportError:
     raise
 
 OUT = Path("/workspace/artifacts/chart-videos")
+ARTIFACTS = Path("/opt/cursor/artifacts/chart-videos")
 RAW = OUT / "raw"
-BASE_URL = "http://localhost:4321/charts/cloud-agent/"
-# Default 900ms entrance animation + hold on the finished chart.
+BASE_URL = "http://127.0.0.1:4321/charts/cloud-agent/"
+# Default 900ms entrance + hold on the finished chart.
 RECORD_MS = 4000
-# 1920×1080 recording — matches a full-HD browser window.
 VIEWPORT = {"width": 1920, "height": 1080}
 
 PANELS: list[tuple[str, str]] = [
@@ -33,29 +33,29 @@ INIT_SCRIPT = (
     "try { localStorage.setItem('colorTheme', 'dark'); } catch {} }"
 )
 
-# Capture-only type scale for 1920×1080 recordings (does not change the live site).
+# Capture-only layout for 1080p — keep full model labels in frame.
 ENLARGE_TEXT_JS = """() => {
   const bump = (el, size) => el && el.style.setProperty('font-size', size, 'important');
-  bump(document.querySelector('h2'), '48px');
-  bump(document.querySelector('h2 + p'), '22px');
+  bump(document.querySelector('h2'), '44px');
+  bump(document.querySelector('h2 + p'), '20px');
   document.querySelectorAll('svg text, svg tspan').forEach((el) => {
-    el.style.setProperty('font-size', '18px', 'important');
+    el.style.setProperty('font-size', '16px', 'important');
   });
   const root = document.querySelector('.not-prose');
   if (root) {
     root.style.setProperty('width', '100%', 'important');
     root.style.setProperty('max-width', '100%', 'important');
-    root.style.setProperty('padding', '2rem 3rem', 'important');
-    root.style.setProperty('zoom', '1.35', 'important');
+    root.style.setProperty('padding', '1.5rem 2.5rem', 'important');
+    root.style.setProperty('zoom', '1.25', 'important');
   }
   const wrap = document.querySelector('.not-prose > div');
   if (wrap) {
-    wrap.style.setProperty('max-width', '80rem', 'important');
+    wrap.style.setProperty('max-width', '88rem', 'important');
     wrap.style.setProperty('width', '100%', 'important');
   }
   const panel = document.querySelector('.border-foreground.bg-card');
   if (panel) {
-    panel.style.setProperty('height', '40rem', 'important');
+    panel.style.setProperty('height', '42rem', 'important');
   }
 }"""
 
@@ -84,7 +84,7 @@ def to_mp4(webm_path: Path, mp4_path: Path) -> None:
     )
 
 
-async def capture_panel(browser, slug: str) -> Path:
+async def capture_panel(browser, slug: str, title: str) -> Path:
     RAW.mkdir(parents=True, exist_ok=True)
     mp4_path = OUT / f"{slug}.mp4"
 
@@ -103,7 +103,16 @@ async def capture_panel(browser, slug: str) -> Path:
     await page.goto(url, wait_until="commit")
     await page.wait_for_selector("canvas", state="attached", timeout=15_000)
     await page.wait_for_selector("h2", state="visible", timeout=15_000)
-    # Apply before the entrance wave finishes; re-apply once labels appear.
+
+    # Confirm horizontal before recording continues (models on left).
+    await page.wait_for_function(
+        """() => {
+          const t = [...document.querySelectorAll('svg text')]
+            .find((el) => (el.getAttribute('text-anchor') === 'end') && (el.textContent || '').includes('gpt'));
+          return !!t;
+        }""",
+        timeout=10_000,
+    )
     await page.evaluate(ENLARGE_TEXT_JS)
     await page.wait_for_timeout(RECORD_MS // 2)
     await page.evaluate(ENLARGE_TEXT_JS)
@@ -119,18 +128,28 @@ async def capture_panel(browser, slug: str) -> Path:
 
     to_mp4(webm_path, mp4_path)
     webm_path.unlink(missing_ok=True)
+
+    # Also write a distinctly named copy so stale downloads aren't confused.
+    named = OUT / f"{slug}-horizontal.mp4"
+    named.write_bytes(mp4_path.read_bytes())
+    print(f"{title}: horizontal confirmed → {mp4_path}")
     return mp4_path
 
 
 async def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         for slug, title in PANELS:
-            path = await capture_panel(browser, slug)
-            print(f"{title}: {path}")
+            await capture_panel(browser, slug, title)
         await browser.close()
+
+    for path in OUT.glob("*.mp4"):
+        dest = ARTIFACTS / path.name
+        dest.write_bytes(path.read_bytes())
+        print(f"copied {dest}")
 
 
 if __name__ == "__main__":
