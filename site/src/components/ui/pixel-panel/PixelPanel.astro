@@ -1,0 +1,33 @@
+---
+// src/components/ui/pixel-panel/PixelPanel.astro — astro-boiler primitive (see ../README.md).
+//
+// The 8-BitQuest signature surface: `bg-card` + a 4px pure-black frame + the hard offset pixel
+// shadow (`shadow-pixel`, or `shadow-pixel-lg` when `elevated`). The ONE canonical pixel card/panel —
+// the hero panels, the ContentCard shell, the About character/gear cards, and the project detail
+// cards all render through it, so the surface can't drift. Bare on purpose: the call site supplies
+// padding + layout via `class` (tailwind-merge lets those win). Tokens only, so light mode flips free.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof pixelPanel> & {
+    /** Render element — `<div>` by default; a hero wants `<section>`, a card `<article>`, a spec list `<dl>`. */
+    as?: keyof HTMLElementTagNameMap;
+  };
+
+export const pixelPanel = tv({
+  base: "bg-card text-card-foreground border-border border-4",
+  variants: {
+    // hero panels lift with the larger shadow; cards use the standard one.
+    elevated: { true: "shadow-pixel-lg", false: "shadow-pixel" },
+  },
+  defaultVariants: { elevated: false },
+});
+
+const { as, elevated, class: className, ...rest } = Astro.props;
+const Tag = as ?? "div";
+---
+
+<Tag class={pixelPanel({ elevated, class: className })} data-slot="pixel-panel" {...rest}>
+  <slot />
+</Tag>

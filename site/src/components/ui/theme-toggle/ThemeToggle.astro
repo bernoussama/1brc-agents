@@ -1,0 +1,60 @@
+---
+// src/components/ui/theme-toggle/ThemeToggle.astro — astro-boiler primitive (see ../README.md).
+// A manual light/dark override on top of BaseHead's device default. Styled as the retro pink
+// `.pixel-btn` (the 8-bit button, defined in global.css) to match the 8-BitQuest header. The icon
+// flip is CSS-only — meteor in light, moon in dark via the `dark:` variant, with no FOUC because
+// `.dark` is set pre-paint in BaseHead. Only the click needs JS: toggle `.dark`, persist the pick to
+// localStorage("colorTheme"), and keep `aria-pressed` accurate. Pairs with the BaseHead pre-paint
+// script, which reads that same key before falling back to the device.
+import { PixelIcon } from "@components/svg/pixel-icons";
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"button"> & VariantProps<typeof themeToggle>;
+
+// Re-skins the global `.pixel-btn` (a CSS class, not the `button` recipe) into a square icon button,
+// so it needs its own small exported recipe rather than composing another primitive's. Exported so a
+// consumer can merge overrides the tailwind-merge way (class:list wouldn't dedupe conflicts).
+export const themeToggle = tv({ base: "pixel-btn size-9 shrink-0" });
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<button
+  type="button"
+  data-slot="theme-toggle"
+  aria-label="Toggle color theme"
+  class={themeToggle({ class: className })}
+  {...rest}
+>
+  {
+    /* Pixel glyphs from the "1300 Free Pixel Icons" set (see svg/pixel-icons). The flip is CSS-only:
+      meteor in light, crescent moon in dark, via the `dark:` variant (no FOUC — `.dark` is pre-paint). */
+  }
+  <PixelIcon name="meteor" size="lg" class="dark:hidden" />
+  <PixelIcon name="moon" size="lg" class="hidden dark:block" />
+</button>
+
+<script>
+  import { onReady } from "../_client";
+
+  // `aria-pressed` is intentionally NOT in the static markup: the initial theme is client-determined
+  // pre-paint (BaseHead), so any SSR value would be wrong for dark-mode users. `sync()` sets the truthful
+  // value on wire (load + each astro:after-swap). Don't "fix" this by hardcoding aria-pressed="false".
+  function wire(btn: HTMLElement) {
+    const sync = () =>
+      btn.setAttribute("aria-pressed", String(document.documentElement.classList.contains("dark")));
+    sync();
+    btn.addEventListener("click", () => {
+      const dark = document.documentElement.classList.toggle("dark");
+      try {
+        localStorage.setItem("colorTheme", dark ? "dark" : "light");
+      } catch {
+        // storage blocked (sandboxed iframe, site data off) — the visual toggle still applies for this
+        // session; it just won't persist across navigations. Fall through so aria-pressed stays in sync.
+      }
+      sync();
+    });
+  }
+  onReady('[data-slot="theme-toggle"]', wire);
+</script>

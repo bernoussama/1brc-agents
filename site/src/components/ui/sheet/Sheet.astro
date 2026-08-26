@@ -1,0 +1,43 @@
+---
+// src/components/ui/sheet/Sheet.astro — astro-boiler primitive (see ../README.md).
+// Slide-in panel (offcanvas) on a native modal <dialog> — a Dialog pinned to one edge. Open and close
+// it exactly like Dialog: a DialogTrigger whose `for` equals this Sheet's `id`, a DialogClose, Escape,
+// or a backdrop click (the SheetTrigger / SheetClose exports re-export those same controls under
+// ergonomic names). Compose the Dialog* content parts inside. `side` picks the edge. Behavior is the
+// shared `_dialog` controller; the slide-in animation (per `data-side`), backdrop scrim, and modal
+// scroll-lock live in `_overlay.css` (which also respects `prefers-reduced-motion`). Tokens only.
+import "../_overlay.css";
+
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"dialog"> & VariantProps<typeof sheet>;
+
+export const sheet = tv({
+  base: [
+    "bg-card text-card-foreground border-border fixed m-0 flex flex-col gap-4 overflow-y-auto p-6 shadow-lg",
+  ],
+  variants: {
+    // left/right fill the full viewport height; top/bottom fill the full width. `max-h-none` /
+    // `max-w-none` defeat the UA `dialog:modal` size cap that otherwise leaves an edge gap.
+    side: {
+      right: "inset-y-0 right-0 left-auto h-auto max-h-none w-80 max-w-full rounded-none border-l",
+      left: "inset-y-0 left-0 right-auto h-auto max-h-none w-80 max-w-full rounded-none border-r",
+      top: "inset-x-0 top-0 bottom-auto h-auto max-h-[90vh] w-auto max-w-none rounded-none border-b",
+      bottom:
+        "inset-x-0 bottom-0 top-auto h-auto max-h-[90vh] w-auto max-w-none rounded-none border-t",
+    },
+  },
+  defaultVariants: { side: "right" },
+});
+
+const { side = "right", class: className, ...rest } = Astro.props;
+---
+
+<dialog class={sheet({ side, class: className })} data-slot="sheet" data-side={side} {...rest}>
+  <slot />
+</dialog>
+
+<script>
+  import "../_dialog";
+</script>

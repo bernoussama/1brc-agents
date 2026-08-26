@@ -1,0 +1,29 @@
+---
+// src/components/Sections/Home/Stats.astro — Figma "Stats Strip" (node 5:20).
+//
+// A retro scoreboard: three neon Press Start stats split by short pixel dividers. This is the mock's
+// `bg-muted` strip — muted is theme-aware, so it's a light-blue scoreboard in light mode and the dark
+// #272939 panel in dark. Each stat colour is a light/dark PAIR so it reads on BOTH grounds: deepened
+// green/pink for the light strip, the neon shades under `dark:` for the dark strip (blue rides the
+// flipping `text-info`). The strip shell (separator seam + stacking) is the shared <Scoreboard>.
+//
+// Stat TEXT comes from portfolioData.stats.home (buyer-editable, retro flavour); the per-stat accent
+// colours are presentational and pair by order — keep this list aligned if you add/remove a stat.
+import Scoreboard from "@components/Sections/Global/Scoreboard.astro";
+import portfolioData from "@config/portfolioData.json";
+import siteData from "@config/siteData.json";
+
+const colors = [
+  "text-success-800 dark:text-success",
+  "text-secondary-700 dark:text-secondary",
+  "text-info",
+];
+const stats = portfolioData.stats.home.map((text, i) => ({
+  text,
+  color: colors[i] ?? "text-info",
+}));
+---
+
+<section aria-label={`${siteData.name} by the numbers`}>
+  <Scoreboard stats={stats} class="bg-muted gap-3 px-5 py-4 text-sm sm:gap-4 sm:text-base" />
+</section>

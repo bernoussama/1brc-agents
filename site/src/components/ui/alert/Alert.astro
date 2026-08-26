@@ -1,0 +1,27 @@
+---
+// src/components/ui/alert/Alert.astro — astro-boiler primitive (see ../README.md).
+// Static, role="alert"; semantic tone via `variant`. Dismissible = Tier 2 (+ tiny script).
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof alert>;
+
+export const alert = tv({
+  base: ["flex items-start gap-3 rounded-lg border p-4 text-sm"],
+  variants: {
+    variant: {
+      info: "bg-info text-info-foreground border-info-foreground/20",
+      success: "bg-success text-success-foreground border-success-foreground/20",
+      warning: "bg-warning text-warning-foreground border-warning-foreground/20",
+      error: "bg-error text-error-foreground border-error-foreground/20",
+    },
+  },
+  defaultVariants: { variant: "info" },
+});
+
+const { variant, class: className, ...rest } = Astro.props;
+---
+
+<div class={alert({ variant, class: className })} role="alert" data-slot="alert" {...rest}>
+  <slot />
+</div>

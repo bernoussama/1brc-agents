@@ -1,0 +1,25 @@
+---
+// src/components/ui/pagination/PaginationLink.astro — Pagination compound part (see ../README.md).
+// Reuses the Button primitive's `button` tv config so pager links match buttons (ghost, or outline
+// for the current page). Set `isActive` on the current page; give prev/next links an aria-label.
+import { button } from "@components/ui/button/Button.astro";
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"a"> & { href?: string; isActive?: boolean };
+
+const { href, isActive = false, class: className, ...rest } = Astro.props;
+---
+
+<a
+  href={href}
+  aria-current={isActive ? "page" : undefined}
+  data-slot="pagination-link"
+  class={button({
+    variant: isActive ? "outline" : "ghost",
+    size: "sm",
+    class: ["size-9 p-0", className],
+  })}
+  {...rest}
+>
+  <slot />
+</a>

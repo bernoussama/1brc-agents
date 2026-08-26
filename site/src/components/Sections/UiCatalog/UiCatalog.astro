@@ -1,0 +1,63 @@
+---
+// src/components/UiCatalog/UiCatalog.astro — DEV-ONLY living demo + regression guard for the UI
+// primitives. Renders every primitive (Tier 1–3, V2, advanced form controls, icons, motion) in
+// every variant; eyeball in light AND dark mode (toggle in the header): a missing token shows up
+// instantly as an un-themed element. Rendered only by src/pages/examples/ui.astro, which 404s it
+// out of prod builds.
+//
+// This file is a thin composition root: each catalog group lives in its own dev-only sibling
+// component (Tier1Catalog, Tier2Catalog, …). Astro emits no wrapper element, so each group's
+// top-level <section>/<Separator> nodes drop straight into the flex-col-gap-14 flow below — the
+// rendered DOM matches the old monolith. Group dividers live here; internal separators live in each
+// group. Add a new group by dropping in a <XCatalog /> + its <Separator /> divider.
+import Separator from "@components/ui/separator";
+import { ThemeToggle } from "@components/ui/theme-toggle";
+
+import FormControlsCatalog from "./FormControlsCatalog.astro";
+import IconsCatalog from "./IconsCatalog.astro";
+import MotionCatalog from "./MotionCatalog.astro";
+import NavigationCatalog from "./NavigationCatalog.astro";
+import NavMarqueeCatalog from "./NavMarqueeCatalog.astro";
+import Tier1Catalog from "./Tier1Catalog.astro";
+import Tier2Catalog from "./Tier2Catalog.astro";
+import Tier3Catalog from "./Tier3Catalog.astro";
+---
+
+<div class="site-container flex flex-col gap-14 py-12">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="h1">UI primitives</h1>
+      <p class="description">Tier 1–3 — eyeball every variant in light and dark mode.</p>
+    </div>
+    {/* The real ThemeToggle primitive drives the catalog's own light/dark switch. */}
+    <ThemeToggle />
+  </header>
+
+  <Tier1Catalog />
+
+  <Separator />
+
+  <Tier2Catalog />
+
+  <Separator />
+
+  <Tier3Catalog />
+
+  <Separator />
+
+  <NavMarqueeCatalog />
+
+  <Separator />
+
+  <NavigationCatalog />
+
+  <Separator />
+
+  <FormControlsCatalog />
+
+  <Separator />
+
+  <IconsCatalog />
+
+  <MotionCatalog />
+</div>

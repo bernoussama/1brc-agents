@@ -1,0 +1,37 @@
+---
+// src/components/svg/icons/Icon.astro — astro-boiler primitive (see ../../ui/README.md).
+// Renders one icon from the generated ICONS registry. Geometry uses currentColor, so
+// recolor with text-* utilities and resize with size-* (or the `size` variant). Decorative
+// by default (aria-hidden); pass `title` to give it an accessible name (role="img").
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+import { type IconName, ICONS } from "./icons";
+
+type Props = Omit<HTMLAttributes<"svg">, "name"> &
+  VariantProps<typeof icon> & { name: IconName; title?: string };
+
+export const icon = tv({
+  base: "inline-block shrink-0",
+  variants: {
+    size: { sm: "size-4", md: "size-5", lg: "size-6", xl: "size-8" },
+  },
+  defaultVariants: { size: "md" },
+});
+
+const { name, size, title, class: className, ...rest } = Astro.props;
+---
+
+<svg
+  viewBox="0 0 24 24"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  class={icon({ size, class: className })}
+  data-slot="icon"
+  role={title ? "img" : undefined}
+  aria-hidden={title ? undefined : "true"}
+  {...rest}
+>
+  {title && <title>{title}</title>}
+  <Fragment set:html={ICONS[name]} />
+</svg>

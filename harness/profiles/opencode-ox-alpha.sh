@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# Ox Alpha Free through the standard OpenCode Zen provider.
-# Supply OPENCODE_API_KEY at launch; it is never stored in this profile or
-# the repository. Use the model's maximum supported reasoning effort.
-PROVIDER=opencode
-MODEL_ID=ox-alpha-free
+# Ox Alpha Free (Unlimited) through OpenCode Zen — keyless free tier.
+# Model id is x-preview-f-free (ox-alpha-free is no longer served).
+# Zen free accepts Authorization: Bearer with an empty token. models.json
+# uses apiKey " " (single space) so pi's OpenAI client sends that form; a
+# non-empty fake key returns AuthError. AUTH_MODE=none keeps the container
+# credential-free. Use max reasoning effort.
+PROVIDER=opencode-zen-free
+MODEL_ID=x-preview-f-free
 THINKING=max
-ADAPTER_ROUTE="pi to OpenCode Zen to ox-alpha-free"
-AUTH_MODE=env
-AUTH_ENV=OPENCODE_API_KEY
-MODELS_FILE="${ROOT}/harness/profiles/opencode-ox-alpha.models.json"
-NCPUS=6
-MEM=16g
+ADAPTER_ROUTE="pi to OpenCode Zen free to x-preview-f-free"
+AUTH_MODE=none
+MODELS_FILE="${ROOT}/harness/profiles/opencode-zen-free.models.json"

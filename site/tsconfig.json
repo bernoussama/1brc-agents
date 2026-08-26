@@ -1,0 +1,18 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"],
+  "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    // No `baseUrl`: since TS 4.1 `paths` resolve relative to this file's dir, and `baseUrl` is
+    // deprecated (removed in TS 7.0). Path values are prefixed `./` to stay explicitly relative.
+    "paths": {
+      "@config/*": ["./src/config/*"],
+      "@js/*": ["./src/js/*"],
+      "@layouts/*": ["./src/layouts/*"],
+      "@components/*": ["./src/components/*"],
+      "@images/*": ["./src/assets/images/*"],
+      "@/*": ["./src/*"]
+    }
+  }
+}

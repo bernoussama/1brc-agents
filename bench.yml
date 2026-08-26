@@ -1,0 +1,85 @@
+# Frozen run profile. The session runner loads this file and treats it as
+# the source of truth for environment, budgets, dataset, and judge settings.
+# Profiles supply only model identity and credentials.
+#
+# Host presets under `hosts:` set the resource envelope and declared hardware
+# for the machine the bench is running on. Default selection is `auto`: the
+# first preset whose `match` rules fit this host. Force one with
+# `BENCH_HOST=<name>` or by setting `host:` below.
+#
+# Set BENCH_ALLOW_OVERRIDE=1 to let env vars override resource caps for local
+# smoke tests. Published comparisons must run with a matched preset.
+
+version: 1
+
+host: auto
+
+hosts:
+  laptop:
+    # Published neutral-v0.5 box.
+    match:
+      cpu_contains: Intel Core i7-9750H
+    resources:
+      cpus: 6
+      memory: 16GiB
+    hardware:
+      cpu: Intel Core i7-9750H
+      physical_cores: 6
+      logical_cpus: 12
+      storage: Intel SSDPEMKF010T8 NVMe
+
+  cloud-agent:
+    # Cursor cloud agent VMs.
+    match:
+      hostname_equals: cursor
+    resources:
+      cpus: 4
+      memory: 16GiB
+    hardware:
+      cpu: Intel(R) Xeon(R) Processor
+      physical_cores: 4
+      logical_cpus: 4
+      storage: cloud-ephemeral
+
+  dedicated:
+    # Draft v1 box. Select explicitly with BENCH_HOST=dedicated until the
+    # match rule is filled in for the sponsored machine.
+    match:
+      cpu_contains: REPLACE_WITH_DEDICATED_CPU_MODEL
+    resources:
+      cpus: 16
+      memory: 64GiB
+    hardware:
+      cpu: REPLACE_WITH_DEDICATED_CPU_MODEL
+      physical_cores: 16
+      logical_cpus: 32
+      storage: REPLACE_WITH_DEDICATED_STORAGE
+
+environment:
+  image: 1brc-agents-sandbox:latest
+  # Pin from the published neutral-v0.5 batch. The runner refuses to start
+  # when the local image digest differs, unless BENCH_ALLOW_OVERRIDE=1.
+  image_digest: sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab
+  proxy_image: 1brc-allowlist-proxy
+  proxy_image_digest: sha256:e43291217da0015d62997806078392bccc8d196a82891b251568a597938f0bff
+  network:
+    mode: allowlist
+
+agent:
+  name: pi
+  budget_minutes: 120
+  wrapup_seconds: 300
+  experiment_max_seconds: 300
+
+dataset:
+  rows: 1000000000
+  volume: 1brc-agents-scored-1b-v1
+  sha256: 59f834861945ddf9cb0bb044595b7639859d2e2f9303c748c6f6610556efb088
+  generator_sha256: efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d
+
+judge:
+  round: A
+  warmup_runs: 1
+  timed_runs: 5
+  report: median
+  prompt_sha256: dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e

@@ -1,0 +1,18 @@
+// Cloudflare Workers config. @astrojs/cloudflare v14 builds through Cloudflare's Vite plugin, which
+// owns the build wiring: `main` is the adapter's unified dev+prod entrypoint (never a dist/ path),
+// static assets, the SESSION KV and IMAGES bindings are all injected into the generated config under
+// dist/ at build time, and `wrangler deploy` reads that via .wrangler/deploy/config.json.
+// Contact secrets are NOT set here — set them once per account with:
+//   pnpm wrangler secret put RESEND_API_KEY
+//   pnpm wrangler secret put CONTACT_TO_EMAIL
+//   pnpm wrangler secret put CONTACT_FROM_EMAIL   (optional — defaults to onboarding@resend.dev)
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "8-bitquest",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-07-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+  },
+}

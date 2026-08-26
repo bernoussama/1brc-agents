@@ -1,0 +1,116 @@
+# 8-BitQuest — Commercial Theme Licence
+
+Version 1.0
+
+Copyright (c) 2026 DomiDex. All rights reserved.
+
+This is a commercial licence agreement ("Agreement") between DomiDex ("Licensor") and the individual
+or single legal entity that purchased this template ("Licensee"). By downloading, copying, or using
+the 8-BitQuest template ("Template"), the Licensee accepts this Agreement.
+
+The Template means the source code, stylesheets, configuration, and documentation in this repository,
+excluding the third-party material listed in `THIRD-PARTY.md`, which carries its own terms (see
+section 6).
+
+## 1. Grant of licence
+
+Subject to payment of the purchase price and to this Agreement, the Licensor grants the Licensee a
+perpetual, worldwide, non-exclusive, non-transferable licence to:
+
+1. use, modify, and adapt the Template;
+2. create an unlimited number of **End Products** from it; and
+3. deploy those End Products publicly and commercially.
+
+An **End Product** is a website, web application, or comparable deliverable built from the Template
+in which the Template has been customised and integrated, and whose primary value to its own users
+comes from the Licensee's content, branding, or functionality rather than from the Template itself.
+
+## 2. Who may use it
+
+The licence is granted to one individual or one legal entity. Employees and contractors of the
+Licensee may work on the Template on the Licensee's behalf.
+
+The Licensee may build End Products for clients. Ownership of a delivered End Product, including the
+Template code integrated into it, may be transferred to that client. The client receives no
+independent right to build further End Products from the Template; a client who wants that must buy
+their own licence.
+
+## 3. What is not permitted
+
+The Licensee may not:
+
+1. sell, resell, sublicense, rent, lease, or otherwise distribute the Template, or any modified or
+   derivative version of it, **as a template, theme, starter, boilerplate, scaffold, UI kit, or
+   component library** — that is, as something whose primary value to the recipient is the Template
+   itself rather than an End Product built from it;
+2. publish the Template, in whole or in substantial part, in a public repository, gist, package
+   registry, tutorial download, or any other publicly accessible location from which it can be
+   obtained as source, whether or not a fee is charged;
+3. include the Template in a product that competes with it, or in any bundle, marketplace listing,
+   or subscription offering of templates or design assets;
+4. use the Template to operate a service that generates websites for third parties from it, whether
+   automatically or on request;
+5. remove, alter, or obscure the copyright notices in this file or in `THIRD-PARTY.md`; or
+6. share the Template's source with anyone outside the scope of section 2.
+
+Publishing an End Product's source is permitted where the Template code in it is incidental to a
+substantially customised application. Publishing a lightly modified copy is not.
+
+## 4. Reserved rights
+
+The Licensor retains all right, title, and interest in the Template, including all intellectual
+property rights. This Agreement grants a licence to use, not a sale of the Template. All rights not
+expressly granted are reserved.
+
+## 5. Attribution
+
+Attribution in an End Product is not required.
+
+## 6. Third-party material
+
+The Template incorporates third-party fonts, icons, code, and images that are **not** covered by this
+Agreement and are licensed separately by their own owners. They are listed in `THIRD-PARTY.md`,
+together with the terms the Licensor understands to apply and the items whose provenance the Licensee
+must confirm before relying on them.
+
+The Licensee is responsible for complying with those terms, and in particular for satisfying itself
+that any trademarked brand mark it uses is used in a manner permitted by the brand owner. Nothing in
+this Agreement grants any right in a third party's trademark.
+
+## 7. No warranty
+
+THE TEMPLATE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
+NON-INFRINGEMENT. THE LICENSOR DOES NOT WARRANT THAT THE TEMPLATE IS ERROR-FREE OR THAT ITS OPERATION
+WILL BE UNINTERRUPTED.
+
+## 8. Limitation of liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY
+INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES, OR FOR ANY LOSS OF PROFITS,
+REVENUE, DATA, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH THE TEMPLATE OR THIS AGREEMENT,
+WHETHER IN CONTRACT, TORT, OR OTHERWISE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+THE LICENSOR'S TOTAL AGGREGATE LIABILITY UNDER THIS AGREEMENT SHALL NOT EXCEED THE AMOUNT THE
+LICENSEE PAID FOR THE TEMPLATE.
+
+Nothing in this Agreement excludes or limits liability that cannot lawfully be excluded or limited.
+
+## 9. Termination
+
+This licence terminates automatically if the Licensee materially breaches section 2 or 3 and does not
+cure the breach within 30 days of written notice. On termination the Licensee must stop using and
+distributing the Template and destroy its copies of it.
+
+End Products deployed in good faith before termination may continue to be used and maintained. No
+refund is due on termination for breach.
+
+## 10. General
+
+This Agreement is the entire agreement between the parties regarding the Template and supersedes any
+prior understanding. If any provision is held unenforceable, the remainder stays in force and the
+unenforceable provision is limited to the minimum extent necessary. A failure to enforce a provision
+is not a waiver of it. The Licensee may not assign this Agreement without the Licensor's written
+consent, except as part of the transfer of an End Product under section 2.
+
+Questions about this licence: sniperdomi@gmail.com

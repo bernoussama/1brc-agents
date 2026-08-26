@@ -1,0 +1,62 @@
+---
+// src/components/Sections/Contact/Faq.astro — Figma "FaqSection" (node 9:75).
+//
+// The shared "Heading 2 + dashed rule" motif over a pixel box of disclosure rows. Reuses the zero-JS
+// Accordion primitive (native <details>) inside the shared PixelPanel; only the trigger row is
+// bespoke — a retro pixel +/− marker (two token-coloured bars, the vertical one fades when open) to
+// match the mock's "+", where the primitive's default trigger draws a chevron. Below the fold →
+// <Reveal> (auto-gated on useAnimations + reduced-motion by the primitive). Tokens only.
+//
+// CONTENT: the three Q&A are the mock's copy verbatim — editorial placeholder (retro flavour). Edit
+// them for your project; a filled honeypot / real support policy is your call, not lorem to keep.
+import SectionHeading from "@components/Sections/Global/SectionHeading.astro";
+import { Accordion, AccordionContent, AccordionItem } from "@components/ui/accordion";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import { Reveal } from "@components/ui/reveal";
+
+const faqs = [
+  {
+    q: "Q: Where is the benchmark source?",
+    a: "On GitHub at bernoussama/1brc-agents — harness, judge, pinned image recipe, and published run bundles with traces.",
+  },
+  {
+    q: "Q: Can I compare laptop v0.5 medians to cloud-agent numbers?",
+    a: "No. Same task and judge protocol, different silicon and storage. Treat them as separate notebooks.",
+  },
+  {
+    q: "Q: What does the median measure?",
+    a: "After the agent exits: one untimed warmup, then five timed runs on the held-out 1B-row file. Wrong output is a DQ. The median is the claim.",
+  },
+] as const;
+---
+
+<Reveal as="section" aria-labelledby="faq-heading" class="flex flex-col gap-6">
+  <SectionHeading id="faq-heading" title="Frequently Asked System Questions" />
+
+  <PixelPanel elevated class="px-6 py-2 sm:px-8">
+    <Accordion class="border-t-0">
+      {
+        faqs.map((faq, i) => (
+          <AccordionItem
+            open={i === 0}
+            class="border-base-300 border-t-0 border-b-2 border-dashed [&[open]_[data-faq-v]]:opacity-0"
+          >
+            <summary class="text-secondary-700 dark:text-secondary font-display focus-visible:ring-outline flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-xs leading-relaxed outline-none focus-visible:ring-3 [&::-webkit-details-marker]:hidden">
+              <span>{faq.q}</span>
+              <span class="relative ml-2 size-4 shrink-0" aria-hidden="true">
+                <span class="bg-muted-foreground absolute top-1/2 left-0 h-1 w-full -translate-y-1/2" />
+                <span
+                  data-faq-v
+                  class="bg-muted-foreground absolute top-0 left-1/2 h-full w-1 -translate-x-1/2 transition-opacity"
+                />
+              </span>
+            </summary>
+            <AccordionContent class="text-muted-foreground pt-0 pb-4 text-sm">
+              {faq.a}
+            </AccordionContent>
+          </AccordionItem>
+        ))
+      }
+    </Accordion>
+  </PixelPanel>
+</Reveal>

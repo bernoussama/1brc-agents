@@ -1,0 +1,15 @@
+---
+// src/components/ui/table/TableHeader.astro — Table compound part (see ../README.md). Wraps <thead>.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"thead"> & VariantProps<typeof tableHeader>;
+
+export const tableHeader = tv({
+  base: ["[&_tr]:border-border [&_tr]:border-b"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<thead class={tableHeader({ class: className })} data-slot="table-header" {...rest}><slot /></thead>

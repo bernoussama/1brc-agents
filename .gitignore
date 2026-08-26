@@ -1,9 +1,25 @@
-data/
-runs/
+/data/
+.sessions/
 *.expected-*
 __pycache__/
 *.pyc
 .DS_Store
+
+# Astro project site (8-BitQuest theme)
+site/node_modules/
+site/dist/
+site/.astro/
+site/.wrangler/
+site/.env
+site/.env.*
+!site/.env.example
+
+# Personal learning notes (not part of the public corpus)
+MISSION.md
+NOTES.md
+RESOURCES.md
+lessons/
+reference/
 
 # Local test and profiling output
 .pytest_cache/
@@ -14,3 +30,10 @@ __pycache__/
 *.log
 *.perf
 *.out
+
+# Published run bundles keep their logs and agent .out files
+!runs/
+!runs/**
+!runs/**/*.log
+!runs/**/*.out
+!runs/**/*.perf

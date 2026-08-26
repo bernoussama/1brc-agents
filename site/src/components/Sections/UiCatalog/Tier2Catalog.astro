@@ -1,0 +1,182 @@
+---
+// src/components/UiCatalog/Tier2Catalog.astro — DEV-ONLY. The "Tier 2" section of the UI catalog
+// (light native behavior: Accordion, Tabs, Tooltip, Breadcrumb, Pagination, Progress, Spinner),
+// extracted from UiCatalog.astro so each tier owns its own demo markup instead of enlarging the
+// catalog monolith. Rendered by UiCatalog; 404s out of prod with it. Emits a run of top-level
+// nodes (leading tier header included) so it slots into the catalog's flex-col-gap-14 flow unchanged.
+import { Icon } from "@components/svg/icons";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@components/ui/accordion";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@components/ui/breadcrumb";
+import Button from "@components/ui/button";
+import {
+  Pagination,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from "@components/ui/pagination";
+import Progress from "@components/ui/progress";
+import Separator from "@components/ui/separator";
+import Spinner from "@components/ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/ui/tabs";
+import Tooltip from "@components/ui/tooltip";
+
+const sizes = ["sm", "md", "lg"] as const;
+---
+
+{/* ── Tier 2 ───────────────────────────────────────────────────────────── */}
+<header class="flex flex-col gap-1">
+  <h2 class="h2">Tier 2</h2>
+  <p class="description">Light native behavior — accordion, tabs, tooltip, nav, indicators.</p>
+</header>
+
+{/* Accordion */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Accordion</h2>
+  <Accordion class="max-w-xl">
+    {
+      ["What is astro-boiler?", "Is it zero-JS?", "Can I theme it?"].map((q, i) => (
+        <AccordionItem name="demo-accordion" open={i === 0}>
+          <AccordionTrigger>{q}</AccordionTrigger>
+          <AccordionContent>
+            Native &lt;details&gt;/&lt;summary&gt; — shared <code>name</code> makes the group
+            mutually exclusive, no JavaScript involved.
+          </AccordionContent>
+        </AccordionItem>
+      ))
+    }
+  </Accordion>
+</section>
+
+<Separator />
+
+{/* Tabs */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Tabs</h2>
+  <Tabs class="max-w-xl">
+    <TabsList>
+      <TabsTrigger value="account" selected>Account</TabsTrigger>
+      <TabsTrigger value="password">Password</TabsTrigger>
+      <TabsTrigger value="team">Team</TabsTrigger>
+    </TabsList>
+    <TabsContent value="account">
+      <p class="text-sm">Account panel — arrow keys move between tabs (roving focus).</p>
+    </TabsContent>
+    <TabsContent value="password">
+      <p class="text-sm">Password panel — only the active panel is shown once hydrated.</p>
+    </TabsContent>
+    <TabsContent value="team">
+      <p class="text-sm">Team panel — degrades to all-panels-visible without JS.</p>
+    </TabsContent>
+  </Tabs>
+
+  {/* With icons — the trigger's base `gap-2` spaces a leading <Icon> from its label. */}
+  <Tabs class="max-w-xl">
+    <TabsList>
+      <TabsTrigger value="dashboard" selected>
+        <Icon name="home-01" size="sm" />Dashboard
+      </TabsTrigger>
+      <TabsTrigger value="explore"><Icon name="search-01" size="sm" />Explore</TabsTrigger>
+      <TabsTrigger value="settings"><Icon name="settings" size="sm" />Settings</TabsTrigger>
+    </TabsList>
+    <TabsContent value="dashboard">
+      <p class="text-sm">Dashboard panel — icons are decorative; the label names the tab.</p>
+    </TabsContent>
+    <TabsContent value="explore">
+      <p class="text-sm">Explore panel — same roving focus and keyboard behavior.</p>
+    </TabsContent>
+    <TabsContent value="settings">
+      <p class="text-sm">Settings panel — tokens flip with the theme.</p>
+    </TabsContent>
+  </Tabs>
+</section>
+
+<Separator />
+
+{/* Tooltip */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Tooltip</h2>
+  <div class="flex flex-wrap items-center gap-10 py-6">
+    {
+      (["top", "bottom", "left", "right"] as const).map((side) => (
+        <Tooltip id={`tooltip-${side}`} side={side} text={`Tooltip on ${side}`}>
+          <Button variant="outline" size="sm" aria-describedby={`tooltip-${side}`}>
+            Hover / focus ({side})
+          </Button>
+        </Tooltip>
+      ))
+    }
+  </div>
+</section>
+
+<Separator />
+
+{/* Breadcrumb */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Breadcrumb</h2>
+  <Breadcrumb>
+    <BreadcrumbItem><BreadcrumbLink href="#breadcrumb">Home</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem><BreadcrumbLink href="#breadcrumb">Docs</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem><BreadcrumbPage>UI primitives</BreadcrumbPage></BreadcrumbItem>
+  </Breadcrumb>
+</section>
+
+<Separator />
+
+{/* Pagination */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Pagination</h2>
+  <Pagination>
+    <PaginationItem>
+      <PaginationLink href="#pagination" aria-label="Previous page">&lsaquo;</PaginationLink>
+    </PaginationItem>
+    <PaginationItem><PaginationLink href="#pagination">1</PaginationLink></PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#pagination" isActive>2</PaginationLink>
+    </PaginationItem>
+    <PaginationItem><PaginationLink href="#pagination">3</PaginationLink></PaginationItem>
+    <PaginationItem><PaginationEllipsis /></PaginationItem>
+    <PaginationItem><PaginationLink href="#pagination">10</PaginationLink></PaginationItem>
+    <PaginationItem>
+      <PaginationLink href="#pagination" aria-label="Next page">&rsaquo;</PaginationLink>
+    </PaginationItem>
+  </Pagination>
+</section>
+
+<Separator />
+
+{/* Progress */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Progress</h2>
+  <div class="flex max-w-md flex-col gap-4">
+    {sizes.map((size) => <Progress size={size} value={60} />)}
+    <Progress value={25} />
+    <Progress value={100} />
+  </div>
+</section>
+
+<Separator />
+
+{/* Spinner */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Spinner</h2>
+  <div class="text-primary flex items-center gap-6">
+    {sizes.map((size) => <Spinner size={size} />)}
+    <Button size="sm" disabled>
+      <Spinner size="sm" class="border-current" />
+      Loading
+    </Button>
+  </div>
+</section>

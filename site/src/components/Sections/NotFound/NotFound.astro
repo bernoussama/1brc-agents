@@ -1,0 +1,56 @@
+---
+// 404 content. Layout-free section: src/pages/404.astro owns BaseLayout + SEO (noindex) and
+// passes the title/description copy down (it doubles as the page's meta tags).
+//
+// Re-skinned to the theme (it was the one page still in the generic stock language — ui/button, a
+// text gradient and a 239-line non-pixel illustration). Now it reuses what every other page uses:
+// the PixelPanel surface, a pixel Badge tag, and a `.pixel-btn` CTA matching Home/Hero. Centred
+// rather than left-aligned like HeroPanel, because a dead end should read as a full-screen stop.
+//
+// The big 404 is set in the display face (Press Start 2P) instead of an illustration: the font IS
+// the pixel treatment, so it costs no new asset and can never drift from the theme's palette. It is
+// aria-hidden — the <h1> carries the real message for a screen reader.
+import { Badge } from "@components/ui/badge";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import { siteSettings } from "@config/siteSettings.json";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props as Props;
+---
+
+<section
+  class="site-container flex min-h-[100lvh] flex-col items-center justify-center py-20 text-center"
+>
+  {
+    /* Above the fold → a time-based `animate-*` (plays once on load), gated on the decorative-motion switch. */
+  }
+  <PixelPanel
+    elevated
+    class:list={[
+      "flex w-full max-w-2xl flex-col items-center gap-6 p-6 sm:p-10",
+      siteSettings.useAnimations && "animate-fade-in-up motion-reduce:animate-none",
+    ]}
+  >
+    <Badge pixel variant="error">Game Over</Badge>
+
+    <p
+      class="font-display text-secondary-700 dark:text-secondary text-5xl leading-none sm:text-7xl md:text-8xl"
+      aria-hidden="true"
+    >
+      404
+    </p>
+
+    <div class="flex flex-col items-center gap-3">
+      <h1 class="h2 text-info text-balance">{title}</h1>
+      <p class="text-muted-foreground max-w-xl text-base text-balance">{description}</p>
+    </div>
+
+    <a href="/" class="pixel-btn pixel-btn--blue mt-1 px-5 py-4 text-sm uppercase sm:text-base">
+      Continue
+    </a>
+  </PixelPanel>
+</section>

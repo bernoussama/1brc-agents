@@ -1,0 +1,17 @@
+---
+// src/components/ui/card/CardAction.astro — Card compound part (see ../README.md).
+// Drop inside CardHeader for a top-right action (button, dropdown, close). Its grid placement pins it
+// to the reserved second column; CardHeader opens that column via `has-[card-action]`.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof cardAction>;
+
+export const cardAction = tv({
+  base: ["col-start-2 row-span-2 row-start-1 flex items-center gap-2 self-start justify-self-end"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={cardAction({ class: className })} data-slot="card-action" {...rest}><slot /></div>

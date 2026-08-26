@@ -3,6 +3,11 @@
 #
 # Usage: run_session.sh <model-slug> <profile-file> [round]
 #
+# Frozen environment, budget, dataset, and judge settings come from
+# bench.yml at the repo root. The profile file supplies only model identity
+# and credentials. Set BENCH_ALLOW_OVERRIDE=1 to let env vars override
+# bench.yml for local smoke tests.
+#
 # 1. ensures image + datasets exist
 # 2. starts container: internal network + allowlist proxy, workdir /work,
 #    /data ro-mounted
@@ -11,39 +16,95 @@
 # 5. injects the held-out input and scores inside the agent container
 #    before releasing it, then writes the run manifest
 #
-# Env: BUDGET_MIN (default 120), BUDGET_WRAPUP_SEC (default 300),
-#      EXPERIMENT_MAX_SEC (default 300), RUNS (default 5),
-#      CLEANUP_RUN_ARTIFACTS (default 1)
+# Env: BENCH_FILE (default: <repo>/bench.yml), BENCH_HOST=<preset>,
+#      BENCH_ALLOW_OVERRIDE=0|1, CLEANUP_RUN_ARTIFACTS (default 1). With
+#      BENCH_ALLOW_OVERRIDE=1 also accepts BUDGET_MIN, BUDGET_WRAPUP_SEC,
+#      EXPERIMENT_MAX_SEC, RUNS, NCPUS, MEM, SCORED_DATASET_VOLUME.
 
 set -euo pipefail
 
 SLUG="${1:?model slug, e.g. glm-4.7}"
 PROFILE="${2:?profile file, see harness/profiles/}"
-ROUND="${3:-A}"
-BUDGET_MIN="${BUDGET_MIN:-120}"
-BUDGET_WRAPUP_SEC="${BUDGET_WRAPUP_SEC:-300}"
-RUNS_N="${RUNS:-5}"
-# Safety cap for an agent-issued top-level command that bypasses the helper.
-# Normal candidate commands should use 1brc-bounded with a shorter limit.
-EXPERIMENT_MAX_SEC="${EXPERIMENT_MAX_SEC:-300}"
-# Full-size 1BRC scored input. It is prepared once in a named Docker volume.
-SCORED_ROWS=1000000000
-SCORED_DATASET_VOLUME="${SCORED_DATASET_VOLUME:-1brc-agents-scored-1b-v1}"
+ROUND_ARG="${3:-}"
+
+# Bash re-reads this file from disk as it runs. Snapshot + re-exec so later
+# harness edits cannot shift line numbers under a live session (that previously
+# aborted scoring with `VFS: command not found` after an in-flight patch).
+if [ -z "${ONEBRC_RUN_SESSION_FROZEN:-}" ]; then
+  ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+  SNAP="$(mktemp "${TMPDIR:-/tmp}/1brc-run_session.XXXXXX.sh")"
+  cp -a "$0" "$SNAP"
+  export ONEBRC_RUN_SESSION_FROZEN=1
+  export ONEBRC_RUN_SESSION_ROOT="$ROOT"
+  export ONEBRC_RUN_SESSION_SNAPSHOT="$SNAP"
+  exec bash "$SNAP" "$@"
+fi
+ROOT="${ONEBRC_RUN_SESSION_ROOT:?ONEBRC_RUN_SESSION_ROOT must be set after runner snapshot re-exec}"
+BENCH_FILE="${BENCH_FILE:-$ROOT/bench.yml}"
+BENCH_ALLOW_OVERRIDE="${BENCH_ALLOW_OVERRIDE:-0}"
+case "$BENCH_ALLOW_OVERRIDE" in
+  0|1) ;;
+  *) echo "BENCH_ALLOW_OVERRIDE must be 0 or 1" >&2; exit 2 ;;
+esac
+
+LOAD_BENCH="$ROOT/harness/lib/load_bench.py"
+[ -f "$LOAD_BENCH" ] || { echo "missing bench loader: $LOAD_BENCH" >&2; exit 1; }
+[ -f "$BENCH_FILE" ] || { echo "missing bench profile: $BENCH_FILE" >&2; exit 1; }
+# shellcheck disable=SC1090
+eval "$(python3 "$LOAD_BENCH" "$BENCH_FILE")"
+
+apply_bench_value() {
+  local var="$1" bench_value="$2" override_env="${3:-}"
+  local current=""
+  if [ -n "$override_env" ] && [ "${!override_env+x}" = x ]; then
+    current="${!override_env}"
+  fi
+  if [ -n "$current" ] && [ "$current" != "$bench_value" ]; then
+    if [ "$BENCH_ALLOW_OVERRIDE" = 1 ]; then
+      printf -v "$var" '%s' "$current"
+      echo "[bench] override $var=$current (bench.yml had $bench_value)" >&2
+      return 0
+    fi
+    echo "$var is set to '$current' but bench.yml requires '$bench_value'." >&2
+    echo "Unset it, or set BENCH_ALLOW_OVERRIDE=1 for a local smoke test." >&2
+    exit 2
+  fi
+  printf -v "$var" '%s' "$bench_value"
+}
+
+apply_bench_value BUDGET_MIN "$BENCH_BUDGET_MIN" BUDGET_MIN
+apply_bench_value BUDGET_WRAPUP_SEC "$BENCH_WRAPUP_SEC" BUDGET_WRAPUP_SEC
+apply_bench_value EXPERIMENT_MAX_SEC "$BENCH_EXPERIMENT_MAX_SEC" EXPERIMENT_MAX_SEC
+apply_bench_value RUNS_N "$BENCH_TIMED_RUNS" RUNS
+apply_bench_value NCPUS "$BENCH_NCPUS" NCPUS
+apply_bench_value MEM "$BENCH_MEM" MEM
+apply_bench_value SCORED_ROWS "$BENCH_SCORED_ROWS"
+apply_bench_value SCORED_DATASET_VOLUME "$BENCH_SCORED_DATASET_VOLUME" SCORED_DATASET_VOLUME
+apply_bench_value IMAGE "$BENCH_IMAGE" IMAGE
+apply_bench_value WARMUP_RUNS "$BENCH_WARMUP_RUNS"
+
+ROUND="${ROUND_ARG:-$BENCH_ROUND}"
+case "$ROUND" in
+  A|B) ;;
+  *) echo "round must be A or B" >&2; exit 2 ;;
+esac
+
 NETWORK_NAME=1brc-agent-net
 PROXY_NAME=1brc-proxy
 PROXY_IP=172.28.77.2
 PROXY_PORT=3128
 NO_PROXY_VALUE="localhost,127.0.0.1,$PROXY_IP"
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ONEBRC_ROOT="${ONEBRC_ROOT:-$ROOT/../1brc}"
 JAVA_GENERATOR="$ROOT/harness/lib/onebrc_generator.sh"
 GENERATOR_SOURCE="$ONEBRC_ROOT/src/main/java/dev/morling/onebrc/CreateMeasurements.java"
 source "$ROOT/harness/lib/auth.sh"
-IMAGE="1brc-agents-sandbox:latest"
 STAMP="$(date -u +%Y%m%dT%H%M%S)"
-RUNDIR="$ROOT/runs/${SLUG}-${STAMP}"
+RUNDIR="$ROOT/.sessions/${SLUG}-${STAMP}"
 mkdir -p "$RUNDIR"
+if [ -n "${ONEBRC_RUN_SESSION_SNAPSHOT:-}" ]; then
+  cp -a "$ONEBRC_RUN_SESSION_SNAPSHOT" "$RUNDIR/run_session.frozen.sh"
+fi
 CLEANUP_RUN_ARTIFACTS="${CLEANUP_RUN_ARTIFACTS:-1}"
 CLEANUP_SCRIPT="$ROOT/harness/cleanup_run.sh"
 CID_FILE="$RUNDIR/container.id"
@@ -107,8 +168,8 @@ case "$EXPERIMENT_MAX_SEC" in
   ''|*[!0-9]*|0) echo "EXPERIMENT_MAX_SEC must be a positive integer" >&2; exit 2 ;;
 esac
 
-RESOURCE_TOOL="$ROOT/sandbox/tools/resources.py"
-BOUNDED_TOOL="$ROOT/sandbox/tools/1brc-bounded"
+RESOURCE_TOOL="$ROOT/task/tools/resources.py"
+BOUNDED_TOOL="$ROOT/task/tools/1brc-bounded"
 AGENT_ENTRYPOINT="$ROOT/harness/lib/agent_entrypoint.sh"
 SCORE_RUNNER="$ROOT/judge/score_run.py"
 SCORED_DATASET_LIB="$ROOT/harness/lib/scored_dataset.sh"
@@ -120,21 +181,42 @@ SCORED_DATASET_LIB="$ROOT/harness/lib/scored_dataset.sh"
 [ -x "$CLEANUP_SCRIPT" ] || { echo "missing cleanup helper: $CLEANUP_SCRIPT" >&2; exit 1; }
 
 # Validate the profile and credential before spending time and disk space on
-# the 1B-row dataset.
+# the 1B-row dataset. Profiles may set model identity and auth only.
+PROFILE_NCPUS_BEFORE="${NCPUS-}"
+PROFILE_MEM_BEFORE="${MEM-}"
+unset NCPUS MEM 2>/dev/null || true
 set -a; source "$PROFILE"; set +a
-NCPUS="${NCPUS:-4}"
-MEM="${MEM:-8g}"
+if [ "${NCPUS+x}" = x ] || [ "${MEM+x}" = x ]; then
+  echo "profile must not set NCPUS or MEM; those come from bench.yml" >&2
+  echo "offending profile: $PROFILE" >&2
+  exit 2
+fi
+NCPUS="$PROFILE_NCPUS_BEFORE"
+MEM="$PROFILE_MEM_BEFORE"
 ADAPTER_ROUTE="${ADAPTER_ROUTE:-pi to $PROVIDER/$MODEL_ID}"
 PROFILE_SHA256="$(sha256sum "$PROFILE" | awk '{print $1}')"
-PROMPT_SHA256="$(sha256sum "$ROOT/sandbox/program.md" | awk '{print $1}')"
+PROMPT_SHA256="$(sha256sum "$ROOT/task/program.md" | awk '{print $1}')"
 JUDGE_SHA256="$(sha256sum "$ROOT/judge/score.py" | awk '{print $1}')"
 JUDGE_RUNNER_SHA256="$(sha256sum "$ROOT/judge/score_run.py" | awk '{print $1}')"
 RUNNER_SHA256="$(sha256sum "$ROOT/harness/run_session.sh" | awk '{print $1}')"
+BENCH_SHA256="$(sha256sum "$BENCH_FILE" | awk '{print $1}')"
 HARNESS_GIT_COMMIT="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || printf unknown)"
 if [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=normal 2>/dev/null)" ]; then
   HARNESS_GIT_DIRTY=true
 else
   HARNESS_GIT_DIRTY=false
+fi
+
+if [ -n "$BENCH_PROMPT_SHA256" ] && [ "$PROMPT_SHA256" != "$BENCH_PROMPT_SHA256" ]; then
+  if [ "$BENCH_ALLOW_OVERRIDE" = 1 ]; then
+    echo "[bench] warning: task/program.md sha256 is $PROMPT_SHA256; bench.yml pins $BENCH_PROMPT_SHA256" >&2
+  else
+    echo "task/program.md does not match bench.yml prompt_sha256." >&2
+    echo "got $PROMPT_SHA256" >&2
+    echo "expected $BENCH_PROMPT_SHA256" >&2
+    echo "Update bench.yml after intentional prompt changes, or set BENCH_ALLOW_OVERRIDE=1." >&2
+    exit 2
+  fi
 fi
 
 # A Cursor CLI completion can legitimately contain many tool turns. The
@@ -213,12 +295,53 @@ if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
     echo "CURSOR_PROXY_API_KEY is required for the in-container cursor proxy" >&2
     exit 1
   }
+  # Pi overwrites the process-wide undici dispatcher with httpIdleTimeoutMs
+  # (default 300s). Long Cursor tool turns go silent on the OpenAI stream and
+  # then abort as errorMessage "terminated". Disable that idle timeout and
+  # raise agent retries so a 120-minute session can survive several CLI drops.
+  mkdir -p "$RUNDIR/pi-home/.pi/agent"
+  python3 - "$RUNDIR/pi-home/.pi/agent/settings.json" "$CURSOR_PROXY_TIMEOUT_MS" <<'PY'
+import json, sys
+path, timeout_ms = sys.argv[1], int(sys.argv[2])
+try:
+    with open(path, encoding="utf-8") as fh:
+        settings = json.load(fh)
+    if not isinstance(settings, dict):
+        settings = {}
+except FileNotFoundError:
+    settings = {}
+retry = settings.get("retry")
+if not isinstance(retry, dict):
+    retry = {}
+provider = retry.get("provider")
+if not isinstance(provider, dict):
+    provider = {}
+settings["httpIdleTimeoutMs"] = 0
+retry["enabled"] = True
+retry["maxRetries"] = max(int(retry.get("maxRetries") or 0), 20)
+retry["baseDelayMs"] = retry.get("baseDelayMs") or 2000
+provider["timeoutMs"] = max(int(provider.get("timeoutMs") or 0), timeout_ms)
+provider["maxRetries"] = 0
+retry["provider"] = provider
+settings["retry"] = retry
+with open(path, "w", encoding="utf-8") as fh:
+    json.dump(settings, fh, indent=2)
+    fh.write("\n")
+PY
+  chmod 600 "$RUNDIR/pi-home/.pi/agent/settings.json"
+  FETCH_BODY_TIMEOUT_PATCH="$ROOT/harness/lib/disable_fetch_body_timeout.mjs"
+  [ -f "$FETCH_BODY_TIMEOUT_PATCH" ] || {
+    echo "missing fetch timeout patch: $FETCH_BODY_TIMEOUT_PATCH" >&2
+    exit 1
+  }
   CONTAINER_EXTRA_ARGS+=(
     -e CURSOR_PROXY_IN_CONTAINER=1
     -e CURSOR_PROXY_MODEL="$MODEL_ID"
     -e CURSOR_PROXY_TIMEOUT_MS="$CURSOR_PROXY_TIMEOUT_MS"
     -e CURSOR_AUTH_TOKEN="$CURSOR_AUTH_TOKEN"
     -e CURSOR_AGENT_BIN="$CURSOR_AGENT_CONTAINER_BIN"
+    -e NODE_OPTIONS="--import /opt/1brc-harness/disable_fetch_body_timeout.mjs"
+    -v "$FETCH_BODY_TIMEOUT_PATCH:/opt/1brc-harness/disable_fetch_body_timeout.mjs:ro"
     -v "$CURSOR_HOST_NPX_ROOT:/opt/cursor-npx:ro"
     -v "$CURSOR_HOST_AGENT_ROOT:/opt/cursor-agent:ro"
     -v "$CURSOR_HOST_CURSOR_CONFIG:/opt/cursor-config-source:ro"
@@ -226,7 +349,19 @@ if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
 fi
 
 # --- image + datasets (the scored volume is prepared/reused before budget) ---
-docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" "$ROOT/sandbox"
+docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" -f "$ROOT/docker/Dockerfile" "$ROOT"
+IMAGE_DIGEST="$(docker image inspect "$IMAGE" --format '{{.Id}}')"
+if [ -n "$BENCH_IMAGE_DIGEST" ] && [ "$IMAGE_DIGEST" != "$BENCH_IMAGE_DIGEST" ]; then
+  if [ "$BENCH_ALLOW_OVERRIDE" = 1 ]; then
+    echo "[bench] warning: image digest is $IMAGE_DIGEST; bench.yml pins $BENCH_IMAGE_DIGEST" >&2
+  else
+    echo "sandbox image digest does not match bench.yml." >&2
+    echo "got $IMAGE_DIGEST" >&2
+    echo "expected $BENCH_IMAGE_DIGEST" >&2
+    echo "Rebuild from the published pin, or set BENCH_ALLOW_OVERRIDE=1 for a local image." >&2
+    exit 2
+  fi
+fi
 AGENT_VERSION="$(docker run --rm --network none --entrypoint pi "$IMAGE" --version 2>/dev/null | head -n 1)"
 [ -n "$AGENT_VERSION" ] || AGENT_VERSION=unknown
 source "$SCORED_DATASET_LIB"
@@ -242,6 +377,27 @@ prepare_scored_dataset
 GENERATOR_SOURCE_SHA256="$SCORED_DATASET_GENERATOR_SOURCE_SHA256"
 EXPECTED_OUTPUT="$SCORED_DATASET_EXPECTED_OUTPUT"
 SCORED_CONTAINER_INPUT=/data/measurements.txt
+
+if [ -n "$BENCH_DATASET_SHA256" ] && [ "$SCORED_DATASET_SHA256" != "$BENCH_DATASET_SHA256" ]; then
+  if [ "$BENCH_ALLOW_OVERRIDE" = 1 ]; then
+    echo "[bench] warning: dataset sha256 is $SCORED_DATASET_SHA256; bench.yml pins $BENCH_DATASET_SHA256" >&2
+  else
+    echo "scored dataset sha256 does not match bench.yml." >&2
+    echo "got $SCORED_DATASET_SHA256" >&2
+    echo "expected $BENCH_DATASET_SHA256" >&2
+    exit 2
+  fi
+fi
+if [ -n "$BENCH_GENERATOR_SHA256" ] && [ "$GENERATOR_SOURCE_SHA256" != "$BENCH_GENERATOR_SHA256" ]; then
+  if [ "$BENCH_ALLOW_OVERRIDE" = 1 ]; then
+    echo "[bench] warning: generator sha256 is $GENERATOR_SOURCE_SHA256; bench.yml pins $BENCH_GENERATOR_SHA256" >&2
+  else
+    echo "generator source sha256 does not match bench.yml." >&2
+    echo "got $GENERATOR_SOURCE_SHA256" >&2
+    echo "expected $BENCH_GENERATOR_SHA256" >&2
+    exit 2
+  fi
+fi
 
 # The volume is mounted read-only into the agent container, but its file is
 # root-owned and mode 0600 until pi exits. This preserves the held-out input
@@ -262,8 +418,8 @@ fi
 # (chown via docker so the script works without host sudo.)
 mkdir -p "$RUNDIR/work/submission"
 mkdir -p "$RUNDIR/lifecycle"
-cp "$ROOT/sandbox/program.md" "$RUNDIR/work/program.md"
-cp -r "$ROOT/sandbox/tools" "$RUNDIR/work/tools"
+cp "$ROOT/task/program.md" "$RUNDIR/work/program.md"
+cp -r "$ROOT/task/tools" "$RUNDIR/work/tools"
 cp "$ROOT/judge/reference.py" "$RUNDIR/work/tools/reference.py"
 find "$RUNDIR/work/tools" -maxdepth 1 -type f -exec chmod +x {} +
 docker run --rm \
@@ -290,8 +446,8 @@ require_network_ready() {
   [ "$proxy_label" = allowlist-v1 ] \
     || { echo "proxy $PROXY_NAME does not have the expected policy label" >&2; return 1; }
   proxy_image="$(docker inspect -f '{{.Config.Image}}' "$PROXY_NAME")"
-  [ "$proxy_image" = 1brc-allowlist-proxy ] \
-    || { echo "proxy $PROXY_NAME uses unexpected image $proxy_image" >&2; return 1; }
+  [ "$proxy_image" = "$BENCH_PROXY_IMAGE" ] \
+    || { echo "proxy $PROXY_NAME uses unexpected image $proxy_image (bench.yml wants $BENCH_PROXY_IMAGE)" >&2; return 1; }
   proxy_ip="$(docker inspect -f '{{(index .NetworkSettings.Networks "1brc-agent-net").IPAddress}}' "$PROXY_NAME")"
   [ "$proxy_ip" = "$PROXY_IP" ] \
     || { echo "proxy IP is $proxy_ip, expected $PROXY_IP" >&2; return 1; }
@@ -309,8 +465,32 @@ require_network_ready
 PROXY_ALLOW_DOMAINS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^ALLOW_DOMAINS=//p')"
 [ -n "$PROXY_ALLOW_DOMAINS" ] || { echo "proxy has no recorded allowlist" >&2; exit 1; }
 PROXY_LOCAL_FORWARD_PORT="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^LOCAL_FORWARD_PORT=//p')"
+PROXY_IDLE_TIMEOUT_MS="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$PROXY_NAME" | sed -n 's/^PROXY_IDLE_TIMEOUT_MS=//p')"
+if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
+  if [ -z "$PROXY_IDLE_TIMEOUT_MS" ]; then
+    echo "1brc-proxy was started without PROXY_IDLE_TIMEOUT_MS." >&2
+    echo "Cursor sessions need CONNECT idle timeouts disabled (or >= CURSOR_PROXY_TIMEOUT_MS)." >&2
+    echo "Rerun: sudo ./harness/setup_network.sh" >&2
+    exit 1
+  fi
+  case "$PROXY_IDLE_TIMEOUT_MS" in
+    0) ;;
+    *[!0-9]*)
+      echo "1brc-proxy PROXY_IDLE_TIMEOUT_MS is invalid: $PROXY_IDLE_TIMEOUT_MS" >&2
+      exit 1
+      ;;
+    *)
+      if [ "$PROXY_IDLE_TIMEOUT_MS" -lt "$CURSOR_PROXY_TIMEOUT_MS" ]; then
+        echo "1brc-proxy idle timeout ${PROXY_IDLE_TIMEOUT_MS}ms is shorter than CURSOR_PROXY_TIMEOUT_MS=$CURSOR_PROXY_TIMEOUT_MS." >&2
+        echo "Idle CONNECT kills during Cursor thinking/tools show up as pi errorMessage=terminated." >&2
+        echo "Rerun: sudo ./harness/setup_network.sh" >&2
+        exit 1
+      fi
+      ;;
+  esac
+fi
 
-echo "[$SLUG] starting: budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS}"
+echo "[$SLUG] starting: host=$BENCH_HOST budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS} cpus=$NCPUS mem=$MEM"
 
 # --- launch pi headless inside the sandbox ---
 GOAL_PROMPT="Read program.md and follow it exactly. Run fully autonomously — never stop, never ask for input, never wait for a human. Goal: make /work/submission/run.sh the fastest CORRECT solution for Round ${ROUND} (${ROUND} is defined in program.md) within your ${BUDGET_MIN}-minute budget. Keep run.sh valid at all times once your first correct version exists.
@@ -338,7 +518,7 @@ SESSION_START_EPOCH="$(date +%s)"
 deadline=$(( SESSION_START_EPOCH + BUDGET_MIN * 60 ))
 CONTROL_DIR="$RUNDIR/control"
 LIFECYCLE_DIR="$RUNDIR/lifecycle"
-TIME_TOOL="$ROOT/sandbox/tools/remaining_time.py"
+TIME_TOOL="$ROOT/task/tools/remaining_time.py"
 [ -f "$TIME_TOOL" ] || { echo "missing remaining-time tool: $TIME_TOOL" >&2; exit 1; }
 mkdir -p "$CONTROL_DIR"
 printf '{"budget_seconds":%s,"started_epoch":%s,"deadline_epoch":%s,"wrapup_seconds":%s}\n' \
@@ -418,8 +598,19 @@ docker run --rm \
   > "$RUNDIR/events.jsonl" 2> "$RUNDIR/pi.err" &
 AGENT_PID=$!
 
-sleep 2
-CID="$(docker ps -q --filter "name=1brc-${SLUG}-${STAMP}")"
+# Overlayfs/vfs-backed and other cold starts can take well over 2s before
+# the container appears in `docker ps`. Poll for the id instead of a fixed sleep.
+CID=""
+for _ in $(seq 1 60); do
+  if ! kill -0 "$AGENT_PID" 2>/dev/null; then
+    break
+  fi
+  CID="$(docker ps -q --filter "name=1brc-${SLUG}-${STAMP}")"
+  if [ -n "$CID" ]; then
+    break
+  fi
+  sleep 1
+done
 echo "$CID" > "$CID_FILE"
 
 # --- wait for pi to finish while keeping the container alive for scoring ---
@@ -524,6 +715,10 @@ fi
 {
   echo "slug: $SLUG"
   echo "profile: $PROFILE"
+  echo "bench_file: $BENCH_FILE"
+  echo "bench_sha256: $BENCH_SHA256"
+  echo "bench_host: $BENCH_HOST"
+  echo "bench_allow_override: $BENCH_ALLOW_OVERRIDE"
   echo "round: $ROUND"
   echo "budget_min: $BUDGET_MIN"
   echo "scored_rows: $SCORED_ROWS"
@@ -552,18 +747,24 @@ fi
   echo "proxy_ip: $PROXY_IP"
   echo "proxy_allow_domains: $PROXY_ALLOW_DOMAINS"
   echo "proxy_local_forward_port: $PROXY_LOCAL_FORWARD_PORT"
+  echo "proxy_idle_timeout_ms: ${PROXY_IDLE_TIMEOUT_MS:-}"
   echo "cursor_proxy_execution: ${CURSOR_PROXY_IN_CONTAINER:-host}"
   echo "cursor_proxy_timeout_ms: ${CURSOR_PROXY_TIMEOUT_MS:-0}"
+  echo "pi_http_idle_timeout_ms: $([ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ] && echo 0 || echo default)"
   echo "credential_isolation: process-shared"
-  echo "image: $(docker image inspect "$IMAGE" --format '{{.Id}}')"
-  echo "proxy_image: $(docker image inspect 1brc-allowlist-proxy --format '{{.Id}}')"
+  echo "image: $IMAGE_DIGEST"
+  echo "proxy_image: $(docker image inspect "$BENCH_PROXY_IMAGE" --format '{{.Id}}')"
   echo "host: $(uname -srmo)"
   echo "cpus: $(nproc)"
   echo "requested_cpu_quota: $NCPUS"
   echo "requested_memory_limit: $MEM"
+  echo "bench_hardware_cpu: \"$BENCH_HARDWARE_CPU\""
+  echo "bench_hardware_physical_cores: $BENCH_HARDWARE_PHYSICAL_CORES"
+  echo "bench_hardware_logical_cpus: $BENCH_HARDWARE_LOGICAL_CPUS"
+  echo "bench_hardware_storage: \"$BENCH_HARDWARE_STORAGE\""
   echo "host_cpu_model: \"$(lscpu | sed -n 's/^Model name:[[:space:]]*//p' | head -n 1)\""
   echo "host_cpu_microcode: \"$(lscpu | sed -n 's/^Microcode version:[[:space:]]*//p' | head -n 1)\""
-  echo "warm_cache_policy: one_untimed_warmup_then_${RUNS_N}_timed_runs"
+  echo "warm_cache_policy: ${WARMUP_RUNS}_untimed_warmup_then_${RUNS_N}_timed_runs"
   echo "budget_started_epoch: $SESSION_START_EPOCH"
   echo "budget_deadline_epoch: $deadline"
   echo "budget_wrapup_seconds: $BUDGET_WRAPUP_SEC"

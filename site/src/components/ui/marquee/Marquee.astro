@@ -1,0 +1,57 @@
+---
+// src/components/ui/marquee/Marquee.astro — astro-boiler primitive (see ../README.md).
+// Seamless pure-CSS infinite scroll (Preline / magic-ui pattern). The slotted content is rendered
+// `repeat` times as identical side-by-side tracks; every track runs the same keyframe and shifts one
+// full copy width + one gap, so as one track scrolls out the next is already in its place — the loop
+// has no seam. Copies after the first are aria-hidden (visual duplicates). `motion-reduce:animate-none`
+// respects reduced-motion (non-negotiable a11y). Keyframes + --animate-marquee* tokens live in
+// src/styles/tailwind-theme.css; --marquee-gap there must match the gap utilities below. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof marquee> & { pauseOnHover?: boolean; repeat?: number };
+
+export const marquee = tv({
+  base: ["group flex gap-[var(--marquee-gap,1rem)] overflow-hidden"],
+  variants: {
+    direction: { left: "flex-row", right: "flex-row", up: "flex-col", down: "flex-col" },
+    speed: {
+      slow: "[--marquee-duration:60s]",
+      normal: "[--marquee-duration:30s]",
+      fast: "[--marquee-duration:15s]",
+    },
+  },
+  defaultVariants: { direction: "left", speed: "normal" },
+});
+
+const {
+  direction = "left",
+  speed,
+  pauseOnHover = true,
+  repeat = 4,
+  class: className,
+  ...rest
+} = Astro.props;
+const vertical = direction === "up" || direction === "down";
+const reverse = direction === "right" || direction === "down";
+// ponytail: `repeat` copies fill the viewport; if content is much narrower than the viewport, raise
+// it (each copy is one more render of the slot). At least 2 are needed for the loop to close.
+const copies = Math.max(2, repeat);
+const track = [
+  vertical ? "animate-marquee-vertical flex-col" : "animate-marquee flex-row",
+  "flex shrink-0 items-center gap-[var(--marquee-gap,1rem)] motion-reduce:animate-none",
+  reverse && "[animation-direction:reverse]",
+  pauseOnHover && "group-hover:[animation-play-state:paused]",
+];
+---
+
+<div class={marquee({ direction, speed, class: className })} data-slot="marquee" {...rest}>
+  {
+    Array.from({ length: copies }).map((_, i) => (
+      <div class:list={track} aria-hidden={i > 0 ? "true" : undefined}>
+        <slot />
+      </div>
+    ))
+  }
+</div>

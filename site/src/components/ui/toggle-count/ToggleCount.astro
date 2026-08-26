@@ -1,0 +1,62 @@
+---
+// src/components/ui/toggle-count/ToggleCount.astro — astro-boiler primitive (see ../README.md).
+// A two-value toggle (e.g. Monthly / Annual pricing) built on the Switch primitive (ladder rung 2).
+// Every <ToggleCountValue for={id}> on the page swaps between its `min` (off) and `max` (on) text when
+// this toggle flips — wired by the small bundled script. `id` links the toggle to its values. The two
+// side labels are plain text (only the switch is interactive, so a label can't fight the toggle).
+import Switch from "@components/ui/switch";
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof toggleCount> & { id: string; offLabel?: string; onLabel?: string };
+
+export const toggleCount = tv({
+  base: ["inline-flex items-center gap-3 text-sm font-medium"],
+});
+
+const { id, offLabel = "Monthly", onLabel = "Annual", class: className, ...rest } = Astro.props;
+---
+
+<div
+  class={toggleCount({ class: className })}
+  data-slot="toggle-count"
+  data-toggle-count-id={id}
+  {...rest}
+>
+  <span class="text-foreground" data-slot="toggle-count-off">{offLabel}</span>
+  <Switch id={id} aria-label={`Toggle between ${offLabel} and ${onLabel}`} />
+  <span class="text-muted-foreground" data-slot="toggle-count-on">{onLabel}</span>
+</div>
+
+<script>
+  import { onReady } from "../_client";
+
+  function wire(root: HTMLElement) {
+    const input = root.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    const id = root.dataset.toggleCountId;
+    if (!input || !id) return;
+    const off = root.querySelector<HTMLElement>('[data-slot="toggle-count-off"]');
+    const on = root.querySelector<HTMLElement>('[data-slot="toggle-count-on"]');
+    const values = document.querySelectorAll<HTMLElement>(
+      `[data-slot="toggle-count-value"][data-toggle-count="${id}"]`,
+    );
+
+    const sync = () => {
+      const checked = input.checked;
+      values.forEach((el) => {
+        el.textContent = (checked ? el.dataset.max : el.dataset.min) ?? "";
+      });
+      // Dim the inactive side so the current value reads at a glance.
+      off?.classList.toggle("text-muted-foreground", checked);
+      off?.classList.toggle("text-foreground", !checked);
+      on?.classList.toggle("text-foreground", checked);
+      on?.classList.toggle("text-muted-foreground", !checked);
+    };
+
+    input.addEventListener("change", sync);
+    sync();
+  }
+
+  onReady('[data-slot="toggle-count"]', wire);
+</script>

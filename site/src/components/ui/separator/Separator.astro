@@ -1,0 +1,30 @@
+---
+// src/components/ui/separator/Separator.astro — astro-boiler primitive (see ../README.md).
+// Token-colored rule; `orientation` switches axis. role="separator" for assistive tech.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof separator>;
+
+export const separator = tv({
+  base: ["bg-border shrink-0 border-0"],
+  variants: {
+    orientation: {
+      horizontal: "h-px w-full",
+      vertical: "h-full w-px",
+    },
+  },
+  defaultVariants: { orientation: "horizontal" },
+});
+
+const { orientation = "horizontal", class: className, ...rest } = Astro.props;
+---
+
+<div
+  class={separator({ orientation, class: className })}
+  role="separator"
+  aria-orientation={orientation}
+  data-slot="separator"
+  {...rest}
+>
+</div>

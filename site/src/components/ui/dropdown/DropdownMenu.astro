@@ -1,0 +1,31 @@
+---
+// src/components/ui/dropdown/DropdownMenu.astro — Dropdown compound part (see ../README.md).
+// Top-layer menu via the native Popover API (`popover="auto"`): hidden until its DropdownTrigger
+// (`popovertarget` = this menu's `id`) toggles it, with native light-dismiss + Escape. `id` is
+// required (the trigger references it). `align` tells the Dropdown script which trigger edge to anchor
+// to; the script sets `top`/`left` (the menu is `fixed`). role="menu". Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof dropdownMenu> & { id: string; align?: "start" | "end" };
+
+export const dropdownMenu = tv({
+  base: [
+    "bg-card text-card-foreground border-border fixed inset-auto z-50 m-0 min-w-44 rounded-md border p-1 shadow-md",
+  ],
+});
+
+const { align = "start", class: className, ...rest } = Astro.props;
+---
+
+<div
+  popover="auto"
+  role="menu"
+  data-slot="dropdown-menu"
+  data-align={align}
+  class={dropdownMenu({ class: className })}
+  {...rest}
+>
+  <slot />
+</div>

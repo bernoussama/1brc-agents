@@ -1,0 +1,33 @@
+---
+// src/components/ui/tabs/TabsTrigger.astro — Tabs compound part (see ../README.md).
+// `value` links this tab to the TabsContent with the same value; mark the default tab `selected`.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"button"> &
+  VariantProps<typeof tabsTrigger> & { value: string; selected?: boolean };
+
+export const tabsTrigger = tv({
+  base: [
+    "text-muted-foreground -mb-px inline-flex items-center gap-2 border-b-2 border-transparent px-3 py-2 text-sm font-medium whitespace-nowrap",
+    "outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-outline",
+    "aria-selected:border-primary aria-selected:text-foreground",
+    "disabled:pointer-events-none disabled:opacity-50",
+  ],
+});
+
+const { value, selected = false, class: className, ...rest } = Astro.props;
+---
+
+<button
+  type="button"
+  role="tab"
+  data-slot="tabs-trigger"
+  data-value={value}
+  aria-selected={selected ? "true" : "false"}
+  tabindex={selected ? 0 : -1}
+  class={tabsTrigger({ class: className })}
+  {...rest}
+>
+  <slot />
+</button>

@@ -1,0 +1,43 @@
+---
+// src/components/Sections/Blog/RelatedPosts.astro — the "More Quests" related-posts strip on the
+// article page (Figma node 5:217): a SectionHeading + up to two compact cards (thumbnail + title +
+// one-line subtitle, no badge/excerpt/CTA — the lighter sibling of ContentCard). Shares the
+// PixelCardLink shell with ContentCard, so only the body differs. <Reveal> below the fold; renders
+// nothing if empty.
+import PixelCardLink from "@components/Cards/PixelCardLink.astro";
+import SectionHeading from "@components/Sections/Global/SectionHeading.astro";
+import { Reveal } from "@components/ui/reveal";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  posts: readonly CollectionEntry<"blog">[];
+}
+const { posts } = Astro.props as Props;
+---
+
+{
+  posts.length > 0 && (
+    <Reveal as="section" aria-labelledby="more-quests-heading" class="flex flex-col gap-6">
+      <SectionHeading id="more-quests-heading" title="More Quests" />
+
+      <ul class="grid gap-6 sm:grid-cols-2">
+        {posts.map((post) => (
+          <li>
+            <PixelCardLink
+              href={`/blog/${post.id}/`}
+              image={post.data.heroImage}
+              imageAlt={post.data.heroImageAlt}
+            >
+              <div class="flex flex-1 flex-col gap-2 p-4">
+                <h3 class="h3 text-card-foreground group-hover:text-info text-balance transition-colors motion-reduce:transition-none">
+                  {post.data.title}
+                </h3>
+                <p class="text-muted-foreground line-clamp-1 text-sm">{post.data.description}</p>
+              </div>
+            </PixelCardLink>
+          </li>
+        ))}
+      </ul>
+    </Reveal>
+  )
+}

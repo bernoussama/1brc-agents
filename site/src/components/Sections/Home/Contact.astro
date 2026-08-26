@@ -1,0 +1,56 @@
+---
+// src/components/Sections/Home/Contact.astro — Figma "Contact Section" (node 14:137).
+//
+// Section heading + a centred prompt, two pixel CTAs (EMAIL ME blue / LET'S TALK pink), and a row of
+// social chips (PixelChip links). Below-the-fold → <Reveal>. Buttons stack on phones. Tokens only.
+//
+// WIRING (real, not transcribed): the prompt comes from portfolioData.contact; EMAIL ME → mailto
+// author email; the three social chips resolve through `@config/socialData`, which owns each
+// platform's label, glyph and sameAs derivation (including Twitter's author-handle preference).
+// LET'S TALK → /contact/.
+import SectionHeading from "@components/Sections/Global/SectionHeading.astro";
+import { Reveal } from "@components/ui/reveal";
+import portfolioData from "@config/portfolioData.json";
+import siteData from "@config/siteData.json";
+import { socialLink } from "@config/socialData.json";
+
+import PixelChip from "./PixelChip.astro";
+
+const socials = [socialLink("github"), socialLink("twitter"), socialLink("linkedin")];
+---
+
+<Reveal as="section" aria-labelledby="contact-heading" class="flex flex-col gap-6">
+  <SectionHeading id="contact-heading" title="Contact" />
+
+  <div class="flex flex-col items-center gap-6 text-center">
+    <p class="text-muted-foreground max-w-2xl text-base">{portfolioData.contact.prompt}</p>
+
+    <div class="flex flex-col gap-4 sm:flex-row">
+      <a
+        href={`mailto:${siteData.author.email}`}
+        class="pixel-btn pixel-btn--blue px-5 py-4 text-sm uppercase sm:text-base"
+      >
+        Email Me
+      </a>
+      <a href="/contact/" class="pixel-btn px-5 py-4 text-sm uppercase sm:text-base">
+        Let's Talk
+      </a>
+    </div>
+
+    <ul class="flex flex-wrap justify-center gap-4">
+      {
+        socials.map((social) => (
+          <li>
+            <PixelChip
+              icon={social.name}
+              label={social.label}
+              href={social.href}
+              ariaLabel={`${social.label} profile`}
+              external
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Reveal>

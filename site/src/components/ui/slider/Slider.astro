@@ -1,0 +1,44 @@
+---
+// src/components/ui/slider/Slider.astro — astro-boiler primitive (see ../README.md).
+// Native <input type="range"> styled cross-browser via the range pseudo-elements: a rounded
+// `bg-muted` track and a `bg-primary` thumb ringed in `background` (so it reads on either track color),
+// with a focus ring on the thumb. Firefox also fills the progressed portion (`::-moz-range-progress`);
+// WebKit has no progress pseudo, so its track stays uniform. Zero-JS. Pass native min/max/step/value/
+// disabled through; give it a name via `id`/`name` and a label via `aria-label` or an associated Label.
+//
+// ponytail: no filled portion in WebKit/Blink without JS (there's no `::-webkit-*-progress`). If a
+// design needs the fill on all browsers, mirror `value` into a `--fill` custom property from a small
+// script and paint the track with a gradient — kept out here to stay zero-JS.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"input"> & VariantProps<typeof slider>;
+
+export const slider = tv({
+  base: [
+    "w-full cursor-pointer appearance-none bg-transparent outline-none",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+    // track
+    "[&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-runnable-track]:rounded-full",
+    "[&::-moz-range-track]:bg-muted [&::-moz-range-track]:rounded-full",
+    "[&::-moz-range-progress]:bg-primary [&::-moz-range-progress]:rounded-full",
+    // thumb — negative top margin recenters it on the thinner track (offset is -mt-1 at both sizes)
+    "[&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:border-background [&::-webkit-slider-thumb]:-mt-1 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:shadow-sm",
+    "[&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-background [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:shadow-sm",
+    // focus ring on the thumb
+    "[&:focus-visible::-webkit-slider-thumb]:ring-outline [&:focus-visible::-webkit-slider-thumb]:ring-3",
+    "[&:focus-visible::-moz-range-thumb]:ring-outline [&:focus-visible::-moz-range-thumb]:ring-3",
+  ],
+  variants: {
+    size: {
+      sm: "h-4 [&::-webkit-slider-runnable-track]:h-1 [&::-moz-range-track]:h-1 [&::-moz-range-progress]:h-1 [&::-webkit-slider-thumb]:size-3 [&::-moz-range-thumb]:size-3",
+      md: "h-5 [&::-webkit-slider-runnable-track]:h-2 [&::-moz-range-track]:h-2 [&::-moz-range-progress]:h-2 [&::-webkit-slider-thumb]:size-4 [&::-moz-range-thumb]:size-4",
+    },
+  },
+  defaultVariants: { size: "md" },
+});
+
+const { size, class: className, ...rest } = Astro.props;
+---
+
+<input type="range" class={slider({ size, class: className })} data-slot="slider" {...rest} />
