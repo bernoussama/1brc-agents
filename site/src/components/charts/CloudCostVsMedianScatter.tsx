@@ -19,13 +19,17 @@ type PlacedLabel = {
   textX: number;
   textY: number;
   anchor: "start" | "end";
+  /** When set, draw a callout from the point into the right label rail. */
+  railX: number | null;
 };
 
-const MARGINS = { top: 28, right: 140, bottom: 48, left: 56 };
+const MARGINS = { top: 28, right: 188, bottom: 48, left: 56 };
 const POINT_R = 5;
 const LABEL_GAP = 10;
-const LABEL_LINE = 13;
+const LABEL_LINE = 15;
 const TICK_COUNT = 5;
+/** Models at/above this cost keep an inline label; cheaper ones use the right rail. */
+const INLINE_COST_FLOOR = 5;
 
 function withCost(run: CloudAgentRun): run is CloudAgentRun & { costUsd: number } {
   return run.metricsAvailable && run.costUsd != null;
@@ -39,7 +43,10 @@ function buildPoints(): CostPoint[] {
   }));
 }
 
-/** Greedy label placement: prefer right of the point, flip/nudge to reduce overlap. */
+/**
+ * High-cost points get inline labels; the dense cheap cluster uses a right-side
+ * rail with leader lines so names stay readable.
+ */
 function placeLabels(
   points: CostPoint[],
   xOf: (v: number) => number,
@@ -47,46 +54,54 @@ function placeLabels(
   plotWidth: number,
   plotHeight: number,
 ): PlacedLabel[] {
-  const placed: PlacedLabel[] = [];
-  const roughWidth = (label: string) => Math.min(label.length * 7.2, 168);
+  const inline: PlacedLabel[] = [];
+  const railCandidates: CostPoint[] = [];
 
   for (const point of points) {
     const x = xOf(point.median);
     const y = yOf(point.costUsd);
-    const preferRight = x < plotWidth * 0.62;
-    let anchor: "start" | "end" = preferRight ? "start" : "end";
-    let textX = preferRight ? x + LABEL_GAP : x - LABEL_GAP;
-    let textY = y - 2;
-
-    // Keep labels inside the plot + right margin band.
-    if (anchor === "start" && textX + roughWidth(point.model) > plotWidth + MARGINS.right - 8) {
-      anchor = "end";
-      textX = x - LABEL_GAP;
-    }
-    if (anchor === "end" && textX - roughWidth(point.model) < -MARGINS.left + 4) {
-      anchor = "start";
-      textX = x + LABEL_GAP;
-    }
-    textY = Math.max(LABEL_LINE, Math.min(plotHeight - 2, textY));
-
-    // Nudge vertically away from already-placed labels with similar x.
-    for (let attempt = 0; attempt < 8; attempt++) {
-      const conflict = placed.some((other) => {
-        const sameSide = other.anchor === anchor;
-        const dx = Math.abs(other.textX - textX);
-        const dy = Math.abs(other.textY - textY);
-        const widthBudget = Math.max(roughWidth(other.model), roughWidth(point.model)) * 0.55;
-        return sameSide && dx < widthBudget && dy < LABEL_LINE;
+    if (point.costUsd >= INLINE_COST_FLOOR) {
+      const preferRight = x < plotWidth * 0.7;
+      inline.push({
+        model: point.model,
+        x,
+        y,
+        textX: preferRight ? x + LABEL_GAP : x - LABEL_GAP,
+        textY: Math.max(LABEL_LINE, y - 2),
+        anchor: preferRight ? "start" : "end",
+        railX: null,
       });
-      if (!conflict) break;
-      textY += attempt % 2 === 0 ? LABEL_LINE : -LABEL_LINE;
-      textY = Math.max(LABEL_LINE, Math.min(plotHeight - 2, textY));
+    } else {
+      railCandidates.push(point);
     }
-
-    placed.push({ model: point.model, x, y, textX, textY, anchor });
   }
 
-  return placed;
+  // Top → bottom by cost so the rail order matches the vertical point order.
+  const railSorted = [...railCandidates].sort(
+    (a, b) => b.costUsd - a.costUsd || a.median - b.median,
+  );
+  const railX = plotWidth + 14;
+  const textX = railX + 8;
+  const needed = Math.max(0, (railSorted.length - 1) * LABEL_LINE);
+  const span = Math.max(needed, plotHeight * 0.55);
+  const startY = Math.max(LABEL_LINE, (plotHeight - span) / 2);
+
+  const rail: PlacedLabel[] = railSorted.map((point, i) => {
+    const x = xOf(point.median);
+    const y = yOf(point.costUsd);
+    const textY = Math.min(plotHeight - 4, startY + i * (span / Math.max(1, railSorted.length - 1)));
+    return {
+      model: point.model,
+      x,
+      y,
+      textX,
+      textY,
+      anchor: "start" as const,
+      railX,
+    };
+  });
+
+  return [...inline, ...rail];
 }
 
 export type CloudCostVsMedianScatterProps = {
@@ -121,14 +136,8 @@ export function CloudCostVsMedianScatter({
   const xMax = Math.max(...points.map((p) => p.median), 1);
   const yMax = Math.max(...points.map((p) => p.costUsd), 1);
 
-  const xScale = scaleLinear()
-    .domain([0, xMax])
-    .nice()
-    .range([0, plotWidth]);
-  const yScale = scaleLinear()
-    .domain([0, yMax])
-    .nice()
-    .range([plotHeight, 0]);
+  const xScale = scaleLinear().domain([0, xMax]).nice().range([0, plotWidth]);
+  const yScale = scaleLinear().domain([0, yMax]).nice().range([plotHeight, 0]);
 
   const labels = ready
     ? placeLabels(points, (v) => xScale(v), (v) => yScale(v), plotWidth, plotHeight)
@@ -217,12 +226,22 @@ export function CloudCostVsMedianScatter({
                     transition: `opacity ${Math.min(400, animationDuration)}ms ease`,
                   }}
                 >
-                  {labels.map((label, i) => {
-                    const point = points[i];
+                  {labels.map((label) => {
+                    const point = points.find((p) => p.model === label.model);
+                    if (!point) return null;
                     const title = `${point.model}: ${formatSecondsFromMs(point.median)}, ${formatUsd(point.costUsd)}`;
                     return (
                       <g key={label.model}>
                         <title>{title}</title>
+                        {label.railX != null ? (
+                          <path
+                            d={`M ${label.x + POINT_R} ${label.y} L ${label.railX} ${label.textY} L ${label.textX - 2} ${label.textY}`}
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1}
+                            className="stroke-muted-foreground/50"
+                          />
+                        ) : null}
                         <circle
                           cx={label.x}
                           cy={label.y}
