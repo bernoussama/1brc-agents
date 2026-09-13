@@ -37,6 +37,7 @@ ids = [m["id"] for m in provider["models"]]
 assert ids == ["gpt-6-astra"], ids
 astra = provider["models"][0]
 assert astra["thinkingLevelMap"]["medium"] == "medium"
+assert astra["thinkingLevelMap"]["high"] == "high"
 PY
 
 echo "gpt codex profile tests: ok"
