@@ -6,8 +6,8 @@
       "apiKey": "!printenv OPENROUTER_API_KEY",
       "models": [
         {
-          "id": "deepseek/deepseek-v4.1-flash:deepseek",
-          "name": "DeepSeek V4.1 Flash (OpenRouter, DeepSeek)",
+          "id": "deepseek/deepseek-v4.1-flash:floor",
+          "name": "DeepSeek V4.1 Flash (OpenRouter, floor)",
           "reasoning": true,
           "input": ["text", "image"],
           "contextWindow": 1000000,
