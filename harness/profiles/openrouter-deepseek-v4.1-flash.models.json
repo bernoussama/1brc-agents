@@ -1,0 +1,23 @@
+{
+  "providers": {
+    "openrouter": {
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "api": "openai-completions",
+      "apiKey": "!printenv OPENROUTER_API_KEY",
+      "models": [
+        {
+          "id": "deepseek/deepseek-v4.1-flash:floor",
+          "name": "DeepSeek V4.1 Flash (OpenRouter, floor)",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "contextWindow": 1000000,
+          "maxTokens": 131072,
+          "compat": {
+            "thinkingFormat": "openrouter",
+            "supportsReasoningEffort": true
+          }
+        }
+      ]
+    }
+  }
+}
