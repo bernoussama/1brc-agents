@@ -1,0 +1,41 @@
+---
+// src/components/ui/badge/Badge.astro — astro-boiler primitive (see ../README.md).
+// Static status pill; semantic tone via `variant`. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"span"> & VariantProps<typeof badge>;
+
+export const badge = tv({
+  base: ["inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium"],
+  variants: {
+    variant: {
+      primary: "bg-primary text-primary-foreground",
+      secondary: "bg-secondary text-secondary-foreground",
+      muted: "bg-muted text-muted-foreground",
+      outline: "border-border text-foreground border",
+      info: "bg-info text-info-foreground",
+      success: "bg-success text-success-foreground",
+      warning: "bg-warning text-warning-foreground",
+      error: "bg-error text-error-foreground",
+    },
+    // `pixel` is the 8-BitQuest retro treatment (Figma "Background+Border" tag: PLAYER 1 / QUEST /
+    // LORE / TECH / PROJECT). Same opt-in-variant pattern as ui/nav's `retro`. It re-tunes the shell
+    // only — 2px black frame, chunkier padding, bold uppercase Space Mono — and reuses the tone
+    // `variant` for colour. tailwind-merge (via tv) lets these win over the base px/py/font-weight.
+    pixel: {
+      true: "border-2 border-border px-2.5 py-1 font-bold tracking-wide uppercase",
+      false: "",
+    },
+  },
+  defaultVariants: { variant: "primary" },
+});
+
+/** The badge tone names — consumed by content-aware cards that map a category to a tone. */
+export type BadgeVariant = NonNullable<VariantProps<typeof badge>["variant"]>;
+
+const { variant, pixel, class: className, ...rest } = Astro.props;
+---
+
+<span class={badge({ variant, pixel, class: className })} data-slot="badge" {...rest}><slot /></span
+>

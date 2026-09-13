@@ -1,0 +1,32 @@
+---
+// src/components/ui/mega-menu/MegaMenuTrigger.astro — MegaMenu compound part (see ../README.md).
+// Button that toggles the MegaMenuPanel whose `id` equals this trigger's `for`, via the native
+// Popover API (`popovertarget`). Reuses the NavLink look so it sits seamlessly between NavLinks in a
+// Nav bar. The chevron rotates while the panel is open — the shared `_popover` controller syncs
+// `aria-expanded`, which drives the rotation. No `aria-haspopup`: the panel is a plain region of
+// links, not a menu, so button + aria-expanded is the correct disclosure pattern. Tokens only.
+import { navLink } from "@components/ui/nav/NavLink.astro";
+import type { HTMLAttributes } from "astro/types";
+import type { VariantProps } from "tailwind-variants";
+
+import Chevron from "../_Chevron.astro";
+
+type Props = HTMLAttributes<"button"> & VariantProps<typeof navLink> & { for: string };
+
+const { for: target, variant, class: className, ...rest } = Astro.props;
+---
+
+<button
+  type="button"
+  popovertarget={target}
+  aria-expanded="false"
+  data-slot="mega-menu-trigger"
+  class={navLink({
+    variant,
+    class: ["cursor-pointer [&[aria-expanded=true]_svg]:rotate-180", className],
+  })}
+  {...rest}
+>
+  <slot />
+  <Chevron />
+</button>

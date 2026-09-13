@@ -1,0 +1,68 @@
+---
+// src/components/Sections/About/SkillTree.astro — Figma "Skill Tree Section" (node 5:331).
+//
+// Section heading + three centred "skill cards" (tag + icon + name). Distinct from the home
+// TechStack's inline PixelChips: these are larger vertical cards, so the layout is reproduced here
+// (used once → an inline map, not a new component). Below the fold → <Reveal>. Tokens only.
+//
+// The tag is a small pixel tag: a WHITE surface in light mode (dark keeps the mock's inverted black
+// surface), with a coloured frame + label. It doesn't map to the ui/badge `pixel` variant (tone bg +
+// dark ink) — it's a small whole-class tone map here. On the white light surface the green/pink tones
+// are deepened to their -700 step for contrast; the neon shades ride under `dark:` for the dark tag.
+// CONTENT: retro flavour (typed local) — a curated three, using the same pixel `svg/pixel-icons`
+// glyphs the home TechStack picked (JS→code, Python→flash, React→component). NOTE: this is an
+// independent literal from TechStack's (three toned cards here vs eight chips there, a different
+// curation), so the two are NOT kept in sync automatically — edit both if you want them aligned.
+import SectionHeading from "@components/Sections/Global/SectionHeading.astro";
+import { PixelIcon, type PixelIconName } from "@components/svg/pixel-icons";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import { Reveal } from "@components/ui/reveal";
+
+type Tone = "success" | "secondary" | "info";
+const skills: readonly { name: string; icon: PixelIconName; tone: Tone }[] = [
+  { name: "JavaScript", icon: "code", tone: "success" },
+  { name: "Python", icon: "flash", tone: "secondary" },
+  { name: "React", icon: "component", tone: "info" },
+];
+
+// Whole static classes per tone (never interpolate a class name — invisible to the compiler). The
+// tag composes both; the icon takes just the text colour — one source for each so they can't drift.
+// Light/dark pairs: the deepened -700 tones read on the white light-mode tag (and card), the neon
+// semantics ride under `dark:` for the inverted dark tag. `info` already flips deep→airy, no pair.
+const toneText: Record<Tone, string> = {
+  success: "text-success-700 dark:text-success",
+  secondary: "text-secondary-700 dark:text-secondary",
+  info: "text-info",
+};
+const toneBorder: Record<Tone, string> = {
+  success: "border-success-700 dark:border-success",
+  secondary: "border-secondary-700 dark:border-secondary",
+  info: "border-info",
+};
+---
+
+<Reveal as="section" aria-labelledby="skill-tree-heading" class="flex flex-col gap-6">
+  <SectionHeading id="skill-tree-heading" title="Tech Stack" />
+
+  <ul class="grid gap-6 sm:grid-cols-3">
+    {
+      skills.map((skill) => (
+        <PixelPanel as="li" class="flex flex-col items-center gap-3 p-4">
+          <span
+            class:list={[
+              "bg-card dark:bg-border border-2 px-2 py-1 text-xs font-bold uppercase",
+              toneBorder[skill.tone],
+              toneText[skill.tone],
+            ]}
+          >
+            {skill.name}
+          </span>
+          <PixelIcon name={skill.icon} class:list={["size-8", toneText[skill.tone]]} />
+          <span class="font-display text-foreground text-center text-sm uppercase">
+            {skill.name}
+          </span>
+        </PixelPanel>
+      ))
+    }
+  </ul>
+</Reveal>

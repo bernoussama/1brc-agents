@@ -1,0 +1,15 @@
+---
+// src/components/ui/table/TableBody.astro — Table compound part (see ../README.md). Wraps <tbody>.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"tbody"> & VariantProps<typeof tableBody>;
+
+export const tableBody = tv({
+  base: ["[&_tr:last-child]:border-0"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<tbody class={tableBody({ class: className })} data-slot="table-body" {...rest}><slot /></tbody>

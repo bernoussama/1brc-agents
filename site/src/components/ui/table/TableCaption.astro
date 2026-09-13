@@ -1,0 +1,17 @@
+---
+// src/components/ui/table/TableCaption.astro — Table compound part (see ../README.md). Wraps <caption>.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"caption"> & VariantProps<typeof tableCaption>;
+
+export const tableCaption = tv({
+  base: ["text-muted-foreground mt-4 text-sm"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<caption class={tableCaption({ class: className })} data-slot="table-caption" {...rest}
+  ><slot /></caption
+>

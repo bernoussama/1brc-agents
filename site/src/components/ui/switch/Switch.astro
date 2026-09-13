@@ -1,0 +1,39 @@
+---
+// src/components/ui/switch/Switch.astro — astro-boiler primitive (see ../README.md).
+// Toggle built from a native checkbox (role=switch) hidden with `sr-only` as the `peer`; the track and
+// thumb are styled siblings driven by `peer-checked` / `peer-focus-visible`. The root <label> makes the
+// whole control clickable — give the input an accessible name via `aria-label` or an associated Label
+// (`id`/`for`). Zero-JS. Tokens only.
+//
+// Two class targets, kept explicit: the consumer `class` merges into the ROOT <label> (the sizing/box,
+// like every other primitive — rule 5), while `{...rest}` (checked/disabled/aria-*) lands on the native
+// <input>. The track's own styling is the exported `switchTrack` recipe (data-slot=switch-track); the
+// h-6/w-11 dimensions and the thumb's peer-checked:translate-x-5 travel are tuned together, so restyle
+// the track through the recipe/slot rather than resizing via the root class.
+import type { HTMLAttributes } from "astro/types";
+import { tv } from "tailwind-variants";
+
+type Props = HTMLAttributes<"input">;
+
+export const switchTrack = tv({
+  base: [
+    "bg-input peer-checked:bg-primary absolute inset-0 rounded-full transition-colors",
+    "peer-focus-visible:ring-3 peer-focus-visible:ring-outline",
+    "peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+  ],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<label
+  class:list={["relative inline-flex h-6 w-11 shrink-0 cursor-pointer", className]}
+  data-slot="switch"
+>
+  <input type="checkbox" role="switch" class="peer sr-only" {...rest} />
+  <span class={switchTrack()} data-slot="switch-track" aria-hidden="true"></span>
+  <span
+    class="bg-background pointer-events-none absolute top-0.5 left-0.5 size-5 rounded-full shadow-sm transition-transform peer-checked:translate-x-5"
+    data-slot="switch-thumb"
+    aria-hidden="true"></span>
+</label>

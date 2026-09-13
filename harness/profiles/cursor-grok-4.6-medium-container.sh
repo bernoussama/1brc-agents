@@ -11,6 +11,3 @@ AUTH_MODE=env
 AUTH_ENV=CURSOR_PROXY_API_KEY
 CURSOR_PROXY_IN_CONTAINER=1
 MODELS_FILE="${ROOT}/harness/profiles/cursor-grok-4.6-medium-container.models.json"
-
-NCPUS=6
-MEM=16g

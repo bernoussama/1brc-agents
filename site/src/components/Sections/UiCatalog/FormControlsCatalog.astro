@@ -1,0 +1,172 @@
+---
+// src/components/UiCatalog/FormControlsCatalog.astro — DEV-ONLY. The "Advanced form controls"
+// section of the UI catalog (Slider, InputNumber, ToggleCount, Password toggle/strength, ComboBox,
+// AdvancedSelect, and the ⌘K Searchbox palette), extracted from UiCatalog.astro so the group owns
+// its own demo data + markup instead of enlarging the catalog monolith. Rendered by UiCatalog; 404s
+// out of prod with it. Emits top-level nodes (leading group header included) so it slots into the
+// catalog's flex-col-gap-14 flow unchanged.
+import { Icon } from "@components/svg/icons";
+import { AdvancedSelect } from "@components/ui/advanced-select";
+import { ComboBox, ComboBoxOption } from "@components/ui/combobox";
+import { InputNumber } from "@components/ui/input-number";
+import Label from "@components/ui/label";
+import { PasswordInput, PasswordStrength } from "@components/ui/password";
+import { Searchbox, SearchboxItem } from "@components/ui/searchbox";
+import Separator from "@components/ui/separator";
+import Slider from "@components/ui/slider";
+import { ToggleCount, ToggleCountValue } from "@components/ui/toggle-count";
+
+const frameworks = [
+  "Astro",
+  "Next.js",
+  "Nuxt",
+  "Remix",
+  "SvelteKit",
+  "SolidStart",
+  "Qwik City",
+  "Eleventy",
+];
+const countryOptions = [
+  { value: "us", label: "United States" },
+  { value: "ca", label: "Canada", selected: true },
+  { value: "uk", label: "United Kingdom" },
+  { value: "au", label: "Australia" },
+  { value: "de", label: "Germany" },
+  { value: "fr", label: "France" },
+  { value: "jp", label: "Japan" },
+];
+const skillOptions = [
+  { value: "ts", label: "TypeScript", selected: true },
+  { value: "astro", label: "Astro", selected: true },
+  { value: "tw", label: "Tailwind CSS" },
+  { value: "node", label: "Node.js" },
+  { value: "rust", label: "Rust" },
+];
+---
+
+{/* ── Advanced form controls (advanced batch) ──────────────────────────── */}
+<header class="flex flex-col gap-1">
+  <h2 class="h2">Advanced form controls</h2>
+  <p class="description">
+    Password toggle/strength, number stepper, slider, pricing toggle, autocomplete, advanced select,
+    and a ⌘K command palette — native-first, tokens only.
+  </p>
+</header>
+
+{/* Slider */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Slider</h2>
+  <div class="flex max-w-sm flex-col gap-6">
+    <Slider aria-label="Volume" value="50" />
+    <Slider size="sm" min="0" max="100" step="10" value="30" aria-label="Brightness" />
+    <Slider value="40" disabled aria-label="Disabled slider" />
+  </div>
+</section>
+
+<Separator />
+
+{/* Input Number */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Input Number</h2>
+  <div class="flex flex-wrap items-end gap-6">
+    <div class="flex flex-col gap-2">
+      <Label for="qty">Quantity (0–10)</Label>
+      <InputNumber id="qty" value="1" min="0" max="10" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <Label for="qty-sm">Small · step 5</Label>
+      <InputNumber id="qty-sm" size="sm" value="10" min="0" max="100" step="5" />
+    </div>
+  </div>
+</section>
+
+<Separator />
+
+{/* Toggle Count */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Toggle Count</h2>
+  <div class="flex flex-col items-start gap-4">
+    <ToggleCount id="billing" offLabel="Monthly" onLabel="Annual" />
+    <p class="text-3xl font-semibold">
+      $<ToggleCountValue for="billing" min="19" max="190" /><span
+        class="text-muted-foreground text-base font-normal"
+      >
+        {" "}per <ToggleCountValue for="billing" min="month" max="year" /></span
+      >
+    </p>
+  </div>
+</section>
+
+<Separator />
+
+{/* Password */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Password — toggle &amp; strength</h2>
+  <div class="flex max-w-sm flex-col gap-2">
+    <Label for="pw">Password</Label>
+    <PasswordInput id="pw" name="password" placeholder="••••••••" />
+    <PasswordStrength for="pw" />
+  </div>
+</section>
+
+<Separator />
+
+{/* ComboBox */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">ComboBox (Autocomplete)</h2>
+  <div class="flex max-w-sm flex-col gap-2">
+    <Label for="framework">Favorite framework</Label>
+    <ComboBox id="framework" name="framework" placeholder="Search frameworks…">
+      {frameworks.map((f) => <ComboBoxOption>{f}</ComboBoxOption>)}
+    </ComboBox>
+  </div>
+</section>
+
+<Separator />
+
+{/* Advanced Select */}
+<section class="flex flex-col gap-6">
+  <h2 class="h3">Advanced Select</h2>
+  <div class="flex flex-wrap gap-6">
+    <div class="flex w-64 flex-col gap-2">
+      <Label for="country">Country (searchable)</Label>
+      <AdvancedSelect
+        id="country"
+        name="country"
+        search
+        options={countryOptions}
+        placeholder="Select a country…"
+      />
+    </div>
+    <div class="flex w-64 flex-col gap-2">
+      <Label for="skills">Skills (multiple)</Label>
+      <AdvancedSelect
+        id="skills"
+        name="skills"
+        multiple
+        search
+        countText="selected"
+        options={skillOptions}
+        placeholder="Select skills…"
+      />
+    </div>
+  </div>
+</section>
+
+<Separator />
+
+{/* Searchbox */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Searchbox (Command Palette)</h2>
+  <p class="description">
+    Press <kbd class="bg-muted border-border rounded border px-1.5 font-mono text-xs">⌘K</kbd> / Ctrl
+    K, or click the trigger to open.
+  </p>
+  <Searchbox id="command-palette" label="Search commands…">
+    <SearchboxItem href="#nav"><Icon name="home-01" size="sm" />Go to Dashboard</SearchboxItem>
+    <SearchboxItem href="#nav"><Icon name="search-01" size="sm" />Search the docs</SearchboxItem>
+    <SearchboxItem href="#nav"><Icon name="edit-01" size="sm" />Create a new draft</SearchboxItem>
+    <SearchboxItem href="#nav"><Icon name="settings" size="sm" />Open settings</SearchboxItem>
+    <SearchboxItem href="#nav"><Icon name="calendar-05" size="sm" />View schedule</SearchboxItem>
+  </Searchbox>
+</section>

@@ -1,0 +1,14 @@
+---
+import CloudAgentDashboard from "@/components/charts/CloudAgentDashboard.tsx";
+import siteData from "@config/siteData.json";
+import BaseLayout from "@layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title={`Cloud-agent charts — ${siteData.name}`}
+  description="Side-by-side median run time, agent wall time, and estimated cost for cloud-agent Round A configurations."
+>
+  <div class="site-container py-8 md:py-12">
+    <CloudAgentDashboard client:load />
+  </div>
+</BaseLayout>

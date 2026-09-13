@@ -1,0 +1,122 @@
+---
+// src/components/UiCatalog/NavigationCatalog.astro — DEV-ONLY. The "Navigation & content" section
+// of the UI catalog (MegaMenu + List), extracted per the catalog's group-per-file pattern. Rendered
+// by UiCatalog; 404s out of prod with it. Emits a run of top-level nodes (leading group header
+// included) so it slots into the catalog's flex-col-gap-14 flow unchanged. Breadcrumb — the third
+// Preline nav piece — is Tier 2 and already demoed there.
+import { Icon } from "@components/svg/icons";
+import { List, ListItem } from "@components/ui/list";
+import { MegaMenu, MegaMenuItem, MegaMenuPanel, MegaMenuTrigger } from "@components/ui/mega-menu";
+import { Nav, NavItem, NavLink } from "@components/ui/nav";
+import Separator from "@components/ui/separator";
+---
+
+{/* ── Navigation & content ─────────────────────────────────────────────── */}
+<header class="flex flex-col gap-1">
+  <h2 class="h2">Navigation &amp; content</h2>
+  <p class="description">
+    MegaMenu (Popover API, shared <code>_popover</code> controller with Dropdown) and the static List
+    set. Breadcrumb lives in Tier 2 above.
+  </p>
+</header>
+
+{/* MegaMenu */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">MegaMenu</h2>
+  <p class="description">
+    Click-to-open, top-layer panel with native light-dismiss + Escape. The trigger reuses the
+    NavLink look, so it drops into a Nav between plain links.
+  </p>
+  <Nav aria-label="Mega menu demo">
+    <NavItem><NavLink href="#mega" aria-current="page">Home</NavLink></NavItem>
+    <NavItem>
+      <MegaMenu>
+        <MegaMenuTrigger for="mega-demo-product">Product</MegaMenuTrigger>
+        <MegaMenuPanel id="mega-demo-product" columns={3}>
+          <MegaMenuItem href="#mega">
+            <Icon name="home-01" size="sm" slot="icon" />
+            Dashboard
+            <Fragment slot="description">Everything at a glance.</Fragment>
+          </MegaMenuItem>
+          <MegaMenuItem href="#mega">
+            <Icon name="search-01" size="sm" slot="icon" />
+            Explore
+            <Fragment slot="description">Browse the full catalog.</Fragment>
+          </MegaMenuItem>
+          <MegaMenuItem href="#mega">
+            <Icon name="edit-01" size="sm" slot="icon" />
+            Drafts
+            <Fragment slot="description">Pick up where you left off.</Fragment>
+          </MegaMenuItem>
+          <MegaMenuItem href="#mega">
+            <Icon name="calendar-05" size="sm" slot="icon" />
+            Schedule
+            <Fragment slot="description">Plan releases and posts.</Fragment>
+          </MegaMenuItem>
+          <MegaMenuItem href="#mega">
+            <Icon name="help-circle-contained" size="sm" slot="icon" />
+            Support
+            <Fragment slot="description">Docs, guides and help.</Fragment>
+          </MegaMenuItem>
+          <MegaMenuItem href="#mega">
+            <Icon name="link-external" size="sm" slot="icon" />
+            Changelog
+            <Fragment slot="description">What shipped this week.</Fragment>
+          </MegaMenuItem>
+        </MegaMenuPanel>
+      </MegaMenu>
+    </NavItem>
+    <NavItem>
+      <MegaMenu>
+        <MegaMenuTrigger for="mega-demo-company">Company</MegaMenuTrigger>
+        <MegaMenuPanel id="mega-demo-company" columns={1}>
+          <MegaMenuItem href="#mega">About us</MegaMenuItem>
+          <MegaMenuItem href="#mega">Careers</MegaMenuItem>
+          <MegaMenuItem href="#mega">Contact</MegaMenuItem>
+        </MegaMenuPanel>
+      </MegaMenu>
+    </NavItem>
+    <NavItem><NavLink href="#mega">Pricing</NavLink></NavItem>
+  </Nav>
+</section>
+
+<Separator />
+
+{/* List */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">List</h2>
+  <p class="description">
+    Marker styles, a styled marker via <code>marker:*</code> at the call site, the horizontal dot-separated
+    inline list, and icon items through ListItem's <code>icon</code> slot.
+  </p>
+  <div class="flex flex-wrap gap-12">
+    <List marker="disc" aria-label="Disc list">
+      <ListItem>Astro islands</ListItem>
+      <ListItem>Tailwind tokens</ListItem>
+      <ListItem>Zero-JS first</ListItem>
+    </List>
+    <List marker="decimal" aria-label="Decimal list">
+      <ListItem>Install dependencies</ListItem>
+      <ListItem>Set the site URL</ListItem>
+      <ListItem>Ship it</ListItem>
+    </List>
+    <List marker="disc" class="marker:text-primary" aria-label="Styled marker list">
+      <ListItem>Primary markers</ListItem>
+      <ListItem>Same text tokens</ListItem>
+      <ListItem>One class at the call site</ListItem>
+    </List>
+  </div>
+  <List orientation="horizontal" aria-label="Inline separated list">
+    <ListItem>Terms</ListItem>
+    <ListItem>Privacy</ListItem>
+    <ListItem>Cookies</ListItem>
+    <ListItem>Licenses</ListItem>
+  </List>
+  <List aria-label="Checked list">
+    <ListItem><Icon name="check-01" size="sm" slot="icon" />Unlimited projects</ListItem>
+    <ListItem><Icon name="check-01" size="sm" slot="icon" />Custom domains</ListItem>
+    <ListItem>
+      <Icon name="check-01" size="sm" class="text-success" slot="icon" />Recolored via the icon
+    </ListItem>
+  </List>
+</section>

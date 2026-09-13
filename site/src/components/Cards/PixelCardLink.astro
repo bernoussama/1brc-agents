@@ -1,0 +1,41 @@
+---
+// src/components/Cards/PixelCardLink.astro — the shared pixel-card LINK shell behind ContentCard and
+// the blog "More Quests" related cards. One hover-lifting <a> wrapping the ui/pixel-panel surface and
+// the thumbnail-on-accent tile (4px black bottom divider); the card BODY is the default slot, so each
+// consumer supplies only what differs (badge/excerpt/CTA vs. title/subtitle). Centralises the
+// interaction (focus ring + hover lift, RM-guarded) and the thumbnail so the two cards can't drift.
+// The `group` lives here, so slotted bodies can still use `group-hover:*` on their CTA/title.
+//
+// ponytail: plain <img> on the Vite-fingerprinted import (like Header.astro's avatar), NOT
+// astro:assets <Image>, so the build needs no Sharp. Demo thumbnails ship at ~2× display size.
+import { PixelPanel } from "@components/ui/pixel-panel";
+
+export interface PixelCardLinkProps {
+  href: string;
+  image: ImageMetadata;
+  imageAlt: string;
+}
+const { href, image, imageAlt } = Astro.props as PixelCardLinkProps;
+---
+
+<a
+  href={href}
+  class="primary-focus group hover:shadow-pixel-lg block h-full transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 motion-reduce:transition-none"
+>
+  <PixelPanel as="article" class="flex h-full flex-col p-1">
+    <!-- Thumbnail: sits on the accent tile with a 4px black divider under it (Figma "Background+HorizontalBorder"). -->
+    <div class="bg-accent border-border h-40 overflow-clip border-b-4 sm:h-44">
+      <img
+        src={image.src}
+        width={image.width}
+        height={image.height}
+        alt={imageAlt}
+        loading="lazy"
+        decoding="async"
+        class="size-full object-cover"
+      />
+    </div>
+
+    <slot />
+  </PixelPanel>
+</a>

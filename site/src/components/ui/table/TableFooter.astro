@@ -1,0 +1,15 @@
+---
+// src/components/ui/table/TableFooter.astro — Table compound part (see ../README.md). Wraps <tfoot>.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"tfoot"> & VariantProps<typeof tableFooter>;
+
+export const tableFooter = tv({
+  base: ["bg-muted/50 border-border border-t font-medium [&>tr]:last:border-b-0"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<tfoot class={tableFooter({ class: className })} data-slot="table-footer" {...rest}><slot /></tfoot>

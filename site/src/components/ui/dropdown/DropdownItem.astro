@@ -1,0 +1,31 @@
+---
+// src/components/ui/dropdown/DropdownItem.astro — Dropdown compound part (see ../README.md).
+// Menu item; renders <a> when `href` is set, otherwise a <button>. Activating it closes the dropdown
+// (handled by the shared `_popover` controller). role="menuitem". Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"button"> & VariantProps<typeof dropdownItem> & { href?: string };
+
+export const dropdownItem = tv({
+  base: [
+    "text-foreground flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm",
+    "outline-none hover:bg-muted focus-visible:bg-muted",
+    "disabled:pointer-events-none disabled:opacity-50",
+  ],
+});
+
+const { href, class: className, ...rest } = Astro.props;
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : "button"}
+  role="menuitem"
+  data-slot="dropdown-item"
+  class={dropdownItem({ class: className })}
+  {...rest}
+>
+  <slot />
+</Tag>

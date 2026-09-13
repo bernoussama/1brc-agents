@@ -1,0 +1,98 @@
+---
+// Blog post detail (/blog/<slug>/). Thin route shell: owns BaseLayout + SEO and composes the Figma
+// "Pixel Quests - Blog Post" frame (node 5:128) via <BlogArticle> + <RelatedPosts>, one instance per
+// collection entry. `getStaticPaths` keys each route on the entry id, and `toPostCard` builds the
+// listing links off the SAME id — so the grid links and the generated routes can never drift. The
+// glob loader gives single-segment ids (`<slug>` for `<slug>/index.mdx`), so a plain `[slug]` fits.
+import BlogArticle from "@components/Sections/Blog/BlogArticle.astro";
+import RelatedPosts from "@components/Sections/Blog/RelatedPosts.astro";
+import siteData from "@config/siteData.json";
+import { siteLocale } from "@config/siteSettings.json";
+import { getSortedPosts } from "@js/blogData";
+import { getAdjacentPosts, getRelatedPosts } from "@js/postCards";
+import { readingTime } from "@js/readingTime";
+import { getArticleSchema, getBreadcrumbSchema, organizationId } from "@js/schema";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import type { GetStaticPaths } from "astro";
+import { type CollectionEntry, getEntry, render } from "astro:content";
+
+export const getStaticPaths = (async () => {
+  const posts = await getSortedPosts();
+  return posts.map((entry) => ({ params: { slug: entry.id }, props: { entry, posts } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  entry: CollectionEntry<"blog">;
+  posts: CollectionEntry<"blog">[];
+}
+const { entry, posts } = Astro.props as Props;
+const { data } = entry;
+const { Content } = await render(entry);
+
+// Byline: resolve the first referenced author (avatar + name), falling back to siteData.
+const authorRef = data.authors[0];
+const authorEntry = authorRef ? await getEntry(authorRef) : undefined;
+const author = {
+  name: authorEntry?.data.name ?? siteData.author.name,
+  avatar: authorEntry?.data.avatar,
+};
+
+const readMinutes = readingTime(entry.body ?? "");
+const dateLabel = data.pubDate
+  .toLocaleDateString(siteLocale, { month: "short", day: "numeric", year: "numeric" })
+  .toUpperCase();
+const dateISO = data.pubDate.toISOString();
+
+const { prev, next } = getAdjacentPosts(posts, entry.id);
+const related = getRelatedPosts(posts, entry.id, 2);
+
+// SEO: BlogPosting + a BreadcrumbList matching the visible breadcrumb (never emit one
+// without the other). Absolute URLs resolve against `site`.
+const canonical = new URL(`/blog/${entry.id}/`, Astro.site).href;
+// author's public URL (the authors collection's authorLink), resolved absolute; publisher points at
+// the same Organization @id BaseHead emits site-wide, so the Article joins that graph by reference.
+const authorUrl = authorEntry ? new URL(authorEntry.data.authorLink, Astro.site).href : undefined;
+const articleSchema = getArticleSchema({
+  headline: data.title,
+  description: data.description,
+  url: canonical,
+  image: new URL(data.heroImage.src, Astro.site).href,
+  datePublished: dateISO,
+  dateModified: data.updatedDate?.toISOString(),
+  authorName: author.name,
+  authorUrl,
+  inLanguage: siteLocale,
+  publisherId: organizationId(canonical),
+});
+const breadcrumbSchema = getBreadcrumbSchema([
+  { name: "Home", url: new URL("/", Astro.site).href },
+  { name: "Blog", url: new URL("/blog/", Astro.site).href },
+  { name: data.title, url: canonical },
+]);
+---
+
+<BaseLayout
+  title={`${data.title} — ${siteData.name}`}
+  description={data.description}
+  image={data.heroImage}
+  schema={[articleSchema, breadcrumbSchema]}
+  article={{ published: data.pubDate, modified: data.updatedDate, author: author.name }}
+>
+  <div class="site-container py-8 md:py-12">
+    <div class="mx-auto flex max-w-[800px] flex-col gap-12">
+      <BlogArticle
+        post={data}
+        author={author}
+        dateLabel={dateLabel}
+        dateISO={dateISO}
+        readMinutes={readMinutes}
+        prev={prev}
+        next={next}
+      >
+        <Content />
+      </BlogArticle>
+
+      <RelatedPosts posts={related} />
+    </div>
+  </div>
+</BaseLayout>

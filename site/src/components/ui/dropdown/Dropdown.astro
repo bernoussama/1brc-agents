@@ -1,0 +1,27 @@
+---
+// src/components/ui/dropdown/Dropdown.astro — astro-boiler primitive (see ../README.md).
+// Dropdown on the native Popover API: a DropdownTrigger toggles the DropdownMenu it points at (by id),
+// which renders in the top layer — so it's never clipped by an ancestor's overflow — with native
+// light-dismiss + Escape and native focus-return to the trigger. The shared `_popover` controller
+// (also driving MegaMenu) positions the menu under its trigger, reflows it on scroll/resize, adds
+// arrow-key roving (Up/Down/Home/End), and syncs `aria-expanded` (which also flips the trigger
+// chevron). Compose DropdownTrigger / DropdownMenu / DropdownItem. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof dropdown>;
+
+export const dropdown = tv({
+  base: ["inline-block text-left"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={dropdown({ class: className })} data-slot="dropdown" {...rest}>
+  <slot />
+</div>
+
+<script>
+  import "../_popover";
+</script>

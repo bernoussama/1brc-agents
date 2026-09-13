@@ -1,0 +1,24 @@
+---
+// Projects listing (/projects/). Thin route shell: owns BaseLayout + SEO and composes the Figma
+// "project-log-overview" frame (node 72:7) — the ProjectsHero panel + the shared CardGrid, fed from
+// the `projects` collection (sorted by `order`, drafts dropped). Same `.site-container` shell/rhythm
+// as index.astro & about.astro. This is the page the header nav's PROJECTS link points at.
+import CardGrid from "@components/Sections/Global/CardGrid.astro";
+import ProjectsHero from "@components/Sections/Project/ProjectsHero.astro";
+import siteData from "@config/siteData.json";
+import { toProjectCard } from "@js/projectCards";
+import { getSortedProjects } from "@js/projectData";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+const cards = (await getSortedProjects()).map(toProjectCard);
+---
+
+<BaseLayout
+  title={`Project Log — ${siteData.name}`}
+  description="The quest archive: full-stack builds, migrations, and terminal prototypes — every module cataloged with its stack, status, and source notes."
+>
+  <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">
+    <ProjectsHero />
+    <CardGrid headingId="all-systems-heading" title="All Systems" items={cards} />
+  </div>
+</BaseLayout>

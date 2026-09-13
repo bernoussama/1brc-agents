@@ -1,0 +1,38 @@
+---
+// src/components/ui/select/Select.astro — astro-boiler primitive (see ../README.md).
+// Native <select> with size + validation `state`; reuses the shared field look (_field) so it matches
+// Input/Textarea. `appearance-none` plus a token-colored chevron. Pass <option>s as children. Zero-JS.
+// (A custom-dropdown / combobox select is intentionally out of scope here — ui/combobox and
+// ui/advanced-select cover that.)
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+import Chevron from "../_Chevron.astro";
+import { fieldBase, fieldState } from "../_field";
+
+type Props = HTMLAttributes<"select"> & VariantProps<typeof select>;
+
+export const select = tv({
+  base: [...fieldBase, "cursor-pointer appearance-none"],
+  variants: {
+    size: {
+      sm: "h-9 pr-8 pl-2 text-sm",
+      md: "h-11 pr-9 pl-3 text-base",
+      lg: "h-12 pr-10 pl-4 text-lg",
+    },
+    state: fieldState,
+  },
+  defaultVariants: { size: "md", state: "default" },
+});
+
+const { size, state, class: className, ...rest } = Astro.props;
+---
+
+<div class="relative w-full" data-slot="select-root">
+  <select class={select({ size, state, class: className })} data-slot="select" {...rest}>
+    <slot />
+  </select>
+  <Chevron
+    class="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
+  />
+</div>

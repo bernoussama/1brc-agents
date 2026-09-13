@@ -1,0 +1,33 @@
+---
+// src/components/ui/searchbox/SearchboxItem.astro — Searchbox compound part (see ../README.md).
+// One role="option" result. Renders <a> when `href` is set (Enter/click navigates), otherwise a
+// <button> (wire your own click handler). The slotted content is what the palette filters on and what
+// the active-item highlight and keyboard nav target. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"button"> & VariantProps<typeof searchboxItem> & { href?: string };
+
+export const searchboxItem = tv({
+  base: [
+    "text-foreground flex w-full cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left text-sm",
+    "outline-none hover:bg-muted aria-selected:bg-muted",
+  ],
+});
+
+const { href, class: className, ...rest } = Astro.props;
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  href={href}
+  type={href ? undefined : "button"}
+  role="option"
+  aria-selected="false"
+  tabindex="-1"
+  data-slot="searchbox-item"
+  class={searchboxItem({ class: className })}
+  {...rest}
+>
+  <slot />
+</Tag>

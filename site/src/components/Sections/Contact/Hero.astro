@@ -1,0 +1,15 @@
+---
+// src/components/Sections/Contact/Hero.astro — Figma "Header - Hero Panel" (node 9:22).
+//
+// The contact page's header panel: a QUEST START tag, the GET IN TOUCH H1, and the intro line.
+// Static page copy (verbatim from the mock), so it takes no props. Renders the shared
+// Global/HeroPanel so it can't drift from the other page heroes. Above the fold → no <Reveal>.
+import HeroPanel from "@components/Sections/Global/HeroPanel.astro";
+---
+
+<HeroPanel
+  headingId="contact-hero-heading"
+  tagline="Quest Start"
+  heading="Get in Touch"
+  intro="Have a question about vintage hardware, spotted a glitch in my matrix, or want to collaborate on a new retro quest? Drop me a transmission. My communications array is fully operational."
+/>

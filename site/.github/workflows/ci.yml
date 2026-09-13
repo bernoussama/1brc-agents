@@ -1,0 +1,38 @@
+# The verification chain from README.md ("Verifying a change"), run on every push and PR.
+#
+# The point of this file in a *boilerplate* is that every template forked from it inherits a working
+# CI on day one. The four commands are deliberately the same four the README and AGENTS.md name —
+# if they ever diverge, the docs are wrong, not this file.
+#
+# No SITE_URL is set here on purpose: the production gate in astro.config.mjs only fires for a real
+# production deploy (Netlify's CONTEXT, Vercel's VERCEL_ENV, or DEPLOY_ENV), so CI builds on the
+# placeholder exactly as a local `pnpm build` does. Setting a fake domain here would prove nothing
+# and would hide the gate.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches the `engines.node` floor in package.json — the same floor that makes
+          # `--experimental-strip-types` in scripts/test.mjs legal (and that pnpm 11 requires).
+          node-version: 22.13.0
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+      - run: pnpm check
+      - run: pnpm build
+      - run: pnpm test

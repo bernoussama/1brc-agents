@@ -1,0 +1,70 @@
+{
+  "sessionsRoot": ".sessions",
+  "runs": [
+    {
+      "chartLabel": "gpt-5.6-sol high",
+      "sessionDir": "gpt-5.6-sol-high-20260824T153119",
+      "pricingId": "openai-codex/gpt-5.6-sol",
+      "metricsAvailable": true,
+      "verifyEventCost": true
+    },
+    {
+      "chartLabel": "MiniMax M3 :free max",
+      "sessionDir": "minimax-m3-free-20260825T121246",
+      "pricingId": "openrouter/minimax/minimax-m3:free",
+      "metricsAvailable": true,
+      "estimateFromListRates": true
+    },
+    {
+      "chartLabel": "gpt-5.6-sol medium",
+      "sessionDir": "gpt-5.6-sol-medium-20260824T131831",
+      "pricingId": "openai-codex/gpt-5.6-sol",
+      "metricsAvailable": true,
+      "verifyEventCost": true
+    },
+    {
+      "chartLabel": "Grok 4.6 high",
+      "sessionDir": "cursor-grok-4.6-high-20260825T135847",
+      "pricingId": null,
+      "metricsAvailable": false
+    },
+    {
+      "chartLabel": "ox-alpha high",
+      "sessionDir": "ox-alpha-high-20260824T214625",
+      "pricingId": "openrouter/stealth/ox-alpha",
+      "metricsAvailable": true
+    },
+    {
+      "chartLabel": "gpt-5.6-luna max",
+      "sessionDir": "gpt-5.6-luna-max-20260824T183125",
+      "pricingId": "openai-codex/gpt-5.6-luna",
+      "metricsAvailable": true,
+      "verifyEventCost": true
+    },
+    {
+      "chartLabel": "Grok 4.6 medium",
+      "sessionDir": "cursor-grok-4.6-medium-20260824T110152",
+      "pricingId": null,
+      "metricsAvailable": false
+    },
+    {
+      "chartLabel": "Muse Spark free xhigh (r2)",
+      "sessionDir": "muse-spark-free-xhigh-r2-20260825T175212",
+      "pricingId": "opencode/muse-spark-1.2-contributor-free",
+      "metricsAvailable": true,
+      "estimateFromListRates": true
+    },
+    {
+      "chartLabel": "MiniMax M2.7 max",
+      "sessionDir": "minimax-m2.7-max-20260825T093528",
+      "pricingId": "gmi/MiniMaxAI/MiniMax-M2.7",
+      "metricsAvailable": true
+    },
+    {
+      "chartLabel": "ox-alpha max",
+      "sessionDir": "ox-alpha-20260823T210214",
+      "pricingId": "openrouter/stealth/ox-alpha",
+      "metricsAvailable": true
+    }
+  ]
+}

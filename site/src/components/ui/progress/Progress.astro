@@ -1,0 +1,40 @@
+---
+// src/components/ui/progress/Progress.astro — astro-boiler primitive (see ../README.md).
+// Determinate progress bar (div track + indicator), role="progressbar" with aria-value*. For an
+// unknown/busy state use the Spinner primitive instead. Tokens only.
+// ponytail: determinate-only — a sliding "indeterminate" state would need a custom @keyframes;
+// not worth a new CSS rule until a build needs it (use Spinner for busy-without-progress).
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof progress> & { value?: number; max?: number };
+
+export const progress = tv({
+  base: ["bg-muted relative w-full overflow-hidden rounded-full"],
+  variants: {
+    size: { sm: "h-1.5", md: "h-2.5", lg: "h-4" },
+  },
+  defaultVariants: { size: "md" },
+});
+
+const { value = 0, max = 100, size, class: className, ...rest } = Astro.props;
+const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
+---
+
+<div
+  role="progressbar"
+  aria-valuemin={0}
+  aria-valuemax={max}
+  aria-valuenow={value}
+  class={progress({ size, class: className })}
+  data-slot="progress"
+  {...rest}
+>
+  <div
+    class="bg-primary h-full rounded-full transition-[width]"
+    style={`width: ${pct}%`}
+    data-slot="progress-indicator"
+  >
+  </div>
+</div>

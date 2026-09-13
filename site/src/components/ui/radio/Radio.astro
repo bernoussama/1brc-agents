@@ -1,0 +1,28 @@
+---
+// src/components/ui/radio/Radio.astro — astro-boiler primitive (see ../README.md).
+// Native <input type=radio>, `appearance-none` and styled with `peer` + `:checked`. The dot is a
+// sibling revealed on `peer-checked`. Group radios by sharing a `name` (native single-select). Zero-JS.
+// Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"input"> & VariantProps<typeof radio>;
+
+export const radio = tv({
+  base: [
+    "peer size-4 shrink-0 appearance-none rounded-full border bg-transparent shadow-xs outline-none",
+    "border-input checked:border-primary",
+    "transition-[color,box-shadow] focus-visible:ring-3 focus-visible:ring-outline",
+    "disabled:cursor-not-allowed disabled:opacity-50",
+  ],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<span class="relative inline-flex" data-slot="radio-root">
+  <input type="radio" class={radio({ class: className })} data-slot="radio" {...rest} />
+  <span
+    class="bg-primary pointer-events-none absolute inset-0 m-auto size-2 rounded-full opacity-0 peer-checked:opacity-100"
+    aria-hidden="true"></span>
+</span>

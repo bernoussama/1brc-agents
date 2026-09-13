@@ -9,6 +9,3 @@ ADAPTER_ROUTE="pi to CLIProxyAPI bridge to Antigravity gemini-3.7-flash-high"
 AUTH_MODE=env
 AUTH_ENV=CLIPROXY_API_KEY
 MODELS_FILE="${ROOT}/harness/profiles/cliproxyapi-gemini-3.7.models.json"
-
-NCPUS=6
-MEM=16g

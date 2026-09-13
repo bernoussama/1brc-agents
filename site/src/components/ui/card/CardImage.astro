@@ -1,0 +1,18 @@
+---
+// src/components/ui/card/CardImage.astro — Card compound part (see ../README.md).
+// A plain <img>; the root Card's `overflow-hidden` clips it to the card radius, so a top, bottom, or
+// full-bleed (overlay) image all just work. Takes a raw/remote src string — for an optimized asset,
+// skip this part and drop an astro:assets <Image class="block w-full object-cover" /> in its place.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"img"> & VariantProps<typeof cardImage>;
+
+export const cardImage = tv({
+  base: ["block h-auto w-full object-cover"],
+});
+
+const { alt = "", class: className, ...rest } = Astro.props;
+---
+
+<img alt={alt} class={cardImage({ class: className })} data-slot="card-image" {...rest} />

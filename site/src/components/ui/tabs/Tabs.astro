@@ -1,0 +1,82 @@
+---
+// src/components/ui/tabs/Tabs.astro — astro-boiler primitive (see ../README.md).
+// Accessible tabs (role=tablist/tab/tabpanel + arrow-key roving focus) wired by the small bundled
+// script below. HTML has no native tab element, so this is the one Tier-2 primitive that needs JS;
+// it degrades to "all panels visible" without it. Compose TabsList / TabsTrigger / TabsContent and
+// match each TabsTrigger `value` to its TabsContent `value`.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof tabs>;
+
+export const tabs = tv({
+  base: ["flex flex-col gap-2"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={tabs({ class: className })} data-slot="tabs" {...rest}>
+  <slot />
+</div>
+
+<script>
+  import { onReady } from "../_client";
+
+  // One bundled module for every <Tabs> on the page (Astro dedupes it to a single include).
+  let uid = 0;
+
+  function initTabs(root: HTMLElement) {
+    const triggers = [...root.querySelectorAll<HTMLElement>('[data-slot="tabs-trigger"]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-slot="tabs-content"]')];
+    if (triggers.length === 0) return;
+
+    // Link each trigger to its panel by shared `value`, minting ids where the author left them off.
+    for (const trigger of triggers) {
+      const panel = panels.find((p) => p.dataset.value === trigger.dataset.value);
+      if (!panel) continue;
+      trigger.id ||= `tab-${(uid += 1)}`;
+      panel.id ||= `tabpanel-${(uid += 1)}`;
+      trigger.setAttribute("aria-controls", panel.id);
+      panel.setAttribute("aria-labelledby", trigger.id);
+    }
+
+    const activate = (value: string | undefined, focus = false) => {
+      for (const trigger of triggers) {
+        const selected = trigger.dataset.value === value;
+        trigger.setAttribute("aria-selected", String(selected));
+        trigger.tabIndex = selected ? 0 : -1;
+        if (selected && focus) trigger.focus();
+      }
+      for (const panel of panels) panel.hidden = panel.dataset.value !== value;
+    };
+
+    triggers.forEach((trigger, i) => {
+      trigger.addEventListener("click", () => activate(trigger.dataset.value));
+      trigger.addEventListener("keydown", (event) => {
+        const moves: Record<string, number | "home" | "end"> = {
+          ArrowRight: 1,
+          ArrowLeft: -1,
+          Home: "home",
+          End: "end",
+        };
+        const move = moves[event.key];
+        if (move === undefined) return;
+        event.preventDefault();
+        const next =
+          move === "home"
+            ? 0
+            : move === "end"
+              ? triggers.length - 1
+              : (i + move + triggers.length) % triggers.length;
+        activate(triggers[next].dataset.value, true);
+      });
+    });
+
+    const initial = triggers.find((t) => t.getAttribute("aria-selected") === "true") ?? triggers[0];
+    activate(initial.dataset.value);
+  }
+
+  // load + re-init after each view-transition swap, via the shared contract (see _client.ts).
+  onReady('[data-slot="tabs"]', initTabs);
+</script>

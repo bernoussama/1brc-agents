@@ -1,0 +1,26 @@
+---
+// src/components/ui/tabs/TabsContent.astro — Tabs compound part (see ../README.md).
+// `value` must match its TabsTrigger. Panels render visible without JS (progressive enhancement);
+// the Tabs script hides the inactive ones once hydrated.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof tabsContent> & { value: string };
+
+export const tabsContent = tv({
+  base: ["text-foreground py-2 outline-none focus-visible:ring-3 focus-visible:ring-outline"],
+});
+
+const { value, class: className, ...rest } = Astro.props;
+---
+
+<div
+  role="tabpanel"
+  tabindex={0}
+  data-slot="tabs-content"
+  data-value={value}
+  class={tabsContent({ class: className })}
+  {...rest}
+>
+  <slot />
+</div>

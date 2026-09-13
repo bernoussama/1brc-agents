@@ -1,0 +1,52 @@
+---
+// src/components/ui/button/Button.astro — astro-boiler primitive (see ../README.md).
+// Dynamic <a>/<button> per `href`, variant + size, plus a square `icon` mode for icon-only
+// buttons. `gap-2` in the base already spaces a leading/trailing <Icon> from its label. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"button"> & VariantProps<typeof button> & { href?: string };
+
+export const button = tv({
+  base: [
+    "inline-flex items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap",
+    "transition-all outline-none focus-visible:ring-3 focus-visible:ring-outline",
+    "disabled:pointer-events-none disabled:opacity-50",
+    // Icon children never intercept the click and never get squeezed in the flex row.
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+  ],
+  variants: {
+    variant: {
+      primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+      outline: "border-border text-foreground hover:bg-muted border bg-transparent",
+      ghost: "text-foreground hover:bg-muted",
+    },
+    size: {
+      sm: "h-9 px-3 text-sm",
+      md: "h-11 px-4 text-base",
+      lg: "h-12 px-6 text-lg",
+    },
+    // Icon-only: drop the horizontal padding; the compoundVariants below square it per size.
+    icon: { true: "px-0" },
+  },
+  compoundVariants: [
+    { icon: true, size: "sm", class: "w-9" },
+    { icon: true, size: "md", class: "w-11" },
+    { icon: true, size: "lg", class: "w-12" },
+  ],
+  defaultVariants: { variant: "primary", size: "md" },
+});
+
+const { variant, size, icon, href, class: className, ...rest } = Astro.props;
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  href={href}
+  class={button({ variant, size, icon, class: className })}
+  data-slot="button"
+  {...rest}
+>
+  <slot />
+</Tag>

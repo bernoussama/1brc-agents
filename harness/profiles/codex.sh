@@ -7,5 +7,3 @@ PROVIDER=openai-codex
 MODEL_ID=gpt-5.6-sol
 AUTH_MODE=file
 AUTH_FILE="${HOME}/.pi/agent/auth.json"
-NCPUS=4
-MEM=8g

@@ -1,0 +1,26 @@
+---
+// Home (/). Thin route shell: owns BaseLayout + SEO and composes the Figma home frame (node 5:2)
+// from Sections/Home. One shared `.site-container` wraps every section for a single column width
+// aligned with the header/footer; `gap-*` gives the vertical rhythm (the mock's ~40px section gaps).
+import About from "@components/Sections/Home/About.astro";
+import Contact from "@components/Sections/Home/Contact.astro";
+import FeaturedProjects from "@components/Sections/Home/FeaturedProjects.astro";
+import Hero from "@components/Sections/Home/Hero.astro";
+import LatestPosts from "@components/Sections/Home/LatestPosts.astro";
+import Stats from "@components/Sections/Home/Stats.astro";
+import TechStack from "@components/Sections/Home/TechStack.astro";
+import siteData from "@config/siteData.json";
+import BaseLayout from "@layouts/BaseLayout.astro";
+---
+
+<BaseLayout title={siteData.title} description={siteData.description}>
+  <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">
+    <Hero />
+    <Stats />
+    <LatestPosts />
+    <TechStack />
+    <FeaturedProjects />
+    <About />
+    <Contact />
+  </div>
+</BaseLayout>

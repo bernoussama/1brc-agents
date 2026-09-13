@@ -1,0 +1,38 @@
+---
+// src/components/ui/mega-menu/MegaMenuItem.astro — MegaMenu compound part (see ../README.md).
+// Rich panel link — the Preline mega-menu link anatomy: optional `icon` slot, title (default slot),
+// optional `description` slot. Plain <a>, natural Tab order. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"a"> & VariantProps<typeof megaMenuItem> & { href: string };
+
+export const megaMenuItem = tv({
+  base: [
+    "hover:bg-muted focus-visible:bg-muted flex gap-3 rounded-sm p-2",
+    "outline-none focus-visible:ring-3 focus-visible:ring-outline",
+  ],
+});
+
+const { href, class: className, ...rest } = Astro.props;
+---
+
+<a href={href} data-slot="mega-menu-item" class={megaMenuItem({ class: className })} {...rest}>
+  {
+    Astro.slots.has("icon") && (
+      <span class="text-muted-foreground mt-0.5 shrink-0" aria-hidden="true">
+        <slot name="icon" />
+      </span>
+    )
+  }
+  <span class="flex min-w-0 flex-col gap-0.5">
+    <span class="text-foreground text-sm font-medium"><slot /></span>
+    {
+      Astro.slots.has("description") && (
+        <span class="text-muted-foreground text-sm">
+          <slot name="description" />
+        </span>
+      )
+    }
+  </span>
+</a>

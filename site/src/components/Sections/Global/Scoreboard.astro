@@ -1,0 +1,55 @@
+---
+// src/components/Sections/Global/Scoreboard.astro
+//
+// The retro scoreboard strip (Figma "Stats Strip"): Press Start stats split by short pixel-bar
+// separators. Shared by the home Stats section and the About Hero panel — it owns the seam logic
+// (the `{i > 0}` separator between items) in ONE place so the two can't drift. The strip stacks to a
+// centred column on narrow screens and spreads to a justified row at `stackAt` (the home's three
+// stats release at `sm`; the About Hero's four longer ones need more room, so they stay stacked
+// until `lg`). Tokens only.
+//
+// Renders on the shared ui/pixel-panel surface (the canonical border-4 + shadow-pixel frame), so the
+// scoreboard can't drift from the site's other panels. The consumer still passes the bg (bg-muted),
+// padding, gap, and text size via `class`; tailwind-merge (through PixelPanel's tv) lets those win,
+// so bg-muted overrides the panel's default bg-card. Text size / `whitespace` on the container are
+// inherited by the stat <p>s.
+import { PixelPanel } from "@components/ui/pixel-panel";
+
+interface Props {
+  stats: readonly { text: string; color: string }[];
+  /** Breakpoint at which the strip switches from a stacked column to a spread row. */
+  stackAt?: "sm" | "lg";
+  /** Container styling: bg token, padding, gap, text size, width/margin. Merged after the panel base. */
+  class?: string;
+}
+const { stats, stackAt = "sm", class: className } = Astro.props as Props;
+
+// Whole static classes per breakpoint (a `${bp}:` prefix can't be interpolated — see tailwind.md).
+const rowLayout = {
+  sm: "sm:flex-row sm:justify-between",
+  lg: "lg:flex-row lg:justify-between",
+} as const;
+const separatorShow = { sm: "sm:block", lg: "lg:block" } as const;
+
+// Astro components don't tailwind-merge a `class:list`, so build the string here and hand it to
+// PixelPanel's `class` prop (its tv() runs the merge, letting the consumer's bg-muted win over bg-card).
+const panelClass = ["flex flex-col items-center", rowLayout[stackAt], className]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<PixelPanel class={panelClass}>
+  {
+    stats.map((stat, i) => (
+      <Fragment>
+        {i > 0 && (
+          <span
+            class:list={["bg-base-400 hidden h-3.5 w-1 shrink-0", separatorShow[stackAt]]}
+            aria-hidden="true"
+          />
+        )}
+        <p class:list={["font-display uppercase", stat.color]}>{stat.text}</p>
+      </Fragment>
+    ))
+  }
+</PixelPanel>

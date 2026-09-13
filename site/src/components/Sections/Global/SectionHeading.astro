@@ -1,0 +1,19 @@
+---
+// src/components/Sections/Global/SectionHeading.astro
+//
+// The recurring Figma "Heading 2 + Margin" motif (nodes 5:33, 14:4, 14:35, 14:117, 14:138): a blue
+// Press Start 2P title followed by a dashed pixel rule that fills the remaining width. Rendered once
+// per section (Latest Posts, Tech Stack, Featured Projects, About Me, Contact). Tokens only — the
+// airy-blue heading (`text-info`) and the base-300 rule read on both the dark navy and light
+// lavender grounds, so it flips for free. `id` lets the section wire `aria-labelledby` to it.
+interface Props {
+  title: string;
+  id?: string;
+}
+const { title, id } = Astro.props as Props;
+---
+
+<div class="flex w-full items-center gap-4">
+  <h2 {id} class="h2 text-info">{title}</h2>
+  <span class="border-base-300 h-1 flex-1 border-b-4 border-dashed" aria-hidden="true"></span>
+</div>

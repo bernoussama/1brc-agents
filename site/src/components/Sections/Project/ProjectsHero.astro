@@ -1,0 +1,14 @@
+---
+// src/components/Sections/Project/ProjectsHero.astro — Figma "Hero Panel" on the Project Log
+// overview (node 72:24). The page-level intro panel: a MISSION ARCHIVE tag, the PROJECT LOG H1, and
+// a one-line archive blurb. Static page copy (not per-entry), so it takes no props. Renders the
+// shared Global/HeroPanel so it can't drift from the other page heroes. Above the fold → no <Reveal>.
+import HeroPanel from "@components/Sections/Global/HeroPanel.astro";
+---
+
+<HeroPanel
+  headingId="projects-hero-heading"
+  tagline="Mission Archive"
+  heading="Project Log"
+  intro="Quest archive — all developer operations, full-stack pipelines, and vintage terminal prototypes thoroughly cataloged and documented. Press view to inspect the source modules."
+/>

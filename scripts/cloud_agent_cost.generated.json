@@ -1,0 +1,174 @@
+{
+  "currency": "USD",
+  "runs": [
+    {
+      "model": "gpt-5.6-sol high",
+      "sessionDir": "gpt-5.6-sol-high-20260824T153119",
+      "metricsAvailable": true,
+      "tokens": 43389638,
+      "tokenBreakdown": {
+        "input": 622995,
+        "output": 118067,
+        "cacheRead": 42648576,
+        "cacheWrite": 0,
+        "reasoning": 55127
+      },
+      "costUsd": 27.9813,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 27.981273,
+      "pricingId": "openai-codex/gpt-5.6-sol",
+      "costUsdBilled": 27.9813,
+      "eventCostDeltaUsd": 2.7e-05
+    },
+    {
+      "model": "MiniMax M3 :free max",
+      "sessionDir": "minimax-m3-free-20260825T121246",
+      "metricsAvailable": true,
+      "tokens": 17962636,
+      "tokenBreakdown": {
+        "input": 560614,
+        "output": 115954,
+        "cacheRead": 17286068,
+        "cacheWrite": 0,
+        "reasoning": 298
+      },
+      "costUsd": 1.3445,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 0.0,
+      "pricingId": "openrouter/minimax/minimax-m3:free",
+      "costUsdBilled": 0.0
+    },
+    {
+      "model": "gpt-5.6-sol medium",
+      "sessionDir": "gpt-5.6-sol-medium-20260824T131831",
+      "metricsAvailable": true,
+      "tokens": 29702282,
+      "tokenBreakdown": {
+        "input": 532331,
+        "output": 125727,
+        "cacheRead": 29044224,
+        "cacheWrite": 0,
+        "reasoning": 70497
+      },
+      "costUsd": 20.9556,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 20.955577,
+      "pricingId": "openai-codex/gpt-5.6-sol",
+      "costUsdBilled": 20.9556,
+      "eventCostDeltaUsd": 2.3e-05
+    },
+    {
+      "model": "Grok 4.6 high",
+      "sessionDir": "cursor-grok-4.6-high-20260825T135847",
+      "metricsAvailable": false,
+      "tokens": null,
+      "tokenBreakdown": null,
+      "costUsd": null,
+      "costUsdListEstimate": null,
+      "eventCostUsd": null,
+      "pricingId": null
+    },
+    {
+      "model": "ox-alpha high",
+      "sessionDir": "ox-alpha-high-20260824T214625",
+      "metricsAvailable": true,
+      "tokens": 15912449,
+      "tokenBreakdown": {
+        "input": 167141,
+        "output": 111836,
+        "cacheRead": 15633472,
+        "cacheWrite": 0,
+        "reasoning": 0
+      },
+      "costUsd": 0.0,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 0.0,
+      "pricingId": "openrouter/stealth/ox-alpha",
+      "costUsdBilled": 0.0
+    },
+    {
+      "model": "gpt-5.6-luna max",
+      "sessionDir": "gpt-5.6-luna-max-20260824T183125",
+      "metricsAvailable": true,
+      "tokens": 92539605,
+      "tokenBreakdown": {
+        "input": 1324482,
+        "output": 169235,
+        "cacheRead": 91045888,
+        "cacheWrite": 0,
+        "reasoning": 90866
+      },
+      "costUsd": 2.2889,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 2.670882,
+      "pricingId": "openai-codex/gpt-5.6-luna",
+      "costUsdBilled": 2.2889,
+      "eventCostDeltaUsd": -0.381982
+    },
+    {
+      "model": "Grok 4.6 medium",
+      "sessionDir": "cursor-grok-4.6-medium-20260824T110152",
+      "metricsAvailable": false,
+      "tokens": null,
+      "tokenBreakdown": null,
+      "costUsd": null,
+      "costUsdListEstimate": null,
+      "eventCostUsd": null,
+      "pricingId": null
+    },
+    {
+      "model": "Muse Spark free xhigh (r2)",
+      "sessionDir": "muse-spark-free-xhigh-r2-20260825T175212",
+      "metricsAvailable": true,
+      "tokens": 12440896,
+      "tokenBreakdown": {
+        "input": 2198391,
+        "output": 140904,
+        "cacheRead": 10101601,
+        "cacheWrite": 0,
+        "reasoning": 69110
+      },
+      "costUsd": 0.2682,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 0.0,
+      "pricingId": "opencode/muse-spark-1.2-contributor-free",
+      "costUsdBilled": 0.0
+    },
+    {
+      "model": "MiniMax M2.7 max",
+      "sessionDir": "minimax-m2.7-max-20260825T093528",
+      "metricsAvailable": true,
+      "tokens": 10761907,
+      "tokenBreakdown": {
+        "input": 264079,
+        "output": 125656,
+        "cacheRead": 10372172,
+        "cacheWrite": 0,
+        "reasoning": 0
+      },
+      "costUsd": 0.8523,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 0.0,
+      "pricingId": "gmi/MiniMaxAI/MiniMax-M2.7",
+      "costUsdBilled": 0.8523
+    },
+    {
+      "model": "ox-alpha max",
+      "sessionDir": "ox-alpha-20260823T210214",
+      "metricsAvailable": true,
+      "tokens": 91250567,
+      "tokenBreakdown": {
+        "input": 423982,
+        "output": 147225,
+        "cacheRead": 90679360,
+        "cacheWrite": 0,
+        "reasoning": 0
+      },
+      "costUsd": 0.0,
+      "costUsdListEstimate": null,
+      "eventCostUsd": 0.0,
+      "pricingId": "openrouter/stealth/ox-alpha",
+      "costUsdBilled": 0.0
+    }
+  ]
+}

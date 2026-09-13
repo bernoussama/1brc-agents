@@ -1,0 +1,144 @@
+---
+// src/components/Sections/Project/ProjectArticle.astro — the per-project detail body (Figma
+// "project-realtime-chat", node 72:191). Data-driven: the page passes one project's frontmatter as
+// `project` and the rendered MDX overview into the default slot. Layout, top → bottom:
+//   • back link → /projects/         (Back Nav, node 72:208)
+//   • hero panel: status + MODULE_ID, H1, tagline   (node 72:211)
+//   • content split — left 2/3: Overview (slot) + System Features; right 1/3: SYS_SPECS + ARC_MAP
+//   • Challenges & Solutions                          (node 72:257)
+//
+// Reuses ui/pixel-panel (the pixel surface), ui/badge (pixel variant), the svg/pixel-icons registry,
+// the .h1/.h3 heading classes, and .primary-focus. Tokens only, so the light theme flips for free.
+import { PixelIcon } from "@components/svg/pixel-icons";
+import { Badge } from "@components/ui/badge";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import { statusMeta } from "@js/projectCards";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  project: CollectionEntry<"projects">["data"];
+}
+const { project } = Astro.props as Props;
+const { title, tagline, status, moduleId, specs, features, archCaption, challenge, solution } =
+  project;
+
+const { label: statusLabel, variant: statusVariant } = statusMeta(status);
+---
+
+<div class="flex flex-col gap-8">
+  <!-- Back Nav (node 72:208) -->
+  <a
+    href="/projects/"
+    class="primary-focus text-info hover:text-success inline-flex w-fit items-center gap-2 text-xs font-bold tracking-wide uppercase transition-colors"
+  >
+    <PixelIcon name="arrow-left" class="size-3.5" />
+    Back to Project Log
+  </a>
+
+  <!-- Hero Panel (node 72:211) -->
+  <PixelPanel
+    as="section"
+    elevated
+    aria-labelledby="project-hero-heading"
+    class="p-6 sm:p-8 md:p-9"
+  >
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <Badge pixel variant={statusVariant}>{statusLabel}</Badge>
+        <span class="text-muted-foreground text-xs font-bold tracking-wide uppercase">
+          Module_ID: {moduleId}
+        </span>
+      </div>
+
+      <h1 id="project-hero-heading" class="h1 text-info text-balance">{title}</h1>
+
+      <p class="text-muted-foreground max-w-3xl text-base text-balance">{tagline}</p>
+    </div>
+  </PixelPanel>
+
+  <!-- Content Split (node 72:218): left column 2/3, right column 1/3; stacks below lg. -->
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="flex flex-col gap-6 lg:col-span-2">
+      <!-- Overview Card — heading + the rendered MDX body (node 72:220) -->
+      <PixelPanel class="flex flex-col gap-4 p-6 sm:p-7">
+        <h2 class="h3 text-secondary-700 dark:text-secondary">Project Overview</h2>
+        <div class="text-muted-foreground space-y-4 text-base leading-relaxed">
+          <slot />
+        </div>
+      </PixelPanel>
+
+      <!-- Key Features Card (node 72:223) -->
+      <PixelPanel class="flex flex-col gap-4 p-6 sm:p-7">
+        <h2 class="h3 text-secondary-700 dark:text-secondary">System Features</h2>
+        <ul class="flex flex-col gap-4">
+          {
+            features.map((feature) => (
+              <li class="flex gap-3">
+                <span class="bg-info mt-1.5 size-2 shrink-0" aria-hidden="true" />
+                <p class="text-muted-foreground text-sm leading-relaxed">
+                  <strong class="text-info font-bold">{feature.lead}:</strong> {feature.text}
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </PixelPanel>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      <!-- Tech Specs Card (node 72:236) — label/value grid, values in success green -->
+      <PixelPanel class="flex flex-col gap-4 p-6">
+        <h2 class="font-display text-info text-xs uppercase sm:text-sm">SYS_SPECS</h2>
+        <dl
+          class="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-xs font-bold uppercase sm:text-sm"
+        >
+          {
+            specs.map((spec) => (
+              <Fragment>
+                <dt class="text-muted-foreground">{spec.label}:</dt>
+                <dd class="text-success">{spec.value}</dd>
+              </Fragment>
+            ))
+          }
+        </dl>
+      </PixelPanel>
+
+      <!-- Architecture Card (node 72:251) — a framed diagram box: a fixed decorative glyph + the
+           per-project caption (which carries the differentiation). -->
+      <PixelPanel class="flex flex-col gap-4 p-6">
+        <h2 class="font-display text-info text-xs uppercase sm:text-sm">ARC_MAP</h2>
+        <div
+          class="border-border text-muted-foreground flex flex-col items-center justify-center gap-3 border-2 p-8"
+        >
+          <PixelIcon name="git-branch" class="text-info size-10" />
+          <span class="text-center text-xs font-bold tracking-wide uppercase">{archCaption}</span>
+        </div>
+      </PixelPanel>
+    </div>
+  </div>
+
+  <!-- Challenges & Solutions (node 72:257) -->
+  <PixelPanel
+    as="section"
+    aria-labelledby="challenges-heading"
+    class="flex flex-col gap-6 p-6 sm:p-7"
+  >
+    <h2 id="challenges-heading" class="h3 text-secondary-700 dark:text-secondary">
+      Challenges &amp; Solutions
+    </h2>
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="flex flex-col gap-2">
+        <h3
+          class="text-secondary-700 dark:text-secondary text-xs font-bold tracking-wide uppercase"
+        >
+          # {challenge.title}
+        </h3>
+        <p class="text-muted-foreground text-sm leading-relaxed">{challenge.body}</p>
+      </div>
+      <div class="flex flex-col gap-2">
+        <h3 class="text-success text-xs font-bold tracking-wide uppercase"># {solution.title}</h3>
+        <p class="text-muted-foreground text-sm leading-relaxed">{solution.body}</p>
+      </div>
+    </div>
+  </PixelPanel>
+</div>

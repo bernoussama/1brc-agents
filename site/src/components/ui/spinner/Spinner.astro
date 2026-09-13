@@ -1,0 +1,29 @@
+---
+// src/components/ui/spinner/Spinner.astro — astro-boiler primitive (see ../README.md).
+// CSS spin (respects motion-reduce). Colors via currentColor — set text-* to recolor. role="status"
+// + aria-label give it an accessible name; override `label` to localize.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"span"> & VariantProps<typeof spinner> & { label?: string };
+
+export const spinner = tv({
+  base: [
+    "inline-block animate-spin rounded-full border-current border-t-transparent",
+    "motion-reduce:animate-none",
+  ],
+  variants: {
+    size: { sm: "size-4 border-2", md: "size-6 border-2", lg: "size-8 border-[3px]" },
+  },
+  defaultVariants: { size: "md" },
+});
+
+const { size, label = "Loading…", class: className, ...rest } = Astro.props;
+---
+
+<span
+  role="status"
+  aria-label={label}
+  class={spinner({ size, class: className })}
+  data-slot="spinner"
+  {...rest}></span>

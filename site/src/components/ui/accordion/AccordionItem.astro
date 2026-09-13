@@ -1,0 +1,20 @@
+---
+// src/components/ui/accordion/AccordionItem.astro — Accordion compound part (see ../README.md).
+// Native <details>; pass a shared `name` across items to make the group mutually exclusive (the
+// native `name` flows through via {...rest}). Rotates the trigger chevron when open via a
+// descendant selector (no JS).
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"details"> & VariantProps<typeof accordionItem>;
+
+export const accordionItem = tv({
+  base: ["border-border border-b", "[&[open]_summary_svg]:rotate-180"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<details class={accordionItem({ class: className })} data-slot="accordion-item" {...rest}>
+  <slot />
+</details>

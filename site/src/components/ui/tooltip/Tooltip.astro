@@ -1,0 +1,36 @@
+---
+// src/components/ui/tooltip/Tooltip.astro — astro-boiler primitive (see ../README.md).
+// Zero-JS CSS tooltip: wraps a trigger (default slot) and reveals `text` on hover/focus-within.
+// For full a11y, give the trigger `aria-describedby` matching this tooltip's `id`. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"span"> & VariantProps<typeof tooltip> & { text: string };
+
+export const tooltip = tv({
+  base: [
+    "pointer-events-none absolute z-50 w-max max-w-xs rounded-md px-2 py-1 text-xs font-medium shadow-md",
+    "bg-foreground text-background",
+    "opacity-0 transition-opacity duration-150 motion-reduce:transition-none",
+    "group-hover:opacity-100 group-focus-within:opacity-100",
+  ],
+  variants: {
+    side: {
+      top: "bottom-full left-1/2 mb-1.5 -translate-x-1/2",
+      bottom: "top-full left-1/2 mt-1.5 -translate-x-1/2",
+      left: "top-1/2 right-full mr-1.5 -translate-y-1/2",
+      right: "top-1/2 left-full ml-1.5 -translate-y-1/2",
+    },
+  },
+  defaultVariants: { side: "top" },
+});
+
+const { side, text, class: className, ...rest } = Astro.props;
+---
+
+<span class="group relative inline-flex w-fit" data-slot="tooltip-root">
+  <slot />
+  <span role="tooltip" class={tooltip({ side, class: className })} data-slot="tooltip" {...rest}>
+    {text}
+  </span>
+</span>

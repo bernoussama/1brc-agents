@@ -1,0 +1,32 @@
+---
+// src/components/ui/dropdown/DropdownTrigger.astro — Dropdown compound part (see ../README.md).
+// Button that toggles the DropdownMenu whose `id` equals this trigger's `for`, via the native Popover
+// API (`popovertarget`). Reuses the Button look (defaults to outline). The chevron rotates when the
+// menu is open — the Dropdown script syncs `aria-expanded`, which drives the rotation. Tokens only.
+import { button } from "@components/ui/button/Button.astro";
+import type { HTMLAttributes } from "astro/types";
+import type { VariantProps } from "tailwind-variants";
+
+import Chevron from "../_Chevron.astro";
+
+type Props = HTMLAttributes<"button"> & VariantProps<typeof button> & { for: string };
+
+const { for: target, variant = "outline", size, class: className, ...rest } = Astro.props;
+---
+
+<button
+  type="button"
+  popovertarget={target}
+  aria-haspopup="menu"
+  aria-expanded="false"
+  data-slot="dropdown-trigger"
+  class={button({
+    variant,
+    size,
+    class: ["[&[aria-expanded=true]_svg]:rotate-180", className],
+  })}
+  {...rest}
+>
+  <slot />
+  <Chevron />
+</button>

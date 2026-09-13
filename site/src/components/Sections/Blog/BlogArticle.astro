@@ -1,0 +1,148 @@
+---
+// src/components/Sections/Blog/BlogArticle.astro — the per-post article body (Figma "Pixel Quests -
+// Blog Post", node 5:128). Data-driven: the page passes one post's frontmatter as `post`, the
+// resolved byline, formatted date, read time, and prev/next neighbours; the rendered MDX article
+// prose goes in the default slot. Layout, top → bottom (within the mock's centred reading column):
+//   • breadcrumb: Home › Blog › <title>          (node 5:130)
+//   • article panel — category tag, H1, meta row (avatar · date · read · byline), hero banner,
+//     the MDX body (.blog-prose), footer tags + ◄PREV NEXT► nav   (node 5:139)
+//
+// Reuses ui/pixel-panel (the surface), ui/badge (pixel variant), ui/breadcrumb, the svg/pixel-icons
+// registry, and .primary-focus. Tokens only, so the light theme flips for free.
+import { PixelIcon } from "@components/svg/pixel-icons";
+import { Badge } from "@components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@components/ui/breadcrumb";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import { type AdjacentLink, categoryMeta } from "@js/postCards";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"blog">["data"];
+  author: { name: string; avatar?: ImageMetadata };
+  /** already-formatted retro date, e.g. "JUL 20, 2026". */
+  dateLabel: string;
+  /** ISO-8601 for the <time datetime>. */
+  dateISO: string;
+  readMinutes: number;
+  prev?: AdjacentLink;
+  next?: AdjacentLink;
+}
+const { post, author, dateLabel, dateISO, readMinutes, prev, next } = Astro.props as Props;
+const { title, category, heroImage, heroImageAlt, tags } = post;
+
+const {
+  label: categoryLabel,
+  variant: categoryVariant,
+  class: categoryClass,
+} = categoryMeta(category);
+---
+
+<div class="flex flex-col gap-8">
+  <!-- Breadcrumbs (node 5:130) -->
+  <Breadcrumb>
+    <BreadcrumbItem><BreadcrumbLink href="/">Home</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem><BreadcrumbLink href="/blog/">Blog</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem><BreadcrumbPage>{title}</BreadcrumbPage></BreadcrumbItem>
+  </Breadcrumb>
+
+  <!-- Article container (node 5:139) -->
+  <PixelPanel as="article" class="flex flex-col gap-6 p-6 sm:p-8">
+    <!-- Header section (node 5:140) -->
+    <header class="flex flex-col gap-4">
+      <div>
+        <Badge pixel variant={categoryVariant} class={categoryClass}>{categoryLabel}</Badge>
+      </div>
+
+      <h1 class="h1 text-foreground text-balance">{title}</h1>
+
+      <!-- Meta row (node 5:145): avatar · date · read time · byline, ruled top and bottom. -->
+      <div class="border-border flex items-center gap-3 border-t-4 border-b-4 py-3">
+        {
+          author.avatar && (
+            <img
+              src={author.avatar.src}
+              width={author.avatar.width}
+              height={author.avatar.height}
+              alt=""
+              loading="eager"
+              decoding="async"
+              class="border-border bg-accent size-8 shrink-0 border-2 object-cover"
+            />
+          )
+        }
+        <p class="text-muted-foreground text-xs font-bold tracking-wide uppercase">
+          <time datetime={dateISO}>{dateLabel}</time> · {readMinutes} Min Read · By {author.name}
+        </p>
+      </div>
+    </header>
+
+    <!-- Hero banner (node 5:150): a framed figure. Reuses the post's hero image (card + banner share
+         one asset — the placeholder precedent). Eager: it's the article's LCP candidate. -->
+    <figure class="border-border bg-accent overflow-clip border-4">
+      <img
+        src={heroImage.src}
+        width={heroImage.width}
+        height={heroImage.height}
+        alt={heroImageAlt}
+        loading="eager"
+        decoding="async"
+        class="aspect-[16/8] w-full object-cover"
+      />
+    </figure>
+
+    <!-- Body: the rendered MDX article prose (node 5:152), styled by .blog-prose (global.css). -->
+    <div class="blog-prose">
+      <slot />
+    </div>
+
+    <!-- Footer tags + prev/next nav (node 5:198) -->
+    <footer class="border-border flex flex-wrap items-center justify-between gap-4 border-t-4 pt-6">
+      {
+        tags.length > 0 && (
+          <ul class="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <li class="bg-accent text-accent-foreground border-border border-2 px-2 py-0.5 text-xs font-bold uppercase">
+                #{tag}
+              </li>
+            ))}
+          </ul>
+        )
+      }
+
+      <div class="ml-auto flex items-center gap-5">
+        {
+          prev && (
+            <a
+              href={prev.href}
+              rel="prev"
+              class="primary-focus text-info hover:text-success inline-flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase transition-colors"
+            >
+              <PixelIcon name="arrow-left" class="size-3.5" />
+              Prev
+            </a>
+          )
+        }
+        {
+          next && (
+            <a
+              href={next.href}
+              rel="next"
+              class="primary-focus text-info hover:text-success inline-flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase transition-colors"
+            >
+              Next
+              <PixelIcon name="arrow-right" class="size-3.5" />
+            </a>
+          )
+        }
+      </div>
+    </footer>
+  </PixelPanel>
+</div>

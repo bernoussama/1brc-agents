@@ -1,0 +1,67 @@
+---
+// src/components/ui/reveal/Reveal.astro — astro-boiler primitive (see ../README.md).
+// Scroll-reveal wrapper. Composes the owned motion catalog (styles/motion/index.css): an entrance
+// `animate-*` driven by the NATIVE scroll timeline (`timeline-view` = `animation-timeline: view()`),
+// so it is ZERO-JS — the element animates as it scrolls into view, progress mapped to `animate-range-*`.
+//
+// Two guards, by design:
+//   • `motion-reduce:animate-none` degrades to static content. This is REQUIRED (not just belt-and-
+//     suspenders): the global reduced-motion guard in motion/index.css zeroes *time* durations, but a
+//     scroll-driven animation is progressed by scroll position, not time, so it must be removed here.
+//   • `siteSettings.useAnimations` is the site master switch (build-time). Off ⇒ plain pass-through
+//     wrapper. The `animate` prop overrides per call site (keeps the primitive usable config-free).
+//
+// ponytail: native scroll timelines are Chromium + Safari; where unsupported (e.g. Firefox), the
+// animation ignores the timeline and simply plays once on load — content still ends visible (graceful
+// degradation, no JS fallback shipped). For above-the-fold content prefer a plain `animate-*` utility.
+import { siteSettings } from "@config/siteSettings.json";
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> &
+  VariantProps<typeof reveal> & {
+    /** Render element (wrapper needs a box — `display:contents` would break the timeline). */
+    as?: keyof HTMLElementTagNameMap;
+    /** Per-call override of the `siteSettings.useAnimations` master switch. */
+    animate?: boolean;
+  };
+
+export const reveal = tv({
+  base: ["timeline-view motion-reduce:animate-none"],
+  variants: {
+    animation: {
+      "fade-in": "animate-fade-in",
+      "fade-in-up": "animate-fade-in-up",
+      "fade-in-down": "animate-fade-in-down",
+      "fade-in-left": "animate-fade-in-left",
+      "fade-in-right": "animate-fade-in-right",
+      "zoom-in": "animate-zoom-in",
+      "blurred-fade-in": "animate-blurred-fade-in",
+      "slide-up-fade": "animate-slide-up-fade",
+      "bounce-fade-in": "animate-bounce-fade-in",
+      "flip-in-x": "animate-flip-in-x",
+      "flip-in-y": "animate-flip-in-y",
+    },
+    // window of the element's view-progress the animation plays over
+    range: {
+      entry: "animate-range-entry",
+      cover: "animate-range-cover",
+      contain: "animate-range-contain",
+      gradual: "animate-range-gradual",
+      moderate: "animate-range-moderate",
+      brisk: "animate-range-brisk",
+      rapid: "animate-range-rapid",
+    },
+  },
+  defaultVariants: { animation: "fade-in-up", range: "entry" },
+});
+
+const { animation, range, as, animate, class: className, ...rest } = Astro.props;
+const Tag = as ?? "div";
+// follow the site master switch unless the call site overrides via `animate`.
+// `satisfies` keeps `useAnimations` a literal type, so default a missing flag to on via `?? true`.
+const on = animate ?? siteSettings.useAnimations ?? true;
+const cls = on ? reveal({ animation, range, class: className }) : className;
+---
+
+<Tag class={cls} data-slot="reveal" {...rest}><slot /></Tag>

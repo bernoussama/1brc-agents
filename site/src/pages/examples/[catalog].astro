@@ -1,0 +1,22 @@
+---
+// src/pages/examples/[catalog].astro — DEV-ONLY route for the UI-primitive catalog. Thin route
+// shell: the catalog itself lives in @components/Sections/UiCatalog; this file owns only the
+// route concerns: dev-only gating and the page's SEO.
+import UiCatalog from "@components/Sections/UiCatalog/UiCatalog.astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+// Dev-only, static-build-safe: getStaticPaths emits no paths in a prod build, so no HTML ships to
+// prod; `astro dev` still serves /examples/ui/. Replaces the old on-demand 404 guard, which needed
+// the (now removed) node adapter.
+export function getStaticPaths() {
+  return import.meta.env.PROD ? [] : [{ params: { catalog: "ui" } }];
+}
+---
+
+<BaseLayout
+  title="UI primitives — dev catalog"
+  description="Dev-only catalog of every astro-boiler UI primitive in every variant."
+  noindex={true}
+>
+  <UiCatalog />
+</BaseLayout>

@@ -1,0 +1,56 @@
+---
+// src/components/Sections/Home/About.astro — Figma "About Me Section" (node 14:116).
+//
+// Section heading + a pixel avatar tile beside a bio and a LOCATION / ROLE / FAVORITE meta list.
+// One desktop frame → the avatar sits above the bio on phones, beside it from sm. Below-the-fold →
+// <Reveal>. The meta is a real <dl> (label→value pairs). Tokens only.
+//
+// CONTENT: the bio + meta VALUES come from portfolioData.profile (buyer-editable); the meta LABELS
+// (Location/Role/Favorite) are presentational and stay here. Avatar is a demo asset (plain <img>, no Sharp).
+import SectionHeading from "@components/Sections/Global/SectionHeading.astro";
+import { Reveal } from "@components/ui/reveal";
+import portfolioData from "@config/portfolioData.json";
+import avatar from "@images/about-avatar.png";
+
+const { shortBio, meta: profileMeta } = portfolioData.profile;
+const meta = [
+  { label: "Location", value: profileMeta.location },
+  { label: "Role", value: profileMeta.role },
+  { label: "Favorite", value: profileMeta.favorite },
+] as const;
+---
+
+<Reveal as="section" aria-labelledby="about-heading" class="flex flex-col gap-6">
+  <SectionHeading id="about-heading" title="About the Bench" />
+
+  <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+    <div
+      class="bg-accent border-border shadow-pixel size-32 shrink-0 overflow-clip border-4 sm:size-40"
+    >
+      <img
+        src={avatar.src}
+        width={avatar.width}
+        height={avatar.height}
+        alt="Pixel-art portrait of the site author"
+        loading="lazy"
+        decoding="async"
+        class="size-full object-cover"
+      />
+    </div>
+
+    <div class="flex flex-1 flex-col gap-4">
+      <p class="text-muted-foreground text-base leading-relaxed">{shortBio}</p>
+
+      <dl class="flex flex-col gap-2 text-sm">
+        {
+          meta.map((row) => (
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-foreground font-bold uppercase">{row.label}</dt>
+              <dd class="text-muted-foreground uppercase">{row.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</Reveal>

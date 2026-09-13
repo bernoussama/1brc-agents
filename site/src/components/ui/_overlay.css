@@ -1,0 +1,103 @@
+/**
+ * src/components/ui/_overlay.css — open/close transitions + modal scroll-lock for the Dialog and
+ * Sheet primitives (both native <dialog>). Imported (once, deduped) from Dialog.astro and Sheet.astro
+ * frontmatter. Plain global CSS — these rules need `@starting-style`, `::backdrop`, `:has()`, and
+ * `allow-discrete`, which don't express cleanly as utilities. Colors come from the token theme
+ * (`var(--color-…)`), never raw hex. Unlayered, so it wins over Tailwind utilities for the animated
+ * properties (opacity / scale / translate), which is what we want.
+ */
+
+/* The panel transitions opacity + transform; `display` and `overlay` are made discrete-transitionable
+   so the element stays painted (and in the top layer) through its exit animation. */
+[data-slot="dialog"],
+[data-slot="sheet"] {
+  transition:
+    opacity 200ms ease,
+    translate 200ms ease,
+    scale 200ms ease,
+    display 200ms allow-discrete,
+    overlay 200ms allow-discrete;
+}
+
+/* Backdrop scrim: a base-950 wash that fades in with the dialog (0 → 50%). */
+[data-slot="dialog"]::backdrop,
+[data-slot="sheet"]::backdrop {
+  background-color: var(--color-base-950);
+  opacity: 0;
+  transition:
+    opacity 200ms ease,
+    display 200ms allow-discrete,
+    overlay 200ms allow-discrete;
+}
+[data-slot="dialog"][open]::backdrop,
+[data-slot="sheet"][open]::backdrop {
+  opacity: 0.5;
+}
+
+/* Centered Dialog: closed = faded + scaled down; open = full. `@starting-style` defines the entry
+   state at the moment it's first displayed, so it animates in (not just out). */
+[data-slot="dialog"] {
+  /* Tailwind v4 Preflight resets `margin: 0` on every element, which clobbers the UA
+     `dialog { margin: auto }` that centers a modal <dialog>. Restore it so showModal() dialogs
+     (Dialog, Searchbox) center in the viewport. Sheets pin to an edge via their own size/translate
+     classes, so this stays scoped to the centered Dialog. */
+  margin: auto;
+  opacity: 0;
+  scale: 0.95;
+}
+[data-slot="dialog"][open] {
+  opacity: 1;
+  scale: 1;
+}
+@starting-style {
+  [data-slot="dialog"][open] {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+
+/* Edge Sheet: slides in from its `data-side` (the panel itself doesn't fade — just the backdrop). */
+[data-slot="sheet"][data-side="right"] {
+  translate: 100% 0;
+}
+[data-slot="sheet"][data-side="left"] {
+  translate: -100% 0;
+}
+[data-slot="sheet"][data-side="top"] {
+  translate: 0 -100%;
+}
+[data-slot="sheet"][data-side="bottom"] {
+  translate: 0 100%;
+}
+[data-slot="sheet"][open] {
+  translate: 0 0;
+}
+@starting-style {
+  [data-slot="sheet"][data-side="right"][open] {
+    translate: 100% 0;
+  }
+  [data-slot="sheet"][data-side="left"][open] {
+    translate: -100% 0;
+  }
+  [data-slot="sheet"][data-side="top"][open] {
+    translate: 0 -100%;
+  }
+  [data-slot="sheet"][data-side="bottom"][open] {
+    translate: 0 100%;
+  }
+}
+
+/* Lock background scroll while any modal <dialog> is open. The `html` base already reserves the
+   scrollbar gutter (scrollbar-gutter: stable), so clipping here causes no layout shift. */
+html:has(dialog:modal) {
+  overflow: clip;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="dialog"],
+  [data-slot="sheet"],
+  [data-slot="dialog"]::backdrop,
+  [data-slot="sheet"]::backdrop {
+    transition: none;
+  }
+}

@@ -1,0 +1,138 @@
+---
+// src/components/Sections/UiCatalog/NavMarqueeCatalog.astro — DEV-ONLY. The Nav + Marquee section of
+// the UI catalog (zero-JS Nav variants + a pure-CSS Marquee), extracted from UiCatalog.astro so the
+// group owns its own markup — and the demo-only nav-click script — instead of enlarging the catalog
+// monolith. Rendered by UiCatalog; emits no HTML in a production build. Emits a run of top-level
+// nodes (leading group header included) so it slots into the catalog's flex-col-gap-14 flow unchanged.
+import { Icon } from "@components/svg/icons";
+import Badge from "@components/ui/badge";
+import Marquee from "@components/ui/marquee";
+import { Nav, NavItem, NavLink } from "@components/ui/nav";
+import Separator from "@components/ui/separator";
+---
+
+{/* ── Nav + Marquee — Tier 1 static ────────────────────────────────────── */}
+<header class="flex flex-col gap-1">
+  <h2 class="h2">Nav &amp; Marquee</h2>
+  <p class="description">Zero-JS nav variants and a pure-CSS marquee.</p>
+</header>
+
+{/* Nav */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Nav</h2>
+  <p class="description">
+    The primitive is a plain route-driven list of links; this dev page wires clicks below so you can
+    preview the active state moving between variants.
+  </p>
+  <div class="flex flex-col gap-4">
+    <Nav aria-label="Underline nav">
+      <NavItem
+        ><NavLink href="#nav" variant="underline" aria-current="page">Overview</NavLink></NavItem
+      >
+      <NavItem><NavLink href="#nav" variant="underline">Docs</NavLink></NavItem>
+      <NavItem><NavLink href="#nav" variant="underline">Pricing</NavLink></NavItem>
+    </Nav>
+    <Nav aria-label="Pills nav">
+      <NavItem><NavLink href="#nav" variant="pills" aria-current="page">Overview</NavLink></NavItem>
+      <NavItem><NavLink href="#nav" variant="pills">Docs</NavLink></NavItem>
+      <NavItem><NavLink href="#nav" variant="pills">Pricing</NavLink></NavItem>
+    </Nav>
+    <Nav aria-label="Segment nav">
+      <NavItem
+        ><NavLink href="#nav" variant="segment" aria-current="page">Overview</NavLink></NavItem
+      >
+      <NavItem><NavLink href="#nav" variant="segment">Docs</NavLink></NavItem>
+      <NavItem><NavLink href="#nav" variant="segment">Pricing</NavLink></NavItem>
+    </Nav>
+    <Nav aria-label="Icon nav, underline">
+      <NavItem>
+        <NavLink href="#nav" variant="underline" aria-current="page">
+          <Icon name="home-01" size="sm" />Dashboard
+        </NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink href="#nav" variant="underline"><Icon name="search-01" size="sm" />Explore</NavLink
+        >
+      </NavItem>
+      <NavItem>
+        <NavLink href="#nav" variant="underline"><Icon name="edit-01" size="sm" />Drafts</NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink href="#nav" variant="underline"
+          ><Icon name="calendar-05" size="sm" />Schedule</NavLink
+        >
+      </NavItem>
+    </Nav>
+    <Nav aria-label="Icon nav, pills">
+      <NavItem>
+        <NavLink href="#nav" variant="pills" aria-current="page">
+          <Icon name="home-01" size="sm" />Dashboard
+        </NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink href="#nav" variant="pills"><Icon name="search-01" size="sm" />Explore</NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink href="#nav" variant="pills"><Icon name="edit-01" size="sm" />Drafts</NavLink>
+      </NavItem>
+    </Nav>
+    <Nav orientation="vertical" aria-label="Vertical nav" class="w-40">
+      <NavItem
+        ><NavLink href="#nav" variant="segment" aria-current="page">Overview</NavLink></NavItem
+      >
+      <NavItem><NavLink href="#nav" variant="segment">Docs</NavLink></NavItem>
+      <NavItem><NavLink href="#nav" variant="segment">Pricing</NavLink></NavItem>
+    </Nav>
+  </div>
+</section>
+
+<Separator />
+
+{/* Marquee */}
+<section class="flex flex-col gap-4">
+  <h2 class="h3">Marquee</h2>
+  <p class="description">Pure CSS; hover to pause, reduced-motion pauses it entirely.</p>
+  <div class="border-border rounded-md border p-4">
+    <Marquee>
+      {
+        ["Astro", "Tailwind", "TypeScript", "Preline", "Vite", "pnpm"].map((name) => (
+          <Badge variant="secondary" class="whitespace-nowrap">
+            {name}
+          </Badge>
+        ))
+      }
+    </Marquee>
+  </div>
+  <div class="border-border rounded-md border p-4">
+    <Marquee direction="right" speed="fast">
+      {
+        ["Fast", "Reverse", "Seamless", "Zero-JS", "Loops", "Forever"].map((name) => (
+          <Badge variant="outline" class="whitespace-nowrap">
+            {name}
+          </Badge>
+        ))
+      }
+    </Marquee>
+  </div>
+</section>
+
+<script>
+  // Dev-catalog only: the placeholder navs are href="#" links, so wire clicks here to preview the
+  // active state moving. The Nav primitive stays a plain list of links — this belongs on the demo
+  // page, not in ui/. Capture phase so preventDefault beats <ClientRouter />'s link handling.
+  document.addEventListener(
+    "click",
+    (event) => {
+      const link =
+        event.target instanceof Element ? event.target.closest('[data-slot="nav-link"]') : null;
+      const nav = link?.closest('[data-slot="nav"]');
+      if (!link || !nav) return;
+      event.preventDefault();
+      nav
+        .querySelectorAll('[data-slot="nav-link"]')
+        .forEach((a) => a.removeAttribute("aria-current"));
+      link.setAttribute("aria-current", "page");
+    },
+    true,
+  );
+</script>

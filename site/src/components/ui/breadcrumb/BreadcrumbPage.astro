@@ -1,0 +1,25 @@
+---
+// src/components/ui/breadcrumb/BreadcrumbPage.astro — Breadcrumb compound part (see ../README.md).
+// The current page: not a link; announces itself with aria-current="page".
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"span"> & VariantProps<typeof breadcrumbPage>;
+
+export const breadcrumbPage = tv({
+  base: ["text-foreground font-medium"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<span
+  role="link"
+  aria-current="page"
+  aria-disabled="true"
+  class={breadcrumbPage({ class: className })}
+  data-slot="breadcrumb-page"
+  {...rest}
+>
+  <slot />
+</span>

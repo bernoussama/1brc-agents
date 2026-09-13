@@ -81,7 +81,7 @@ prepare_scored_dataset() {
   }
 
   docker image inspect "$SCORED_DATASET_IMAGE" >/dev/null 2>&1 || \
-    docker build -t "$SCORED_DATASET_IMAGE" "$SCORED_DATASET_ROOT/sandbox"
+    docker build -t "$SCORED_DATASET_IMAGE" -f "$SCORED_DATASET_ROOT/docker/Dockerfile" "$SCORED_DATASET_ROOT"
   docker volume inspect "$SCORED_DATASET_VOLUME" >/dev/null 2>&1 || \
     docker volume create "$SCORED_DATASET_VOLUME" >/dev/null
 

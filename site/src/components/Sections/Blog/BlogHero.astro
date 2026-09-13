@@ -1,0 +1,14 @@
+---
+// src/components/Sections/Blog/BlogHero.astro — the listing hero panel (Figma "Hero Panel", node
+// 76:25): a MISSION CONTROL tag, the LATEST POSTS H1, and the Dev Dispatches blurb. Static page copy
+// (reproduced verbatim from the mock), so it takes no props. Renders the shared Global/HeroPanel so
+// it can't drift from the other page heroes. Above the fold → no <Reveal>.
+import HeroPanel from "@components/Sections/Global/HeroPanel.astro";
+---
+
+<HeroPanel
+  headingId="blog-hero-heading"
+  tagline="Mission Control"
+  heading="Latest Posts"
+  intro="Dev Dispatches — Field Notes from the Code Frontier. Real-time logging of web operations, vintage architectures, and unconventional full-stack implementations."
+/>

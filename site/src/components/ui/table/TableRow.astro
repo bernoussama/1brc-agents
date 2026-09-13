@@ -1,0 +1,15 @@
+---
+// src/components/ui/table/TableRow.astro — Table compound part (see ../README.md). Wraps <tr>.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"tr"> & VariantProps<typeof tableRow>;
+
+export const tableRow = tv({
+  base: ["border-border hover:bg-muted/50 border-b transition-colors"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<tr class={tableRow({ class: className })} data-slot="table-row" {...rest}><slot /></tr>

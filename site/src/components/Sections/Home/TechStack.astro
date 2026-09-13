@@ -1,0 +1,41 @@
+---
+// src/components/Sections/Home/TechStack.astro — Figma "Tech Stack Section" (node 14:3).
+//
+// Section heading + a wrapping row of pixel chips (PixelChip, static — no href). The Figma grid is
+// already `flex-wrap`, so it reflows to any width for free. Below-the-fold → <Reveal>.
+//
+// CONTENT: retro flavour tech list (typed local). Icons are mapped to the closest glyphs in the
+// pixel `svg/pixel-icons` registry (reused, not re-drawn) — the set has no exact `layers`/`cloud`
+// glyph, so React→component and AWS→globe are deliberate nearest-matches. The About
+// SkillTree keeps its own curated three; the two lists are independent literals, not a shared source.
+import SectionHeading from "@components/Sections/Global/SectionHeading.astro";
+import type { PixelIconName } from "@components/svg/pixel-icons";
+import { Reveal } from "@components/ui/reveal";
+
+import PixelChip from "./PixelChip.astro";
+
+const stack: readonly { label: string; icon: PixelIconName }[] = [
+  { label: "Docker", icon: "package" },
+  { label: "pi", icon: "flash" },
+  { label: "Bash", icon: "server" },
+  { label: "Python", icon: "code" },
+  { label: "C / gcc", icon: "component" },
+  { label: "Astro", icon: "globe" },
+  { label: "Git", icon: "git-branch" },
+  { label: "TypeScript", icon: "type" },
+];
+---
+
+<Reveal as="section" aria-labelledby="tech-stack-heading" class="flex flex-col gap-6">
+  <SectionHeading id="tech-stack-heading" title="Tech Stack" />
+
+  <ul class="flex flex-wrap gap-3 sm:gap-4">
+    {
+      stack.map((tech) => (
+        <li>
+          <PixelChip icon={tech.icon} label={tech.label} />
+        </li>
+      ))
+    }
+  </ul>
+</Reveal>

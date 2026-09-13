@@ -1,0 +1,29 @@
+---
+// src/components/ui/mega-menu/MegaMenu.astro — astro-boiler primitive (see ../README.md).
+// Mega menu on the native Popover API — a Dropdown with a wide multi-column panel (the same move as
+// Sheet reusing Dialog): a MegaMenuTrigger toggles the MegaMenuPanel it points at (by id), which
+// renders in the top layer with native light-dismiss + Escape + focus-return. Placement and
+// aria-expanded sync come from the shared `_popover` controller; there's no roving — a panel is a
+// grid of links, so natural Tab order is the right keyboard model. Compose MegaMenuTrigger /
+// MegaMenuPanel / MegaMenuItem, typically inside a NavItem. Tokens only.
+// ponytail: click-to-open only — no Preline-style hover trigger. Hover menus are hostile to touch
+// and keyboard users; if a project insists, add hover at the composition layer, not here.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof megaMenu>;
+
+export const megaMenu = tv({
+  base: ["inline-block text-left"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={megaMenu({ class: className })} data-slot="mega-menu" {...rest}>
+  <slot />
+</div>
+
+<script>
+  import "../_popover";
+</script>

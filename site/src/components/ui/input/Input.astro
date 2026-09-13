@@ -1,0 +1,23 @@
+---
+// src/components/ui/input/Input.astro — astro-boiler primitive (see ../README.md).
+// Native <input> with size + validation `state`. `peer` enables peer-* on a sibling label/message.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+import { fieldBase, fieldState } from "../_field";
+
+type Props = HTMLAttributes<"input"> & VariantProps<typeof input>;
+
+export const input = tv({
+  base: fieldBase,
+  variants: {
+    size: { sm: "h-9 px-2 text-sm", md: "h-11 px-3 text-base", lg: "h-12 px-4 text-lg" },
+    state: fieldState,
+  },
+  defaultVariants: { size: "md", state: "default" },
+});
+
+const { size, state, class: className, ...rest } = Astro.props;
+---
+
+<input class={input({ size, state, class: className })} data-slot="input" {...rest} />

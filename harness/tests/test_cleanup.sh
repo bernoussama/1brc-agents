@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-TEST_DIR="$(mktemp -d "$ROOT/runs/.cleanup-test.XXXXXX")"
+mkdir -p "$ROOT/.sessions"
+TEST_DIR="$(mktemp -d "$ROOT/.sessions/.cleanup-test.XXXXXX")"
 cleanup() {
   rm -rf -- "$TEST_DIR"
 }

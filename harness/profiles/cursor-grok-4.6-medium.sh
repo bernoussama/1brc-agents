@@ -10,6 +10,3 @@ ADAPTER_ROUTE="pi to host cursor-api-proxy to Cursor CLI Grok 4.6 Medium"
 AUTH_MODE=env
 AUTH_ENV=CURSOR_PROXY_API_KEY
 MODELS_FILE="${ROOT}/harness/profiles/cursor-grok-4.6-medium.models.json"
-
-NCPUS=6
-MEM=16g

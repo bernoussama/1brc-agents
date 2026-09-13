@@ -1,0 +1,38 @@
+---
+// src/components/ui/list/List.astro — astro-boiler primitive (see ../README.md).
+// Static styled list (Preline lists.html): `marker` picks the style (none / disc / decimal — decimal
+// renders an <ol>), `orientation="horizontal"` inlines the items with a dot separator between them
+// (the Preline "inline separator" pattern), drawn by the list itself so items stay plain <li>s.
+// Style markers from the call site with `marker:*` utilities (e.g. `class="marker:text-primary"`).
+// Compose ListItem. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"ul"> & VariantProps<typeof list>;
+
+export const list = tv({
+  base: ["text-foreground marker:text-muted-foreground text-sm"],
+  variants: {
+    marker: {
+      none: "list-none",
+      disc: "list-inside list-disc",
+      decimal: "list-inside list-decimal",
+    },
+    orientation: {
+      vertical: "space-y-2",
+      horizontal: [
+        "flex flex-wrap items-center gap-x-3 gap-y-2 [&>li]:flex [&>li]:items-center",
+        "[&>li+li]:before:bg-muted-foreground/60 [&>li+li]:before:me-3 [&>li+li]:before:size-1 [&>li+li]:before:shrink-0 [&>li+li]:before:rounded-full [&>li+li]:before:content-['']",
+      ],
+    },
+  },
+  defaultVariants: { marker: "none", orientation: "vertical" },
+});
+
+const { marker, orientation, class: className, ...rest } = Astro.props;
+const Tag = marker === "decimal" ? "ol" : "ul";
+---
+
+<Tag class={list({ marker, orientation, class: className })} data-slot="list" {...rest}>
+  <slot />
+</Tag>

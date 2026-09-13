@@ -3,6 +3,39 @@
 One session = one model, one benchmark container, one round. The same
 container that runs the agent also runs the final submission score.
 
+## Quick start
+
+```bash
+# 1. build the box once (from the repo root)
+docker build -t 1brc-agents-sandbox:latest -f docker/Dockerfile .
+
+# 2. lock the model-API network (once per host)
+sudo ./harness/setup_network.sh
+
+# 3. smoke-test the judge end-to-end (no agent involved)
+bash harness/lib/onebrc_generator.sh 100000 /tmp/smoke.txt
+mkdir -p /tmp/dummy && cp judge/reference.py /tmp/dummy/
+printf '#!/bin/sh\nexec python3 "$(dirname "$0")/reference.py" "$1"\n' \
+  > /tmp/dummy/run.sh && chmod +x /tmp/dummy/run.sh
+python3 judge/score.py --host --round A --input /tmp/smoke.txt \
+  --submission /tmp/dummy/run.sh --runs 3
+
+# 4. optionally prepare the shared 1B dataset and expected output now
+./harness/prepare_scored_dataset.sh A
+
+# 5. run a session (auto-prepares the volume if step 4 was skipped)
+export OPENROUTER_API_KEY=...
+./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
+```
+
+Environment, budget, dataset size, and timed-run count come from
+[bench.yml](../bench.yml). Host presets under `hosts:` pick the resource
+envelope for the machine the bench is running on (`laptop` = 6 CPUs / 16 GiB
+for the published v0.5 box; `cloud-agent` = 4 CPUs / 16 GiB for Cursor cloud
+VMs; set `BENCH_HOST` to force one). Profiles supply only the model and
+credentials. For a local smoke test that changes resource caps, set
+`BENCH_ALLOW_OVERRIDE=1`.
+
 ## Usage
 
 Set up the internal network and allowlist proxy once on the host before the
@@ -14,13 +47,16 @@ sudo ./harness/setup_network.sh
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-...   # whichever profile you're running
-./harness/run_session.sh glm-4.7 harness/profiles/glm-coding.sh A
-BUDGET_MIN=90 RUNS=5 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh A
-BUDGET_WRAPUP_SEC=600 ./harness/run_session.sh glm-5.3 harness/profiles/glm-5.3.sh A
+./harness/run_session.sh glm-4.7 harness/profiles/glm-coding.sh
+./harness/run_session.sh glm-5.3 harness/profiles/glm-5.3.sh
 ./harness/run_session.sh deepseek harness/profiles/deepseek.sh B
+# Force the laptop resource preset on a different machine:
+BENCH_HOST=laptop ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
+# Local smoke test with a shorter budget:
+BENCH_ALLOW_OVERRIDE=1 BUDGET_MIN=5 ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
 ```
 
-Artifacts land in `runs/<slug>-<timestamp>/`:
+Session scratch lands in `.sessions/<slug>-<timestamp>/` (gitignored):
 - `events.jsonl` — full pi event stream (the trace)
 - `work/` — everything the agent built (includes `submission/run.sh`)
 - `control/budget.json` — read-only authoritative session deadline metadata
@@ -28,6 +64,8 @@ Artifacts land in `runs/<slug>-<timestamp>/`:
 - `score.log` — live judge progress, including reference-generation time
 - `manifest.yaml` — image digest, host info, generator source hash
 - `cleanup.log` — exact disposable paths removed after the session
+
+Published batches live under `runs/<date>-<label>/`.
 
 The runner expects the sibling checkout at `../1brc` by default. Set
 `ONEBRC_ROOT` to another checkout when needed. It compiles and runs
@@ -60,7 +98,7 @@ the run directory and are never removed by this cleanup. Set
 clean an existing completed run explicitly with:
 
 ```bash
-./harness/cleanup_run.sh runs/<slug>-<timestamp>
+./harness/cleanup_run.sh .sessions/<slug>-<timestamp>
 ```
 
 `EXPERIMENT_MAX_SEC` defaults to 300. The runner stops a top-level agent shell
@@ -72,11 +110,24 @@ For in-container Cursor proxy profiles, `CURSOR_PROXY_TIMEOUT_MS` defaults to
 the session budget minus `BUDGET_WRAPUP_SEC`, so a long Cursor tool turn is not
 cut off by a separate 15-minute bridge timeout. Set it explicitly only when a
 shorter per-completion limit is intentional; the selected value is recorded in
-`manifest.yaml`.
+`manifest.yaml`. The allowlist proxy's `PROXY_IDLE_TIMEOUT_MS` defaults to `0`
+(disabled) for the same reason: a short CONNECT idle kill shows up as pi
+`errorMessage: terminated`. After changing the proxy, rerun
+`sudo ./harness/setup_network.sh`. Cursor sessions also disable Node/undici's
+default 300s fetch `bodyTimeout` inside the agent container, write pi
+`settings.json` with `httpIdleTimeoutMs: 0` (pi otherwise replaces that
+dispatcher with a 300s idle abort), and raise `retry.maxRetries` so a long
+session can survive several Cursor CLI drops.
+
+`run_session.sh` copies itself to a temp snapshot and re-execs immediately so
+later harness edits cannot shift line numbers under a live session (bash
+re-reads the script from disk; that previously aborted scoring with
+`VFS: command not found`).
 
 ## Profiles
 
-Each profile file defines:
+Each profile file defines model identity and credentials only.
+Resource caps, budgets, and judge settings come from `bench.yml`.
 
 | var | meaning |
 |---|---|
@@ -87,12 +138,10 @@ Each profile file defines:
 | `AUTH_FILE` | host path to `auth.json` when `AUTH_MODE=file` |
 | `THINKING` | optional pi thinking level (`off`..`max`) |
 | `ADAPTER_ROUTE` | publication label for the complete model/provider adapter path |
-| `NCPUS` / `MEM` | container CPU-equivalent and memory caps; keep identical when comparing models |
 
 Never put keys in profile files. The runner reads them from the host env.
 For OAuth, log in once on the host with `pi` and point `AUTH_FILE` at the
 resulting `~/.pi/agent/auth.json`.
-
 The current runner must give pi the provider credential so it can authenticate.
 Commands launched by pi share that process environment and can therefore read
 the credential. The network boundary is fail-closed, but this is not a
@@ -110,8 +159,8 @@ pi   # interactive once on the runner host, or edit ~/.pi/agent/models.json
 
 Add the endpoint as a custom provider (pi docs → Custom Providers /
 Custom Models), then point `PROVIDER`/`MODEL_ID` in the profile at it.
-The runner mounts `runs/<...>/pi-home` over `/home/agent`, so each session
-starts with a clean but pre-configured pi state.
+The runner mounts `.sessions/<...>/pi-home` over `/home/agent`, so each
+session starts with a clean but pre-configured pi state.
 
 ## Timing fairness (the bit that keeps the leaderboard honest)
 
@@ -129,8 +178,8 @@ starts with a clean but pre-configured pi state.
   `control/budget.json` file. Agents must use it for remaining-time decisions;
   the manifest records the actual stop reason and elapsed time.
 - The container exposes `1brc-resources`, which reports cgroup CPU and memory
-  limits separately from visible host topology. The GLM 5.3 profile uses the
-  current host baseline of 6 CPU-equivalents and 16 GiB.
+  limits separately from visible host topology. The active `hosts.*` preset in
+  `bench.yml` sets the current envelope (laptop: 6 CPU-equivalents / 16 GiB).
 - Candidate commands should use `1brc-bounded`; it isolates an experiment's
   process group and cleans up descendants after a timeout. Docker's `--init`
   is also enabled so orphaned children are reaped.
@@ -152,7 +201,7 @@ mode.
 After building the image on the target machine, optionally freeze it:
 
 ```bash
-docker build -t 1brc-agents-sandbox:latest sandbox/
+docker build -t 1brc-agents-sandbox:latest -f docker/Dockerfile .
 docker tag  1brc-agents-sandbox:latest 1brc-agents-sandbox:$(git -C . rev-parse --short HEAD)
 ```
 
@@ -162,12 +211,14 @@ sessions and keep both leaderboards separate.
 Focused harness checks:
 
 ```bash
+bash harness/tests/test_bench.sh
 bash harness/tests/test_auth.sh
 bash harness/tests/test_firewall.sh
 node harness/tests/test_proxy.js
 bash harness/tests/test_1brc.sh
 bash harness/tests/test_profiling.sh
 bash harness/tests/test_budget.sh
+bash harness/tests/test_runner_snapshot.sh
 bash harness/tests/test_resources.sh
 bash harness/tests/test_scoring_container.sh
 bash harness/tests/test_scored_dataset.sh

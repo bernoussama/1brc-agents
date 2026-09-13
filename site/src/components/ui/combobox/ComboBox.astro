@@ -1,0 +1,200 @@
+---
+// src/components/ui/combobox/ComboBox.astro — astro-boiler primitive (see ../README.md).
+// Single-select autocomplete: a role="combobox" text input (reusing the `input` field look, rung 2)
+// over a role="listbox" of <ComboBoxOption>s that filters as you type. Keyboard: ↑/↓ move the active
+// option (via aria-activedescendant, focus stays in the input), Enter commits, Esc closes, Home/End
+// jump. The visible input shows the label; when `name` is set, a hidden input carries the selected
+// option's value so the form submits the value, not the label.
+//
+// ponytail: client-side, static options only — the filter is a substring match on each option's text,
+// there's no async/remote loading and no grouping. Upgrade path: fetch + render options server-side
+// per page, or add a remote-source branch to the script below; the markup contract stays the same.
+// The listbox is absolutely positioned inside this relative wrapper, so an ancestor with
+// `overflow: hidden` can clip it — lift it to the Popover API (like Dropdown) if a layout needs that.
+import { input } from "@components/ui/input/Input.astro";
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+import Chevron from "../_Chevron.astro";
+
+type Props = HTMLAttributes<"input"> & VariantProps<typeof input> & { emptyText?: string };
+
+export const comboboxList = tv({
+  base: [
+    "bg-card text-card-foreground border-border absolute inset-x-0 top-full z-50 mt-1 hidden",
+    "max-h-60 overflow-auto rounded-md border p-1 shadow-md",
+  ],
+});
+
+const {
+  size,
+  state,
+  name,
+  placeholder = "Search…",
+  emptyText = "No results",
+  class: className,
+  ...rest
+} = Astro.props;
+const listId = `combobox-list-${crypto.randomUUID().slice(0, 8)}`;
+---
+
+<div class="relative w-full" data-slot="combobox">
+  <input
+    type="text"
+    role="combobox"
+    aria-expanded="false"
+    aria-controls={listId}
+    aria-autocomplete="list"
+    autocomplete="off"
+    placeholder={placeholder}
+    data-slot="combobox-input"
+    class={input({ size, state, class: ["pr-9", className] })}
+    {...rest}
+  />
+  {
+    /* Carries the committed option's value for form submission — the visible input holds the label. */
+  }
+  {name && <input type="hidden" name={name} data-slot="combobox-value" />}
+  <button
+    type="button"
+    tabindex="-1"
+    aria-label="Toggle options"
+    data-slot="combobox-toggle"
+    class="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 grid w-9 place-items-center rounded-md outline-none [&[aria-expanded=true]_svg]:rotate-180"
+    aria-expanded="false"
+  >
+    <Chevron />
+  </button>
+  <ul id={listId} role="listbox" data-slot="combobox-list" class={comboboxList()}>
+    <slot />
+    <li
+      data-slot="combobox-empty"
+      class="text-muted-foreground hidden px-2 py-1.5 text-sm"
+      role="presentation"
+    >
+      {emptyText}
+    </li>
+  </ul>
+</div>
+
+<script>
+  import { onReady } from "../_client";
+  import { createActiveDescendant, filterByText } from "../_listbox";
+
+  let uid = 0;
+
+  function wire(root: HTMLElement) {
+    const input = root.querySelector<HTMLInputElement>('[data-slot="combobox-input"]');
+    const toggle = root.querySelector<HTMLButtonElement>('[data-slot="combobox-toggle"]');
+    const list = root.querySelector<HTMLElement>('[data-slot="combobox-list"]');
+    const empty = root.querySelector<HTMLElement>('[data-slot="combobox-empty"]');
+    const hidden = root.querySelector<HTMLInputElement>('[data-slot="combobox-value"]');
+    if (!input || !list) return;
+    const options = [...list.querySelectorAll<HTMLElement>('[data-slot="combobox-option"]')];
+    options.forEach((o) => (o.id ||= `combobox-opt-${(uid += 1)}`));
+
+    const rover = createActiveDescendant(input, options);
+
+    const open = () => {
+      list.classList.remove("hidden");
+      input.setAttribute("aria-expanded", "true");
+      toggle?.setAttribute("aria-expanded", "true");
+    };
+    const close = () => {
+      list.classList.add("hidden");
+      input.setAttribute("aria-expanded", "false");
+      toggle?.setAttribute("aria-expanded", "false");
+      rover.setActive(null);
+    };
+
+    // Typing filters by the query; opening (focus / toggle) shows every option so a committed value
+    // can still be changed — filtering on open would leave only the one already-selected label visible.
+    const filter = () => {
+      filterByText(options, input.value, empty);
+      if (rover.active()?.hidden) rover.setActive(null);
+    };
+    const showAll = () => filterByText(options, "", empty);
+
+    const commit = (option: HTMLElement) => {
+      input.value = option.dataset.label ?? (option.textContent ?? "").trim();
+      if (hidden) hidden.value = option.dataset.value ?? input.value;
+      options.forEach((o) => (o.dataset.selected = String(o === option)));
+      close();
+      // `change` = value committed (what form frameworks listen for). Don't dispatch a synthetic
+      // `input` too — that's the user-typing signal and would re-enter the input handler below.
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      input.focus();
+    };
+
+    input.addEventListener("focus", () => {
+      input.select(); // select the committed label so the next keystroke replaces it
+      showAll();
+      open();
+    });
+    input.addEventListener("input", () => {
+      open();
+      filter();
+      rover.setActive(rover.visible()[0] ?? null);
+    });
+    input.addEventListener("keydown", (event) => {
+      const vis = rover.visible();
+      switch (event.key) {
+        case "ArrowDown":
+          event.preventDefault();
+          if (input.getAttribute("aria-expanded") !== "true") open();
+          rover.move(1);
+          break;
+        case "ArrowUp":
+          event.preventDefault();
+          rover.move(-1);
+          break;
+        case "Home":
+          if (vis.length) {
+            event.preventDefault();
+            rover.setActive(vis[0]);
+          }
+          break;
+        case "End":
+          if (vis.length) {
+            event.preventDefault();
+            rover.setActive(vis[vis.length - 1]);
+          }
+          break;
+        case "Enter": {
+          const a = rover.active();
+          if (a) {
+            event.preventDefault();
+            commit(a);
+          }
+          break;
+        }
+        case "Escape":
+          close();
+          break;
+      }
+    });
+
+    toggle?.addEventListener("click", () => {
+      if (input.getAttribute("aria-expanded") === "true") {
+        close();
+      } else {
+        showAll();
+        open();
+        input.focus();
+      }
+    });
+
+    for (const o of options) {
+      // mousedown fires before the input's blur, so preventDefault keeps focus in the input.
+      o.addEventListener("mousedown", (event) => event.preventDefault());
+      o.addEventListener("click", () => commit(o));
+      o.addEventListener("mousemove", () => rover.setActive(o));
+    }
+
+    root.addEventListener("focusout", (event) => {
+      if (!(event.relatedTarget instanceof Node && root.contains(event.relatedTarget))) close();
+    });
+  }
+
+  onReady('[data-slot="combobox"]', wire);
+</script>

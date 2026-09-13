@@ -1,0 +1,37 @@
+---
+// src/components/ui/breadcrumb/BreadcrumbSeparator.astro — Breadcrumb compound part (see ../README.md).
+// Decorative divider between items (aria-hidden); default chevron, override via the slot.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"li"> & VariantProps<typeof breadcrumbSeparator>;
+
+export const breadcrumbSeparator = tv({
+  base: ["text-muted-foreground [&>svg]:size-3.5"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<li
+  role="presentation"
+  aria-hidden="true"
+  class={breadcrumbSeparator({ class: className })}
+  data-slot="breadcrumb-separator"
+  {...rest}
+>
+  <slot>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m9 18 6-6-6-6"></path>
+    </svg>
+  </slot>
+</li>

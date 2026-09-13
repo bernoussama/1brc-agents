@@ -1,0 +1,15 @@
+---
+// src/components/ui/table/TableCell.astro — Table compound part (see ../README.md). Wraps <td>.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"td"> & VariantProps<typeof tableCell>;
+
+export const tableCell = tv({
+  base: ["px-3 py-2 align-middle"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<td class={tableCell({ class: className })} data-slot="table-cell" {...rest}><slot /></td>

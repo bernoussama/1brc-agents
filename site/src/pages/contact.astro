@@ -1,0 +1,34 @@
+---
+// Contact (/contact/). Figma "contact-page" frame (node 9:4). Thin route shell: owns BaseLayout +
+// SEO and composes the Sections/Contact blocks in the same shell as index/about (one .site-container
+// + gap rhythm).
+//
+// This is the ONE on-demand route: it receives the Resend form POST and re-renders with the result,
+// so it opts out of prerendering. Every other page stays static. See astro.config.mjs (the adapter)
+// and src/actions/index.ts.
+export const prerender = false;
+
+import Faq from "@components/Sections/Contact/Faq.astro";
+import Form from "@components/Sections/Contact/Form.astro";
+import Hero from "@components/Sections/Contact/Hero.astro";
+import InfoCards from "@components/Sections/Contact/InfoCards.astro";
+import siteData from "@config/siteData.json";
+import BaseLayout from "@layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title={`Contact — ${siteData.name}`}
+  description="Drop me a transmission — questions on vintage hardware, a retro-quest collab, or a guest devlog pitch — plus e-mail, Discord and GitHub links and a system FAQ."
+>
+  <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">
+    <Hero />
+
+    {/* Figma FormAndInfoContainer: form grows, info column is a fixed 340px — stacks below lg. */}
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <Form />
+      <InfoCards />
+    </div>
+
+    <Faq />
+  </div>
+</BaseLayout>

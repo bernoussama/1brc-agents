@@ -1,0 +1,21 @@
+---
+// src/components/ui/breadcrumb/Breadcrumb.astro — astro-boiler primitive (see ../README.md).
+// Static breadcrumb trail (<nav> + <ol>). Compose BreadcrumbItem / BreadcrumbLink / BreadcrumbPage /
+// BreadcrumbSeparator. Tokens only.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"nav"> & VariantProps<typeof breadcrumb>;
+
+export const breadcrumb = tv({
+  base: ["text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" data-slot="breadcrumb" {...rest}>
+  <ol class={breadcrumb({ class: className })}>
+    <slot />
+  </ol>
+</nav>

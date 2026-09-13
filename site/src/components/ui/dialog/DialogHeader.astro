@@ -1,0 +1,15 @@
+---
+// src/components/ui/dialog/DialogHeader.astro — Dialog compound part (see ../README.md).
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof dialogHeader>;
+
+export const dialogHeader = tv({
+  base: ["flex flex-col gap-1.5 text-center sm:text-left"],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={dialogHeader({ class: className })} data-slot="dialog-header" {...rest}><slot /></div>

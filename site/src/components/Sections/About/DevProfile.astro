@@ -1,0 +1,73 @@
+---
+// src/components/Sections/About/DevProfile.astro — Figma "Character Profile Section" (node 5:303).
+//
+// The About page's "character sheet": the DEV PROFILE heading, a pixel avatar tile, and a stats
+// card of ROLE / YRS rows plus two HP-style skill bars (FRONTEND / BACKEND). Near the top of the
+// page (just below the Hero), so NO <Reveal> — a scroll-timeline element already in view renders
+// mid-progress. Tokens only, so the light theme flips for free.
+//
+// CONTENT: the ROLE / YRS values and the skill %s come from portfolioData.profile (buyer-editable);
+// the labels + value colours stay here (presentational). Avatar is a demo asset (plain <img>, no Sharp).
+import SectionHeading from "@components/Sections/Global/SectionHeading.astro";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import portfolioData from "@config/portfolioData.json";
+import avatar from "@images/about-avatar.png";
+
+const { role, years, skills } = portfolioData.profile;
+const specs = [
+  { label: "Role", value: role, valueClass: "text-foreground" },
+  { label: "Yrs", value: years, valueClass: "text-success" },
+] as const;
+
+// Skill bars: label + percentage (from portfolioData). The track is the fixed black pixel surface
+// (bg-border), the fill the info blue — both read on the card in either theme (the card flips, the
+// track stays black).
+const bars = skills;
+---
+
+<section aria-labelledby="dev-profile-heading" class="flex flex-col gap-6">
+  <SectionHeading id="dev-profile-heading" title="Dev Profile" />
+
+  <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+    <div
+      class="bg-accent border-border shadow-pixel size-32 shrink-0 overflow-clip border-4 sm:size-40"
+    >
+      <img
+        src={avatar.src}
+        width={avatar.width}
+        height={avatar.height}
+        alt="Pixel-art portrait of the site author"
+        loading="eager"
+        decoding="async"
+        class="size-full object-cover"
+      />
+    </div>
+
+    <PixelPanel as="dl" class="flex min-w-0 flex-1 flex-col gap-4 p-5 sm:p-6">
+      {
+        specs.map((spec) => (
+          <div class="flex items-center justify-between gap-4 text-xs font-bold uppercase sm:text-sm">
+            <dt class="text-info">{spec.label}:</dt>
+            <dd class={spec.valueClass}>{spec.value}</dd>
+          </div>
+        ))
+      }
+
+      {
+        bars.map((bar) => (
+          <div class="flex flex-col gap-2">
+            <dt class="text-info flex items-center justify-between gap-4 text-xs font-bold uppercase sm:text-sm">
+              <span>{bar.label}</span>
+              <span>{bar.pct}%</span>
+            </dt>
+            <dd class="m-0">
+              <div class="bg-border border-info flex h-4 border-2 p-0.5" aria-hidden="true">
+                <div class="bg-info h-full" style={`width: ${bar.pct}%`} />
+              </div>
+            </dd>
+          </div>
+        ))
+      }
+    </PixelPanel>
+  </div>
+</section>

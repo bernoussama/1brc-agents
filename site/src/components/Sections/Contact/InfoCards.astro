@@ -1,0 +1,79 @@
+---
+// src/components/Sections/Contact/InfoCards.astro — Figma "InfoCardsContainer" (node 9:53).
+//
+// Three pixel info cards beside the form: a retro tag, a title, a one-line blurb, and a linked
+// value box. Reuses the shared pixel surface + badge; the value box is a real <a> that goes green on
+// hover (the house active/hover colour). Tokens only.
+//
+// WIRING (real, not transcribed): the E-MAIL value is `siteData.author.email` (→ mailto); GITHUB and
+// DISCORD resolve through `@config/socialData`, which owns the `sameAs` derivation every section
+// shares and falls back to the platform root when `sameAs` is empty. The mock's placeholder brand
+// values (HELLO@PIXELQUESTS.COM, GITHUB.COM/PIXELQUESTS) are NOT transcribed. Fill `sameAs` +
+// `author.email` in siteData to point these at real profiles.
+import type { BadgeVariant } from "@components/ui/badge";
+import { Badge } from "@components/ui/badge";
+import { PixelPanel } from "@components/ui/pixel-panel";
+import siteData from "@config/siteData.json";
+import { socialHref } from "@config/socialData.json";
+
+const email = siteData.author.email;
+const github = socialHref("github");
+const discord = socialHref("discord");
+
+/** Strip scheme + trailing slash for the displayed value (the box still links to the full URL). */
+const display = (url: string): string => url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+const cards: readonly {
+  tag: string;
+  tone: BadgeVariant;
+  title: string;
+  blurb: string;
+  value: string;
+  href: string;
+}[] = [
+  {
+    tag: "E-Mail",
+    tone: "info",
+    title: "Telepathy",
+    blurb: "Direct digital link to my HQ mailbox",
+    value: email,
+    href: `mailto:${email}`,
+  },
+  {
+    tag: "Community",
+    tone: "success",
+    title: "Discord Bar",
+    blurb: "Hang out with fellow retro hackers",
+    value: display(discord),
+    href: discord,
+  },
+  {
+    tag: "Codebase",
+    tone: "secondary",
+    title: "GitHub Hub",
+    blurb: "Inspect my open-source pipelines",
+    value: display(github),
+    href: github,
+  },
+];
+---
+
+<div class="flex flex-col gap-6">
+  {
+    cards.map((card) => (
+      <PixelPanel class="flex flex-col items-start gap-4 p-6">
+        <Badge pixel variant={card.tone}>
+          {card.tag}
+        </Badge>
+        <h2 class="h3 text-foreground">{card.title}</h2>
+        <p class="text-muted-foreground text-xs">{card.blurb}</p>
+        <a
+          href={card.href}
+          class="bg-accent border-border text-info hover:text-success primary-focus block w-full truncate border-2 p-3 text-sm uppercase transition-colors"
+        >
+          {card.value}
+        </a>
+      </PixelPanel>
+    ))
+  }
+</div>

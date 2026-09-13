@@ -1,0 +1,22 @@
+---
+// src/components/ui/card/CardHeader.astro — Card compound part (see ../README.md).
+// Grid so a CardAction can pin to the top-right: `has-[card-action]` opens a second column and the
+// action places itself there (col-start-2, row-span-2), leaving title/description to flow down col 1.
+// Rows are implicit (auto-rows-min) so a title-only header has no phantom trailing gutter; the action's
+// row-span mints the second row only when present. With no action it's a plain single-column stack.
+import type { HTMLAttributes } from "astro/types";
+import { tv, type VariantProps } from "tailwind-variants";
+
+type Props = HTMLAttributes<"div"> & VariantProps<typeof cardHeader>;
+
+export const cardHeader = tv({
+  base: [
+    "grid auto-rows-min items-start gap-1.5 p-[var(--card-p,1.5rem)]",
+    "has-[[data-slot=card-action]]:grid-cols-[1fr_auto]",
+  ],
+});
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<div class={cardHeader({ class: className })} data-slot="card-header" {...rest}><slot /></div>

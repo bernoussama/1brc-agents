@@ -1,0 +1,36 @@
+---
+// Project detail (/projects/<slug>/). Thin route shell: owns BaseLayout + SEO and composes the Figma
+// "project-realtime-chat" frame (node 72:191) via <ProjectArticle>, one instance per collection
+// entry. `getStaticPaths` keys each route on the entry id, and `toProjectCard` builds the listing
+// links off the SAME id — so the grid links and the generated routes can never drift. The glob
+// loader gives single-segment ids (`<slug>` for `<slug>/index.mdx`), so a plain `[slug]` param fits.
+import ProjectArticle from "@components/Sections/Project/ProjectArticle.astro";
+import siteData from "@config/siteData.json";
+import { getSortedProjects } from "@js/projectData";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import type { GetStaticPaths } from "astro";
+import { type CollectionEntry, render } from "astro:content";
+
+export const getStaticPaths = (async () => {
+  const projects = await getSortedProjects();
+  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+}
+const { entry } = Astro.props as Props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout
+  title={`${entry.data.title} — ${siteData.name}`}
+  description={entry.data.description}
+  image={entry.data.thumbnail}
+>
+  <div class="site-container flex flex-col gap-10 py-8 md:gap-12 md:py-12">
+    <ProjectArticle project={entry.data}>
+      <Content />
+    </ProjectArticle>
+  </div>
+</BaseLayout>

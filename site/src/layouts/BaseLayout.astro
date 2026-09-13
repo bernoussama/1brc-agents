@@ -1,0 +1,45 @@
+---
+/**
+ * Top-level page shell: <html> + <head> (via BaseHead) + <body>.
+ * Renders the global site Header (8-BitQuest committed theme) above the page slot; a Footer would
+ * join it here. The skeleton shipped chrome-free — that changed when this became a real template.
+ */
+import "@/styles/global.css";
+
+import Footer from "@components/Sections/Global/Footer.astro";
+import Header from "@components/Sections/Global/Header.astro";
+import { siteLang } from "@config/siteSettings.json";
+import { type SeoProps } from "@js/schema";
+import BaseHead from "@layouts/BaseHead.astro";
+
+// title/description/image/noindex + the SEO pass-throughs (schema/article) — forwarded to BaseHead
+interface Props extends SeoProps {
+  title: string;
+  description: string;
+  image?: ImageMetadata;
+  noindex?: boolean;
+}
+
+const { title, description, image, noindex = false, schema, article } = Astro.props as Props;
+---
+
+<!doctype html>
+<html lang={siteLang}>
+  <head>
+    <BaseHead
+      title={title}
+      description={description}
+      image={image}
+      noindex={noindex}
+      schema={schema}
+      article={article}
+    />
+  </head>
+  <body class="flex min-h-[100lvh] flex-col">
+    <Header />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
