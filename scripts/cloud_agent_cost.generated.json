@@ -189,6 +189,24 @@
       "costUsdBilled": 0.8523
     },
     {
+      "model": "DeepSeek V4.1 Flash :floor max",
+      "sessionDir": "deepseek-v4.1-flash-floor-max-20260913T151246",
+      "metricsAvailable": true,
+      "tokens": 14922733,
+      "tokenBreakdown": {
+        "input": 48867,
+        "output": 171018,
+        "cacheRead": 14702848,
+        "cacheWrite": 0,
+        "reasoning": 117608
+      },
+      "costUsd": 0.154,
+      "eventCostUsd": 0.0,
+      "pricingId": "openrouter/deepseek/deepseek-v4.1-flash:floor",
+      "costUsdBilled": 0.154,
+      "costUsdListEstimate": null
+    },
+    {
       "model": "ox-alpha max",
       "sessionDir": "ox-alpha-20260823T210214",
       "metricsAvailable": true,

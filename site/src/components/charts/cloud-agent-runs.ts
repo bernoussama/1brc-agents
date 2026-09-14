@@ -101,6 +101,14 @@ export const CLOUD_AGENT_RUNS: CloudAgentRun[] = [
     metricsAvailable: true,
   },
   {
+    model: "DeepSeek V4.1 Flash :floor max",
+    median: 6736.3,
+    agentSeconds: 3447,
+    tokens: 14_922_733,
+    costUsd: 0.154,
+    metricsAvailable: true,
+  },
+  {
     model: "ox-alpha max",
     median: 7256.5,
     agentSeconds: 7215,

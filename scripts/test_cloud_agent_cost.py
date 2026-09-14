@@ -40,6 +40,14 @@ class CostFormulaTests(unittest.TestCase):
         self.assertEqual(rates.cacheRead, 1.0)
         self.assertEqual(rates.cacheWrite, 0.0)
 
+    def test_deepseek_v41_flash_openrouter_offpeak_rates(self) -> None:
+        pricing = json.loads((ROOT / "scripts" / "model_pricing.json").read_text())
+        rates = resolve_rates(pricing, "openrouter/deepseek/deepseek-v4.1-flash:floor")
+        self.assertEqual(rates.input, 0.15)
+        self.assertEqual(rates.output, 0.6)
+        self.assertEqual(rates.cacheRead, 0.003)
+        self.assertEqual(rates.cacheWrite, 0.0)
+
 
 class SessionIntegrationTests(unittest.TestCase):
     @classmethod
@@ -124,6 +132,19 @@ class AstraLocalSessionTests(unittest.TestCase):
         self.assertEqual(event_cost, 0.0)
         rates = resolve_rates(pricing, "openai-codex/gpt-6-astra")
         self.assertAlmostEqual(rates.cost_usd(usage), 7.4128, places=3)
+
+
+class DeepSeekLocalSessionTests(unittest.TestCase):
+    def test_aggregate_deepseek_floor_max_events(self) -> None:
+        events = ROOT / ".sessions/deepseek-v4.1-flash-floor-max-20260913T151246/events.jsonl"
+        if not events.is_file():
+            raise unittest.SkipTest("deepseek v4.1 flash :floor session is not available")
+        pricing = json.loads((ROOT / "scripts" / "model_pricing.json").read_text())
+        usage, event_cost = aggregate_session(events)
+        self.assertEqual(usage.total_tokens, 14_922_733)
+        self.assertEqual(event_cost, 0.0)
+        rates = resolve_rates(pricing, "openrouter/deepseek/deepseek-v4.1-flash:floor")
+        self.assertAlmostEqual(rates.cost_usd(usage), 0.154, places=3)
 
 
 if __name__ == "__main__":

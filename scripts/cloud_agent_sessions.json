@@ -73,6 +73,12 @@
       "metricsAvailable": true
     },
     {
+      "chartLabel": "DeepSeek V4.1 Flash :floor max",
+      "sessionDir": "deepseek-v4.1-flash-floor-max-20260913T151246",
+      "pricingId": "openrouter/deepseek/deepseek-v4.1-flash:floor",
+      "metricsAvailable": true
+    },
+    {
       "chartLabel": "ox-alpha max",
       "sessionDir": "ox-alpha-20260823T210214",
       "pricingId": "openrouter/stealth/ox-alpha",

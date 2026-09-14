@@ -125,7 +125,7 @@ export default function CloudAgentDashboard() {
           </h1>
           <p className="font-mono text-xs leading-relaxed text-muted-foreground sm:text-sm">
             Xeon 4 CPU / 16 GiB · 120m budget · GPT-5.6 Sol · GPT-6 Astra · MiniMax M3 · Grok 4.6 ·
-            ox-alpha · GPT-5.6 Luna · Muse Spark · MiniMax M2.7
+            ox-alpha · GPT-5.6 Luna · Muse Spark · MiniMax M2.7 · DeepSeek V4.1 Flash
           </p>
         </header>
       ) : null}
