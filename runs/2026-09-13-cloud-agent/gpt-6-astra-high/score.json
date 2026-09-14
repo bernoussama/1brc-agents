@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/workspace/.sessions/gpt-6-astra-high-20260913T233817/work/submission/run.sh",
+  "execution_environment": "container:6f9bd6b983bd",
+  "correct": true,
+  "median_ms": 1906.0,
+  "runs_ms": [
+    1997.0,
+    1913.9,
+    1889.2,
+    1906.0,
+    1849.5
+  ],
+  "expected_ms": 1.2,
+  "scoring_elapsed_ms": 12904.7,
+  "expected_sha256": "8d9fb0217b2b9c6c",
+  "actual_sha256": "8d9fb0217b2b9c6c"
+}

@@ -45,6 +45,11 @@ label and full traces. That transparency is the product.
 The canonical neutral-prompt v0.5 batch is
 [runs/2026-08-21-neutral-v0.5](runs/2026-08-21-neutral-v0.5/).
 
+Cloud-agent GPT-6 Astra and DeepSeek V4.1 Flash traces from the Sep 2026 VM
+are [runs/2026-09-13-cloud-agent](runs/2026-09-13-cloud-agent/). That notebook
+is a different box than v0.5 and is not a complete copy of the cloud-agent
+chart.
+
 ## Credits
 
 - 1BRC by Gunnar Morling (the task)

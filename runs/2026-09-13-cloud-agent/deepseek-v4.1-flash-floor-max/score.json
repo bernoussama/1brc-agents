@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/workspace/.sessions/deepseek-v4.1-flash-floor-max-20260913T151246/work/submission/run.sh",
+  "execution_environment": "container:b2a1766a8b28",
+  "correct": true,
+  "median_ms": 6736.3,
+  "runs_ms": [
+    5629.4,
+    6353.3,
+    6737.7,
+    6736.3,
+    6969.6
+  ],
+  "expected_ms": 0.8,
+  "scoring_elapsed_ms": 40752.1,
+  "expected_sha256": "8d9fb0217b2b9c6c",
+  "actual_sha256": "8d9fb0217b2b9c6c"
+}

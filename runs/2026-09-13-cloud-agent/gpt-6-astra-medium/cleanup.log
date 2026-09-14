@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/workspace/.sessions/gpt-6-astra-medium-20260913T212937
+started_utc=2026-09-13T23:26:41Z
+removed=data bytes=137969664
+removed=lifecycle bytes=8192
+removed=pi-home bytes=593920
+removed=container.id bytes=4096
+removed_bytes=138575872
+preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots run_session.frozen.sh
+finished_utc=2026-09-13T23:26:41Z
