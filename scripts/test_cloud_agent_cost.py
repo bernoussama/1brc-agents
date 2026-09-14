@@ -32,6 +32,14 @@ class CostFormulaTests(unittest.TestCase):
         self.assertEqual(rates.input, 0.3)
         self.assertEqual(rates.output, 1.2)
 
+    def test_gpt_6_astra_codex_list_rates(self) -> None:
+        pricing = json.loads((ROOT / "scripts" / "model_pricing.json").read_text())
+        rates = resolve_rates(pricing, "openai-codex/gpt-6-astra")
+        self.assertEqual(rates.input, 10.0)
+        self.assertEqual(rates.output, 50.0)
+        self.assertEqual(rates.cacheRead, 1.0)
+        self.assertEqual(rates.cacheWrite, 0.0)
+
 
 class SessionIntegrationTests(unittest.TestCase):
     @classmethod
@@ -39,6 +47,14 @@ class SessionIntegrationTests(unittest.TestCase):
         sessions_root = ROOT / ".sessions"
         if not sessions_root.is_dir():
             raise unittest.SkipTest(".sessions directory is not available in this environment")
+        config = json.loads((ROOT / "scripts" / "cloud_agent_sessions.json").read_text())
+        missing = [
+            run["sessionDir"]
+            for run in config["runs"]
+            if not (sessions_root / run["sessionDir"] / "events.jsonl").is_file()
+        ]
+        if missing:
+            raise unittest.SkipTest(f"incomplete .sessions coverage: {missing[0]} (+{len(missing) - 1} more)")
         cls.summary = summarize_all(repo_root=ROOT)
 
     def test_grok_runs_are_marked_unavailable(self) -> None:
@@ -74,6 +90,40 @@ class SessionIntegrationTests(unittest.TestCase):
         usage, event_cost = aggregate_session(events)
         self.assertGreater(usage.total_tokens, 0)
         self.assertGreater(event_cost, 0)
+
+    def test_gpt_6_astra_high_uses_list_rates(self) -> None:
+        run = next(r for r in self.summary["runs"] if r["model"] == "gpt-6-astra high")
+        self.assertEqual(run["tokens"], 10_446_655)
+        self.assertAlmostEqual(run["costUsd"], 19.0846, places=3)
+
+    def test_gpt_6_astra_medium_uses_list_rates(self) -> None:
+        run = next(r for r in self.summary["runs"] if r["model"] == "gpt-6-astra medium")
+        self.assertEqual(run["tokens"], 4_356_243)
+        self.assertAlmostEqual(run["costUsd"], 7.4128, places=3)
+
+
+class AstraLocalSessionTests(unittest.TestCase):
+    def test_aggregate_astra_high_events(self) -> None:
+        events = ROOT / ".sessions/gpt-6-astra-high-20260913T233817/events.jsonl"
+        if not events.is_file():
+            raise unittest.SkipTest("gpt-6-astra high session is not available")
+        pricing = json.loads((ROOT / "scripts" / "model_pricing.json").read_text())
+        usage, event_cost = aggregate_session(events)
+        self.assertEqual(usage.total_tokens, 10_446_655)
+        self.assertEqual(event_cost, 0.0)
+        rates = resolve_rates(pricing, "openai-codex/gpt-6-astra")
+        self.assertAlmostEqual(rates.cost_usd(usage), 19.0846, places=3)
+
+    def test_aggregate_astra_medium_events(self) -> None:
+        events = ROOT / ".sessions/gpt-6-astra-medium-20260913T212937/events.jsonl"
+        if not events.is_file():
+            raise unittest.SkipTest("gpt-6-astra medium session is not available")
+        pricing = json.loads((ROOT / "scripts" / "model_pricing.json").read_text())
+        usage, event_cost = aggregate_session(events)
+        self.assertEqual(usage.total_tokens, 4_356_243)
+        self.assertEqual(event_cost, 0.0)
+        rates = resolve_rates(pricing, "openai-codex/gpt-6-astra")
+        self.assertAlmostEqual(rates.cost_usd(usage), 7.4128, places=3)
 
 
 if __name__ == "__main__":

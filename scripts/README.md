@@ -31,6 +31,9 @@ python3 scripts/test_cloud_agent_cost.py -v
 - **Codex (gpt-5.6-sol)** — computed cost matches summed `usage.cost.total` from
   session events (within floating-point tolerance). Tests enforce this for sol
   high and sol medium.
+- **Codex (gpt-6-astra)** — pi events currently omit `usage.cost.total`; estimated
+  USD uses ChatGPT Enterprise list rates ($10 / $50 / $1 cached per 1M; Codex does
+  not bill cache writes).
 - **Free preview routes** — ox-alpha and OpenCode/M3 `:free` bill $0; the chart
   uses list rates from `estimateFrom` pricing entries where applicable.
 - **Cursor Grok** — marked `metricsAvailable: false`; token and cost charts show

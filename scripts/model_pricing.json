@@ -25,6 +25,14 @@
       "cacheRead": 0.02,
       "cacheWrite": 0.0
     },
+    "openai-codex/gpt-6-astra": {
+      "label": "GPT-6 Astra (Codex OAuth)",
+      "source": "openai-chatgpt-enterprise-2026-08",
+      "input": 10.0,
+      "output": 50.0,
+      "cacheRead": 1.0,
+      "cacheWrite": 0.0
+    },
     "openrouter/minimax/minimax-m3": {
       "label": "MiniMax M3 (OpenRouter list)",
       "source": "openrouter-api-2026-08-25",
