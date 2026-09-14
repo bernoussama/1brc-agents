@@ -65,7 +65,8 @@ Session scratch lands in `.sessions/<slug>-<timestamp>/` (gitignored):
 - `manifest.yaml` — image digest, host info, generator source hash
 - `cleanup.log` — exact disposable paths removed after the session
 
-Published batches live under `runs/<date>-<label>/`.
+Published batches live under `runs/<date>-<label>/`. The Sep 2026 cloud-agent
+Astra/DeepSeek traces are `runs/2026-09-13-cloud-agent/`.
 
 The runner expects the sibling checkout at `../1brc` by default. Set
 `ONEBRC_ROOT` to another checkout when needed. It compiles and runs
@@ -142,6 +143,11 @@ Resource caps, budgets, and judge settings come from `bench.yml`.
 Never put keys in profile files. The runner reads them from the host env.
 For OAuth, log in once on the host with `pi` and point `AUTH_FILE` at the
 resulting `~/.pi/agent/auth.json`.
+
+GPT models always use `PROVIDER=openai-codex` and `AUTH_MODE=file`. Do not
+route them through OpenRouter. The pinned sandbox pi version's Codex
+catalog may lag new SKUs. `gpt-6-astra` is added with
+`harness/profiles/openai-codex-gpt-6-astra.models.json`.
 The current runner must give pi the provider credential so it can authenticate.
 Commands launched by pi share that process environment and can therefore read
 the credential. The network boundary is fail-closed, but this is not a
@@ -213,6 +219,7 @@ Focused harness checks:
 ```bash
 bash harness/tests/test_bench.sh
 bash harness/tests/test_auth.sh
+bash harness/tests/test_gpt_codex_profiles.sh
 bash harness/tests/test_firewall.sh
 node harness/tests/test_proxy.js
 bash harness/tests/test_1brc.sh

@@ -9,6 +9,12 @@
       "verifyEventCost": true
     },
     {
+      "chartLabel": "gpt-6-astra high",
+      "sessionDir": "gpt-6-astra-high-20260913T233817",
+      "pricingId": "openai-codex/gpt-6-astra",
+      "metricsAvailable": true
+    },
+    {
       "chartLabel": "MiniMax M3 :free max",
       "sessionDir": "minimax-m3-free-20260825T121246",
       "pricingId": "openrouter/minimax/minimax-m3:free",
@@ -42,6 +48,12 @@
       "verifyEventCost": true
     },
     {
+      "chartLabel": "gpt-6-astra medium",
+      "sessionDir": "gpt-6-astra-medium-20260913T212937",
+      "pricingId": "openai-codex/gpt-6-astra",
+      "metricsAvailable": true
+    },
+    {
       "chartLabel": "Grok 4.6 medium",
       "sessionDir": "cursor-grok-4.6-medium-20260824T110152",
       "pricingId": null,
@@ -58,6 +70,12 @@
       "chartLabel": "MiniMax M2.7 max",
       "sessionDir": "minimax-m2.7-max-20260825T093528",
       "pricingId": "gmi/MiniMaxAI/MiniMax-M2.7",
+      "metricsAvailable": true
+    },
+    {
+      "chartLabel": "DeepSeek V4.1 Flash :floor max",
+      "sessionDir": "deepseek-v4.1-flash-floor-max-20260913T151246",
+      "pricingId": "openrouter/deepseek/deepseek-v4.1-flash:floor",
       "metricsAvailable": true
     },
     {

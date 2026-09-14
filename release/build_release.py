@@ -67,22 +67,23 @@ def secret_scan(path: Path) -> None:
     if b"\0" in data[:8192]:
         return
     text = data.decode("utf-8", errors="replace")
-    forbidden = (
+    pem_markers = (
         "-----BEGIN PRIVATE KEY-----",
         "-----BEGIN RSA PRIVATE KEY-----",
         "-----BEGIN OPENSSH PRIVATE KEY-----",
-        "gho_",
-        "ghp_",
-        "ghs_",
-        "ghu_",
     )
-    for marker in forbidden:
+    github_markers = ("gho_", "ghp_", "ghs_", "ghu_")
+    for marker in pem_markers:
         if marker in text:
             raise ValueError(f"possible secret marker {marker!r} in {path}")
     if path.name == "events.jsonl":
         for line_number, line in enumerate(text.splitlines(), 1):
             event = json.loads(line)
             scan_json_strings(event, path, line_number)
+        return
+    for marker in github_markers:
+        if marker in text:
+            raise ValueError(f"possible secret marker {marker!r} in {path}")
 
 
 def scan_json_strings(value: object, path: Path, line_number: int, key: str = "") -> None:
@@ -99,6 +100,10 @@ def scan_json_strings(value: object, path: Path, line_number: int, key: str = ""
             "ZAI_API_KEY=",
             "CLIPROXY_API_KEY=",
             '"accessToken":',
+            "gho_",
+            "ghp_",
+            "ghs_",
+            "ghu_",
         )
         if any(marker in value for marker in markers):
             raise ValueError(f"possible credential in {path}:{line_number}")

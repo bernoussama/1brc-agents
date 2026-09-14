@@ -77,20 +77,24 @@ laptop medians.
 | Configuration | Thinking | Correct | Median | Notes |
 |---|---|---|---:|---|
 | gpt-5.6-sol | high | true | **1311.4 ms** | 1× WebSocket idle timeout recovered |
+| gpt-6-astra | high | true | **1906.0 ms** | Codex OAuth; 1× stale command kill |
 | MiniMax M3 `:free` | max | true | **3061.3 ms** | OpenRouter free; 9× auto-retry recovered |
 | gpt-5.6-sol | medium | true | 3174.4 ms | |
 | Grok 4.6 | high | true | 3953.1 ms | In-container cursor-api-proxy |
 | ox-alpha | high | true | 3954.6 ms | Restart after container death; 2×429 recovered |
 | gpt-5.6-luna | max | true | 4610.3 ms | |
+| gpt-6-astra | medium | true | 5675.8 ms | Codex OAuth; 2× stale command kills |
 | Grok 4.6 | medium | true | 5746.5 ms | Same host also saw 3040.8 ms on another night |
 | Muse Spark free | xhigh | true | **6500.8 ms** | OpenCode Zen free, Responses API; full ~120 m (r1 early-exit: 8940.2 ms) |
 | MiniMax M2.7 | max | true | 6562.3 ms | GMI Serving |
+| DeepSeek V4.1 Flash `:floor` | max | true | 6736.3 ms | OpenRouter floor routing; 1× stale command kill (`:deepseek` early-exit: 14816.2 ms) |
 | ox-alpha | max | true | 7256.5 ms | |
 | MiniMax M3 | max | true | 12225.6 ms | GMI Serving |
 
 Same-model thinking level moved the needle hard for Sol on this host: medium
-landed at 3174.4 ms, high at 1311.4 ms. Ox Alpha moved the other way relative
-to its own max run. We would not build a theory of reasoning budgets from two
+landed at 3174.4 ms, high at 1311.4 ms. GPT-6 Astra went the same direction
+(medium 5675.8 ms, high 1906.0 ms). Ox Alpha moved the other way relative to
+its own max run. We would not build a theory of reasoning budgets from three
 pairs — but the setting is load-bearing enough that it belongs in the profile
 name, not buried in a chat transcript.
 

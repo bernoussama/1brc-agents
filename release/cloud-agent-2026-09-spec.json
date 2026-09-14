@@ -1,0 +1,76 @@
+{
+  "release": {
+    "id": "cloud-agent-2026-09",
+    "published_on": "2026-09-14",
+    "agent_version": "pi 0.84.2",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "warm_cache_policy": "one untimed warmup followed by five timed runs",
+    "hardware": {
+      "host": "Linux 6.12.94+ x86_64 GNU/Linux",
+      "cpu": "Intel(R) Xeon(R) Processor",
+      "physical_cores": 4,
+      "logical_cpus": 4,
+      "storage": "cloud-ephemeral",
+      "per_run_cpu_quota": 4,
+      "per_run_memory_gib": 16
+    }
+  },
+  "batch_dir": "runs/2026-09-13-cloud-agent",
+  "successful_runs": [
+    {
+      "label": "GPT-6 Astra",
+      "run_dir": ".sessions/gpt-6-astra-high-20260913T233817",
+      "profile": "harness/profiles/gpt-6-astra-high.sh",
+      "reasoning": "high",
+      "adapter_route": "pi to openai-codex OAuth to gpt-6-astra",
+      "slug": "gpt-6-astra-high"
+    },
+    {
+      "label": "GPT-6 Astra",
+      "run_dir": ".sessions/gpt-6-astra-medium-20260913T212937",
+      "profile": "harness/profiles/gpt-6-astra-medium.sh",
+      "reasoning": "medium",
+      "adapter_route": "pi to openai-codex OAuth to gpt-6-astra",
+      "slug": "gpt-6-astra-medium"
+    },
+    {
+      "label": "DeepSeek V4.1 Flash :floor",
+      "run_dir": ".sessions/deepseek-v4.1-flash-floor-max-20260913T151246",
+      "profile": "harness/profiles/openrouter-deepseek-v4.1-flash-max.sh",
+      "reasoning": "max",
+      "adapter_route": "pi to OpenRouter to deepseek/deepseek-v4.1-flash:floor",
+      "slug": "deepseek-v4.1-flash-floor-max"
+    }
+  ],
+  "failed_attempts": [
+    {
+      "label": "GPT-6 Astra medium OpenRouter first attempt",
+      "run_dir": ".sessions/gpt-6-astra-medium-20260913T202852",
+      "profile": "harness/profiles/openrouter-gpt-6-astra-medium.sh",
+      "profile_sha256": "608f0df94af3da1109cf4af3579902afb2bceb5fc26b5e156602c7b639b6bf49",
+      "reason": "The agent exited after 41 seconds without creating work/submission/run.sh; scoring failed at the missing submission boundary. Route was OpenRouter openai/gpt-6-astra, later discarded in favor of Codex OAuth.",
+      "slug": "gpt-6-astra-medium-openrouter-attempt-1"
+    }
+  ],
+  "other_attempts": [
+    {
+      "label": "GPT-6 Astra medium OpenRouter",
+      "run_dir": ".sessions/gpt-6-astra-medium-20260913T203239",
+      "profile": "harness/profiles/openrouter-gpt-6-astra-medium.sh",
+      "profile_sha256": "608f0df94af3da1109cf4af3579902afb2bceb5fc26b5e156602c7b639b6bf49",
+      "reasoning": "medium",
+      "adapter_route": "pi to OpenRouter to openai/gpt-6-astra",
+      "reason": "Correct Round A score on OpenRouter. Not the charted medium row; Codex OAuth is the published GPT-6 Astra route.",
+      "slug": "gpt-6-astra-medium-openrouter"
+    },
+    {
+      "label": "DeepSeek V4.1 Flash :deepseek",
+      "run_dir": ".sessions/deepseek-v4.1-flash-max-20260913T142605",
+      "profile": "harness/profiles/openrouter-deepseek-v4.1-flash-max.sh",
+      "reasoning": "max",
+      "adapter_route": "pi to OpenRouter to deepseek/deepseek-v4.1-flash:deepseek",
+      "reason": "Correct Round A score after 135 seconds. Early exit; not the charted DeepSeek row. The published profile uses :floor routing.",
+      "slug": "deepseek-v4.1-flash-deepseek"
+    }
+  ]
+}

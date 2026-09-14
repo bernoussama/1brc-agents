@@ -21,6 +21,14 @@ export const CLOUD_AGENT_RUNS: CloudAgentRun[] = [
     metricsAvailable: true,
   },
   {
+    model: "gpt-6-astra high",
+    median: 1906.0,
+    agentSeconds: 7064,
+    tokens: 10_446_655,
+    costUsd: 19.0846,
+    metricsAvailable: true,
+  },
+  {
     model: "MiniMax M3 :free max",
     median: 3061.3,
     agentSeconds: 5201,
@@ -61,6 +69,14 @@ export const CLOUD_AGENT_RUNS: CloudAgentRun[] = [
     metricsAvailable: true,
   },
   {
+    model: "gpt-6-astra medium",
+    median: 5675.8,
+    agentSeconds: 6952,
+    tokens: 4_356_243,
+    costUsd: 7.4128,
+    metricsAvailable: true,
+  },
+  {
     model: "Grok 4.6 medium",
     median: 5746.5,
     agentSeconds: 4896,
@@ -82,6 +98,14 @@ export const CLOUD_AGENT_RUNS: CloudAgentRun[] = [
     agentSeconds: 3751,
     tokens: 10_761_907,
     costUsd: 0.8523,
+    metricsAvailable: true,
+  },
+  {
+    model: "DeepSeek V4.1 Flash :floor max",
+    median: 6736.3,
+    agentSeconds: 3447,
+    tokens: 14_922_733,
+    costUsd: 0.154,
     metricsAvailable: true,
   },
   {

@@ -1,0 +1,8 @@
+[score] using cached expected output: /workspace/data/.1brc-expected-A-388bd3b5fde49f8f8da848bc916daafeec7cad1393fe44bcf29498b23de03882-d96e01753738bb22052665517f6d2af7b17eb120c1d99dc3e3963e1cc5fad54c.txt
+[score] expected output ready in 0.0s
+[score] running untimed warmup
+[score] running timed pass 1/5
+[score] running timed pass 2/5
+[score] running timed pass 3/5
+[score] running timed pass 4/5
+[score] running timed pass 5/5

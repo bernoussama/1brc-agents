@@ -21,6 +21,24 @@
       "eventCostDeltaUsd": 2.7e-05
     },
     {
+      "model": "gpt-6-astra high",
+      "sessionDir": "gpt-6-astra-high-20260913T233817",
+      "metricsAvailable": true,
+      "tokens": 10446655,
+      "tokenBreakdown": {
+        "input": 492709,
+        "output": 85786,
+        "cacheRead": 9868160,
+        "cacheWrite": 0,
+        "reasoning": 51832
+      },
+      "costUsd": 19.0846,
+      "eventCostUsd": 0.0,
+      "pricingId": "openai-codex/gpt-6-astra",
+      "costUsdBilled": 19.0846,
+      "costUsdListEstimate": null
+    },
+    {
       "model": "MiniMax M3 :free max",
       "sessionDir": "minimax-m3-free-20260825T121246",
       "metricsAvailable": true,
@@ -106,6 +124,24 @@
       "eventCostDeltaUsd": -0.381982
     },
     {
+      "model": "gpt-6-astra medium",
+      "sessionDir": "gpt-6-astra-medium-20260913T212937",
+      "metricsAvailable": true,
+      "tokens": 4356243,
+      "tokenBreakdown": {
+        "input": 150343,
+        "output": 34764,
+        "cacheRead": 4171136,
+        "cacheWrite": 0,
+        "reasoning": 13157
+      },
+      "costUsd": 7.4128,
+      "eventCostUsd": 0.0,
+      "pricingId": "openai-codex/gpt-6-astra",
+      "costUsdBilled": 7.4128,
+      "costUsdListEstimate": null
+    },
+    {
       "model": "Grok 4.6 medium",
       "sessionDir": "cursor-grok-4.6-medium-20260824T110152",
       "metricsAvailable": false,
@@ -151,6 +187,24 @@
       "eventCostUsd": 0.0,
       "pricingId": "gmi/MiniMaxAI/MiniMax-M2.7",
       "costUsdBilled": 0.8523
+    },
+    {
+      "model": "DeepSeek V4.1 Flash :floor max",
+      "sessionDir": "deepseek-v4.1-flash-floor-max-20260913T151246",
+      "metricsAvailable": true,
+      "tokens": 14922733,
+      "tokenBreakdown": {
+        "input": 48867,
+        "output": 171018,
+        "cacheRead": 14702848,
+        "cacheWrite": 0,
+        "reasoning": 117608
+      },
+      "costUsd": 0.154,
+      "eventCostUsd": 0.0,
+      "pricingId": "openrouter/deepseek/deepseek-v4.1-flash:floor",
+      "costUsdBilled": 0.154,
+      "costUsdListEstimate": null
     },
     {
       "model": "ox-alpha max",
