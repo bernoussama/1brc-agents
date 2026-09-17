@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/workspace/.sessions/union-alpha-20260916T221726
+started_utc=2026-09-17T00:23:35Z
+removed=data bytes=137953280
+removed=lifecycle bytes=8192
+removed=pi-home bytes=7593984
+removed=container.id bytes=4096
+removed_bytes=145559552
+preserved=events.jsonl pi.err work control score.json score.log manifest.yaml reports expected-output snapshots run_session.frozen.sh
+finished_utc=2026-09-17T00:23:35Z

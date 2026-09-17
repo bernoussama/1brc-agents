@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/workspace/.sessions/union-alpha-20260916T221726/work/submission/run.sh",
+  "execution_environment": "container:b7444f4bc4fb",
+  "correct": true,
+  "median_ms": 4421.1,
+  "runs_ms": [
+    5108.5,
+    4550.4,
+    4421.1,
+    4212.6,
+    4213.8
+  ],
+  "expected_ms": 2.0,
+  "scoring_elapsed_ms": 55966.3,
+  "expected_sha256": "b2a0e713c1e079fd",
+  "actual_sha256": "b2a0e713c1e079fd"
+}

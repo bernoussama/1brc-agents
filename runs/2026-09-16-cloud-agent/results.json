@@ -1,0 +1,67 @@
+{
+  "failed_first_attempts": [],
+  "interpretation": {
+    "charted_rows": [
+      "union-alpha-max"
+    ],
+    "missing_from_this_vm": "Earlier cloud-agent chart rows (Sol, Luna, Grok, MiniMax, ox-alpha, Muse Spark, GPT-6 Astra, DeepSeek V4.1 Flash) are not in this batch.",
+    "round_b_run": false,
+    "sample_size": "n=1 autonomous agent session per configuration"
+  },
+  "other_attempts": [],
+  "release": {
+    "agent_version": "pi 0.84.2",
+    "dataset_sha256": "daa7a62a8daa0fe452b33407fc419113a81700221008510e4270211b02706710",
+    "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+    "hardware": {
+      "cpu": "Intel(R) Xeon(R) Processor",
+      "host": "Linux 6.12.94+ x86_64 GNU/Linux",
+      "logical_cpus": 4,
+      "per_run_cpu_quota": 4,
+      "per_run_memory_gib": 16,
+      "physical_cores": 4,
+      "storage": "cloud-ephemeral"
+    },
+    "id": "cloud-agent-2026-09-16",
+    "image_sha256": "sha256:ee74d3779db486610615d2d6ca4cd9ad52c1d1034711a7549d7328b03e3067a7",
+    "judge_runner_sha256": "b4a5c51b4143f81c2e2b18f50b4f016dd54a85c73bc5690540f523613c48edcc",
+    "judge_sha256": "1f3f8aeb0181e18248a253e54d0bfb23fec7c9166350c5be28f5447064cee2c1",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "proxy_image_sha256": "sha256:7fc104f7cea24214cdcd3c6ecc6d31d9d7719213a3201878a2f39bce7b462334",
+    "published_on": "2026-09-17",
+    "runner_sha256": "cbfd65626fa427793d84e4d0c6defbeb652eb5b6a4ad22ceb05368da3d2044ea",
+    "scope": "cloud-agent VM traces for OpenRouter stealth/union-alpha max thinking; not the full cloud-agent chart; not comparable to laptop v0.5",
+    "warm_cache_policy": "one untimed warmup followed by five timed runs"
+  },
+  "results": [
+    {
+      "adapter_route": "pi to OpenRouter to stealth/union-alpha",
+      "agent_elapsed_seconds": 6718,
+      "correct": true,
+      "dataset_sha256": "daa7a62a8daa0fe452b33407fc419113a81700221008510e4270211b02706710",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "harness_git_commit": "034923c6174c88d097bf77f664ffd5a49b3ebdd4",
+      "image_sha256": "sha256:ee74d3779db486610615d2d6ca4cd9ad52c1d1034711a7549d7328b03e3067a7",
+      "label": "Union Alpha",
+      "max_ms": 5108.5,
+      "median_ms": 4421.1,
+      "min_ms": 4212.6,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/openrouter-union-alpha-max.sh",
+      "profile_sha256": "287f14b26c1b3eebb43a603e73cbb86be811febb79ea393b190207a4ce9655d0",
+      "published_artifacts": "union-alpha-max",
+      "rank": 1,
+      "reasoning": "max",
+      "runs_ms": [
+        5108.5,
+        4550.4,
+        4421.1,
+        4212.6,
+        4213.8
+      ],
+      "source_run_dir": ".sessions/union-alpha-20260916T221726",
+      "stop_reason": "agent_exit"
+    }
+  ]
+}

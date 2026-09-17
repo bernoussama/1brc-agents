@@ -66,7 +66,8 @@ Session scratch lands in `.sessions/<slug>-<timestamp>/` (gitignored):
 - `manifest.yaml` — image digest, host info, generator source hash
 - `cleanup.log` — exact disposable paths removed after the session
 
-Published batches live under `runs/<date>-<label>/`.
+Published batches live under `runs/<date>-<label>/`. The Union Alpha
+cloud-agent session is [runs/2026-09-16-cloud-agent](../runs/2026-09-16-cloud-agent/).
 
 The runner expects the sibling checkout at `../1brc` by default. Set
 `ONEBRC_ROOT` to another checkout when needed. It compiles and runs
