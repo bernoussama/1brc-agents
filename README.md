@@ -43,7 +43,9 @@ v0.5 results are single-box, single-session, n=1 per model. Publish with that
 label and full traces. That transparency is the product.
 
 The canonical neutral-prompt v0.5 batch is
-[runs/2026-08-21-neutral-v0.5](runs/2026-08-21-neutral-v0.5/).
+[runs/2026-08-21-neutral-v0.5](runs/2026-08-21-neutral-v0.5/). Cloud-agent
+Union Alpha traces are in
+[runs/2026-09-16-cloud-agent](runs/2026-09-16-cloud-agent/).
 
 ## Credits
 

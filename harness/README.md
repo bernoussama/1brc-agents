@@ -49,6 +49,7 @@ sudo ./harness/setup_network.sh
 export OPENROUTER_API_KEY=sk-or-...   # whichever profile you're running
 ./harness/run_session.sh glm-4.7 harness/profiles/glm-coding.sh
 ./harness/run_session.sh glm-5.3 harness/profiles/glm-5.3.sh
+./harness/run_session.sh union-alpha harness/profiles/openrouter-union-alpha-max.sh
 ./harness/run_session.sh deepseek harness/profiles/deepseek.sh B
 # Force the laptop resource preset on a different machine:
 BENCH_HOST=laptop ./harness/run_session.sh qwen harness/profiles/openrouter-qwen.sh
@@ -65,7 +66,8 @@ Session scratch lands in `.sessions/<slug>-<timestamp>/` (gitignored):
 - `manifest.yaml` — image digest, host info, generator source hash
 - `cleanup.log` — exact disposable paths removed after the session
 
-Published batches live under `runs/<date>-<label>/`.
+Published batches live under `runs/<date>-<label>/`. The Union Alpha
+cloud-agent session is [runs/2026-09-16-cloud-agent](../runs/2026-09-16-cloud-agent/).
 
 The runner expects the sibling checkout at `../1brc` by default. Set
 `ONEBRC_ROOT` to another checkout when needed. It compiles and runs
@@ -223,6 +225,7 @@ bash harness/tests/test_resources.sh
 bash harness/tests/test_scoring_container.sh
 bash harness/tests/test_scored_dataset.sh
 bash harness/tests/test_cleanup.sh
+bash harness/tests/test_openrouter_union_alpha.sh
 # Or validate a submission against the sibling project's canonical samples:
 bash harness/tests/test_1brc.sh /path/to/run.sh
 ```

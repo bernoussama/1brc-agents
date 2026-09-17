@@ -65,7 +65,7 @@ def collect_solution_files(run_dir: Path) -> list[str]:
         if normalized:
             rel_paths.add(normalized)
 
-    for match in re.finditer(r'\$DIR/([\w./_-]+)', text):
+    for match in re.finditer(r'\$(?:DIR|ROOT)/([\w./_-]+)', text):
         rel_paths.add(f"work/submission/{match.group(1)}")
 
     for match in re.finditer(r'\$\(dirname\s+"?\$0"?\)/([\w./_-]+)', text):
