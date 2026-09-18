@@ -136,7 +136,7 @@ Resource caps, budgets, and judge settings come from `bench.yml`.
 | `MODEL_ID` | model id for that provider |
 | `AUTH_MODE` | `env` for an API key, `file` for a credential file, or `none` |
 | `AUTH_ENV` | name of the host env var holding the API key |
-| `AUTH_FILE` | host path to `auth.json` when `AUTH_MODE=file` |
+| `AUTH_FILE` | host path to `auth.json` (pi) or OpenCode 2 `opencode.db` when `AUTH_MODE=file` |
 | `THINKING` | optional reasoning level (`off`..`max`, or OpenCode 2 variants such as `xhigh`) |
 | `ADAPTER_ROUTE` | publication label for the complete model/provider adapter path |
 
@@ -180,16 +180,25 @@ server instead of V2's shared background service.
 Model selection is `-m provider/model` with an optional `#variant` from
 `THINKING` (for example `opencode/x-preview-f-free#max`). Starting
 profiles: `harness/profiles/opencode-cli-ox-alpha.sh`,
-`opencode-cli-hy3-free-high.sh`, `opencode-cli-muse-spark-free-xhigh.sh`.
+`opencode-cli-hy3-free-high.sh`, `opencode-cli-muse-spark-free-xhigh.sh`,
+and `opencode-cli-gpt-5.6-sol-high.sh` (ChatGPT/Codex OAuth).
 
 ```bash
 ./harness/run_session.sh ox-alpha-opencode2 harness/profiles/opencode-cli-ox-alpha.sh
+./harness/run_session.sh gpt-5.6-sol-high-opencode2 harness/profiles/opencode-cli-gpt-5.6-sol-high.sh
 ```
 
 Prefer `AUTH_MODE=env` (`OPENCODE_API_KEY`) for paid Zen. Keyless free
-models use `AUTH_MODE=none`. `AUTH_MODE=file` copies a legacy
-`auth.json` into OpenCode's data dir for import; V2 stores new credentials
-in SQLite.
+models use `AUTH_MODE=none`. `AUTH_MODE=file` copies either a legacy
+`auth.json` or an OpenCode 2 `opencode.db` (+ wal/shm) into the session
+data dir. Codex ChatGPT login on the host:
+
+```
+opencode2 auth login --standalone openai --method chatgpt-headless
+```
+
+That profile sets `OPENCODE_MODELS_FETCH=1` so `gpt-5.6-sol` can come from
+`models.dev` (allowlisted in `setup_network.sh`).
 
 ## Timing fairness (the bit that keeps the leaderboard honest)
 

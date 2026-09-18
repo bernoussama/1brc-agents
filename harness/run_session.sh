@@ -626,9 +626,14 @@ if [ "$AGENT_FRAMEWORK" = opencode ]; then
     -e OPENCODE_DISABLE_AUTOUPDATE=1
     -e OPENCODE_DISABLE_LSP_DOWNLOAD=1
     -e OPENCODE_DISABLE_DEFAULT_PLUGINS=1
-    -e OPENCODE_DISABLE_MODELS_FETCH=1
     -e OPENCODE_DISABLE_CLAUDE_CODE=1
   )
+  # Codex/ChatGPT models come from the models.dev catalog. Zen-free
+  # profiles can keep fetch disabled; paid/OAuth profiles should set
+  # OPENCODE_MODELS_FETCH=1.
+  if [ "${OPENCODE_MODELS_FETCH:-0}" != 1 ]; then
+    CONTAINER_EXTRA_ARGS+=(-e OPENCODE_DISABLE_MODELS_FETCH=1)
+  fi
 fi
 
 docker run --rm \

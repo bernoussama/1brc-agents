@@ -24,11 +24,28 @@ prepare_auth() {
       AUTH_FILE="${AUTH_FILE:-$HOME/.pi/agent/auth.json}"
       [ -f "$AUTH_FILE" ] || { echo "auth file not found at $AUTH_FILE" >&2; return 1; }
       if [ "${AGENT_FRAMEWORK:-pi}" = opencode ]; then
-        # OpenCode 2 stores live credentials in SQLite. A legacy auth.json in
-        # the data directory is imported on first start; prefer AUTH_MODE=env.
+        # OpenCode 2 stores live credentials in SQLite. Copy a db (+ wal/shm)
+        # when AUTH_FILE points at opencode.db; otherwise keep a legacy
+        # auth.json for first-start import.
         mkdir -p "$rundir/pi-home/.local/share/opencode"
-        cp "$AUTH_FILE" "$rundir/pi-home/.local/share/opencode/auth.json"
-        chmod 600 "$rundir/pi-home/.local/share/opencode/auth.json"
+        case "$AUTH_FILE" in
+          *.db)
+            cp "$AUTH_FILE" "$rundir/pi-home/.local/share/opencode/opencode.db"
+            chmod 600 "$rundir/pi-home/.local/share/opencode/opencode.db"
+            if [ -f "${AUTH_FILE}-wal" ]; then
+              cp "${AUTH_FILE}-wal" "$rundir/pi-home/.local/share/opencode/opencode.db-wal"
+              chmod 600 "$rundir/pi-home/.local/share/opencode/opencode.db-wal"
+            fi
+            if [ -f "${AUTH_FILE}-shm" ]; then
+              cp "${AUTH_FILE}-shm" "$rundir/pi-home/.local/share/opencode/opencode.db-shm"
+              chmod 600 "$rundir/pi-home/.local/share/opencode/opencode.db-shm"
+            fi
+            ;;
+          *)
+            cp "$AUTH_FILE" "$rundir/pi-home/.local/share/opencode/auth.json"
+            chmod 600 "$rundir/pi-home/.local/share/opencode/auth.json"
+            ;;
+        esac
       else
         mkdir -p "$rundir/pi-home/.pi/agent"
         cp "$AUTH_FILE" "$rundir/pi-home/.pi/agent/auth.json"

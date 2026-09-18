@@ -96,3 +96,7 @@ the same configuration as a native OpenCode 2 session.
 `AGENT_FRAMEWORK=opencode` profiles (`harness/profiles/opencode-cli-*.sh`)
 launch `opencode2 --standalone run` inside the sandbox. Treat those rows as
 a separate adapter/leaderboard. Do not collapse them into pi-to-Zen scores.
+
+`opencode-cli-gpt-5.6-sol-high.sh` is the native OpenCode 2 + ChatGPT/Codex
+OAuth counterpart of `gpt-5.6-sol-high.sh` (pi to `openai-codex`). Login on
+the host with `opencode2 auth login --standalone openai --method chatgpt-headless`.

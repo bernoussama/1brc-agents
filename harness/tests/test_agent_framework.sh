@@ -9,7 +9,11 @@ bash -n \
   "$ROOT/harness/lib/opencode_home.sh" \
   "$ROOT/harness/profiles/opencode-cli-ox-alpha.sh" \
   "$ROOT/harness/profiles/opencode-cli-hy3-free-high.sh" \
-  "$ROOT/harness/profiles/opencode-cli-muse-spark-free-xhigh.sh"
+  "$ROOT/harness/profiles/opencode-cli-muse-spark-free-xhigh.sh" \
+  "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high.sh"
+
+grep -Fq models.dev "$ROOT/harness/setup_network.sh"
+grep -Fq OPENCODE_MODELS_FETCH "$ROOT/harness/run_session.sh"
 
 # Native OpenCode 2 launch argv, not the v1 CLI.
 grep -Fq -- '--standalone run' "$ROOT/harness/run_session.sh"
@@ -61,6 +65,35 @@ do
     exit 1
   }
 done
+
+# Codex/ChatGPT subscription uses the OpenCode SQLite store, not AUTH_MODE=none.
+unset AGENT_FRAMEWORK AUTH_MODE AUTH_FILE OPENCODE_MODELS_FETCH PROVIDER MODEL_ID THINKING
+# shellcheck disable=SC1091
+source "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high.sh"
+[ "$AGENT_FRAMEWORK" = opencode ] || {
+  echo "Codex Sol-high profile must set AGENT_FRAMEWORK=opencode" >&2
+  exit 1
+}
+[ "$AUTH_MODE" = file ] || {
+  echo "Codex Sol-high profile must use AUTH_MODE=file" >&2
+  exit 1
+}
+[ "$OPENCODE_MODELS_FETCH" = 1 ] || {
+  echo "Codex Sol-high profile must enable models.dev fetch" >&2
+  exit 1
+}
+[ "$PROVIDER" = openai ] || {
+  echo "Codex Sol-high profile must use PROVIDER=openai" >&2
+  exit 1
+}
+[ "$MODEL_ID" = gpt-5.6-sol ] || {
+  echo "Codex Sol-high profile must use MODEL_ID=gpt-5.6-sol" >&2
+  exit 1
+}
+[ "$THINKING" = high ] || {
+  echo "Codex Sol-high profile must use THINKING=high" >&2
+  exit 1
+}
 
 # Existing pi-to-Zen profiles must stay on pi.
 unset AGENT_FRAMEWORK
