@@ -23,9 +23,17 @@ prepare_auth() {
     file)
       AUTH_FILE="${AUTH_FILE:-$HOME/.pi/agent/auth.json}"
       [ -f "$AUTH_FILE" ] || { echo "auth file not found at $AUTH_FILE" >&2; return 1; }
-      mkdir -p "$rundir/pi-home/.pi/agent"
-      cp "$AUTH_FILE" "$rundir/pi-home/.pi/agent/auth.json"
-      chmod 600 "$rundir/pi-home/.pi/agent/auth.json"
+      if [ "${AGENT_FRAMEWORK:-pi}" = opencode ]; then
+        # OpenCode 2 stores live credentials in SQLite. A legacy auth.json in
+        # the data directory is imported on first start; prefer AUTH_MODE=env.
+        mkdir -p "$rundir/pi-home/.local/share/opencode"
+        cp "$AUTH_FILE" "$rundir/pi-home/.local/share/opencode/auth.json"
+        chmod 600 "$rundir/pi-home/.local/share/opencode/auth.json"
+      else
+        mkdir -p "$rundir/pi-home/.pi/agent"
+        cp "$AUTH_FILE" "$rundir/pi-home/.pi/agent/auth.json"
+        chmod 600 "$rundir/pi-home/.pi/agent/auth.json"
+      fi
       docker run --rm -v "$rundir/pi-home:/h" alpine:latest chown -R 1000:1000 /h
       ;;
     env)

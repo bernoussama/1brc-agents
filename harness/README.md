@@ -57,7 +57,7 @@ BENCH_ALLOW_OVERRIDE=1 BUDGET_MIN=5 ./harness/run_session.sh qwen harness/profil
 ```
 
 Session scratch lands in `.sessions/<slug>-<timestamp>/` (gitignored):
-- `events.jsonl` — full pi event stream (the trace)
+- `events.jsonl` — full agent event stream (pi JSON mode, or OpenCode 2 `--format json`)
 - `work/` — everything the agent built (includes `submission/run.sh`)
 - `control/budget.json` — read-only authoritative session deadline metadata
 - `score.json` — verdict + timings
@@ -131,12 +131,13 @@ Resource caps, budgets, and judge settings come from `bench.yml`.
 
 | var | meaning |
 |---|---|
-| `PROVIDER` | pi provider id (`openrouter`, `deepseek`, `glm`, `openai`, ...) |
+| `AGENT_FRAMEWORK` | `pi` (default) or `opencode` for a native OpenCode 2 CLI session |
+| `PROVIDER` | pi provider id, or OpenCode 2 provider prefix (`opencode`, `openrouter`, ...) |
 | `MODEL_ID` | model id for that provider |
-| `AUTH_MODE` | `env` for an API key or `file` for a pi OAuth file |
+| `AUTH_MODE` | `env` for an API key, `file` for a credential file, or `none` |
 | `AUTH_ENV` | name of the host env var holding the API key |
 | `AUTH_FILE` | host path to `auth.json` when `AUTH_MODE=file` |
-| `THINKING` | optional pi thinking level (`off`..`max`) |
+| `THINKING` | optional reasoning level (`off`..`max`, or OpenCode 2 variants such as `xhigh`) |
 | `ADAPTER_ROUTE` | publication label for the complete model/provider adapter path |
 
 Never put keys in profile files. The runner reads them from the host env.
@@ -160,13 +161,41 @@ pi   # interactive once on the runner host, or edit ~/.pi/agent/models.json
 Add the endpoint as a custom provider (pi docs → Custom Providers /
 Custom Models), then point `PROVIDER`/`MODEL_ID` in the profile at it.
 The runner mounts `.sessions/<...>/pi-home` over `/home/agent`, so each
-session starts with a clean but pre-configured pi state.
+session starts with a clean but pre-configured agent home (pi state and, for
+native OpenCode 2 sessions, `~/.config/opencode/opencode.jsonc`).
+
+### Native OpenCode 2 CLI track
+
+`AGENT_FRAMEWORK=opencode` runs OpenCode 2 (`opencode2 --standalone run`)
+instead of pi. That is a separate adapter from the pi-to-Zen profiles
+(`harness/profiles/opencode-ox-alpha.sh` and friends). Do not mix the two
+on one leaderboard.
+
+The runner seeds native V2 config (ordered `permissions` with `shell`, not
+V1 `permission`/`bash`), denies `question`/`webfetch`/`websearch`, and
+allows `external_directory` so `/data` does not hang headless. `--auto`
+covers any remaining `ask`. `--standalone` gives the session a private
+server instead of V2's shared background service.
+
+Model selection is `-m provider/model` with an optional `#variant` from
+`THINKING` (for example `opencode/x-preview-f-free#max`). Starting
+profiles: `harness/profiles/opencode-cli-ox-alpha.sh`,
+`opencode-cli-hy3-free-high.sh`, `opencode-cli-muse-spark-free-xhigh.sh`.
+
+```bash
+./harness/run_session.sh ox-alpha-opencode2 harness/profiles/opencode-cli-ox-alpha.sh
+```
+
+Prefer `AUTH_MODE=env` (`OPENCODE_API_KEY`) for paid Zen. Keyless free
+models use `AUTH_MODE=none`. `AUTH_MODE=file` copies a legacy
+`auth.json` into OpenCode's data dir for import; V2 stores new credentials
+in SQLite.
 
 ## Timing fairness (the bit that keeps the leaderboard honest)
 
 - Sessions run **sequentially** on the same machine, nothing else running.
-- Images and the pi version are pinned; digests are recorded in the manifest.
-  Same compilers, same glibc for every contestant.
+- Images and the agent versions (pi and OpenCode 2) are pinned; digests are
+  recorded in the manifest. Same compilers, same glibc for every contestant.
 - One validated 1B-row dataset is generated once by a fresh Java generator
   process and reused from a named read-only Docker volume. Its exact bytes,
   row count, and generator source hash are recorded in the volume metadata and
@@ -205,6 +234,11 @@ docker build -t 1brc-agents-sandbox:latest -f docker/Dockerfile .
 docker tag  1brc-agents-sandbox:latest 1brc-agents-sandbox:$(git -C . rev-parse --short HEAD)
 ```
 
+A rebuild that adds OpenCode 2 changes the digest. Update
+`environment.image_digest` in `bench.yml` after that build. Native OpenCode 2
+sessions need `opencode2` in the image; v0.5 numbers stay on
+`sha256:ebc131d3…`.
+
 Never rebuild mid-benchmark. If you must change the image, rerun all
 sessions and keep both leaderboards separate.
 
@@ -223,6 +257,7 @@ bash harness/tests/test_resources.sh
 bash harness/tests/test_scoring_container.sh
 bash harness/tests/test_scored_dataset.sh
 bash harness/tests/test_cleanup.sh
+bash harness/tests/test_agent_framework.sh
 # Or validate a submission against the sibling project's canonical samples:
 bash harness/tests/test_1brc.sh /path/to/run.sh
 ```

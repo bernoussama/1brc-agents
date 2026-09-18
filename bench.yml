@@ -57,8 +57,9 @@ hosts:
 
 environment:
   image: 1brc-agents-sandbox:latest
-  # Pin from the published neutral-v0.5 batch. The runner refuses to start
-  # when the local image digest differs, unless BENCH_ALLOW_OVERRIDE=1.
+  # Pin from the published neutral-v0.5 batch. Adding OpenCode 2 (opencode2)
+  # to docker/Dockerfile produces a new digest; rebuild and replace this pin
+  # before native OpenCode 2 sessions. Do not mix the new image with v0.5.
   image_digest: sha256:ebc131d318fa10fdac858ec44fa61aa12c1e3d41039104759930bdf0e1f625ab
   proxy_image: 1brc-allowlist-proxy
   proxy_image_digest: sha256:e43291217da0015d62997806078392bccc8d196a82891b251568a597938f0bff

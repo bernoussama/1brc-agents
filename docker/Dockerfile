@@ -4,6 +4,7 @@
 FROM node:24-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03
 
 ARG PI_VERSION=0.84.2
+ARG OPENCODE_VERSION=0.0.0-beta-19271
 ARG ZIG_VERSION=0.14.1
 ARG GRAALVM_RELEASE=25.2.4
 ARG GRAALVM_JDK_VERSION=25.0.4
@@ -82,13 +83,35 @@ ENV PATH=/opt/flamegraph:/opt/graalvm/bin:$PATH
 # pi coding agent (the harness agents run under), pinned
 RUN npm install -g --ignore-scripts "@earendil-works/pi-coding-agent@${PI_VERSION}"
 
+# OpenCode 2 CLI (native-CLI track). GitHub v2.0.x tags currently ship as
+# @opencode-ai/cli-linux-* npm tarballs containing the opencode2 binary.
+RUN set -eux; \
+    case "$(dpkg --print-architecture)" in \
+      amd64) \
+        OPENCODE_PKG=cli-linux-x64; \
+        OPENCODE_SHA256=a50a152791df51393292af1a39819723fbed84782e2d530e45254480b33ac550 ;; \
+      arm64) \
+        OPENCODE_PKG=cli-linux-arm64; \
+        OPENCODE_SHA256=007c956f0a35a418067e796ef611c0d749e83b4395e5b0e5171b2df30473759b ;; \
+      *) echo "unsupported architecture for pinned OpenCode 2 binary" >&2; exit 1 ;; \
+    esac; \
+    curl --fail --location --silent --show-error \
+      "https://registry.npmjs.org/@opencode-ai/${OPENCODE_PKG}/-/${OPENCODE_PKG}-${OPENCODE_VERSION}.tgz" \
+      --output /tmp/opencode2.tgz; \
+    echo "${OPENCODE_SHA256}  /tmp/opencode2.tgz" | sha256sum --check --status; \
+    mkdir -p /tmp/opencode2; \
+    tar -xzf /tmp/opencode2.tgz -C /tmp/opencode2; \
+    install -m 0755 /tmp/opencode2/package/bin/opencode2 /usr/local/bin/opencode2; \
+    rm -rf /tmp/opencode2 /tmp/opencode2.tgz
+
 # Fail the image build if any advertised language/runtime is missing.
 RUN set -eux; \
-    for tool in bash gcc g++ clang go rustc cargo zig python3 pip3 node npm java javac native-image perf perl dot pi stackcollapse-perf.pl stackcollapse-go.pl stackcollapse-jstack.pl flamegraph.pl; do \
+    for tool in bash gcc g++ clang go rustc cargo zig python3 pip3 node npm java javac native-image perf perl dot pi opencode2 stackcollapse-perf.pl stackcollapse-go.pl stackcollapse-jstack.pl flamegraph.pl; do \
       command -v "$tool"; \
     done; \
     test "$(zig version)" = "${ZIG_VERSION}"; \
     test "$(pi --version)" = "${PI_VERSION}"; \
+    opencode2 --version | grep -F "${OPENCODE_VERSION}"; \
     test "$(command -v java)" = /opt/graalvm/bin/java; \
     java --version; \
     native-image --version
