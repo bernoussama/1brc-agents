@@ -60,7 +60,9 @@ assert cfg["default_agent"] == "conductor"
 assert cfg["plugins"][0]["package"] == "./plugins/opencode-conductor"
 opts = cfg["plugins"][0]["options"]
 assert opts["conductorModel"] == "openai/gpt-5.6-sol#high"
-assert opts["workerModel"].startswith("openrouter/deepseek/deepseek-v4.1-flash")
+assert opts["workerModel"] == "openrouter/deepseek/deepseek-v4.1-flash#max"
+assert ":floor" not in opts["workerModel"]
+assert ":floor" not in opts["workerFallbackModel"]
 assert opts["enableQuestion"] is False
 actions = {row["action"] for row in cfg["permissions"]}
 assert "subagent" in actions
@@ -84,7 +86,7 @@ seed_opencode_home "$CONDUCTOR_SEED" "$ROOT/harness/lib/opencode.conductor.jsonc
 test -f "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/src/index.ts"
 test -f "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'openai/gpt-5.6-sol#high' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
-grep -Fq 'deepseek-v4.1-flash:floor#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
+grep -Fq 'deepseek-v4.1-flash#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
 
 opencode2_version_ok "opencode2 v0.0.0-beta-19271" "0.0.0-beta-19271"
 opencode2_version_ok "0.0.0-beta-19271" "0.0.0-beta-19271"
