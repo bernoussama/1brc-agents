@@ -86,6 +86,7 @@ seed_opencode_home "$CONDUCTOR_SEED" "$ROOT/harness/lib/opencode.conductor.jsonc
 test -f "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/src/index.ts"
 test -f "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'openai/gpt-5.6-sol#high' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+grep -Fq 'background false' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'deepseek-v4.1-flash#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
 
 opencode2_version_ok "opencode2 v0.0.0-beta-19271" "0.0.0-beta-19271"
