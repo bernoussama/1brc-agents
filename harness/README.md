@@ -175,13 +175,19 @@ The runner seeds native V2 config (ordered `permissions` with `shell`, not
 V1 `permission`/`bash`), denies `question`/`webfetch`/`websearch`, and
 allows `external_directory` so `/data` does not hang headless. `--auto`
 covers any remaining `ask`. `--standalone` gives the session a private
-server instead of V2's shared background service.
+server instead of V2's shared background service. The seeded
+`opencode.jsonc` is chowned to uid 1000 after copy so the container user
+can read it on hosts whose login uid is not 1000.
 
 Model selection is `-m provider/model` with an optional `#variant` from
 `THINKING` (for example `opencode/x-preview-f-free#max`). Starting
 profiles: `harness/profiles/opencode-cli-ox-alpha.sh`,
 `opencode-cli-hy3-free-high.sh`, `opencode-cli-muse-spark-free-xhigh.sh`,
 and `opencode-cli-gpt-5.6-sol-high.sh` (ChatGPT/Codex OAuth).
+
+`events.jsonl` for this track is OpenCode 2 `--format json`, not pi JSON
+mode. Leaderboard/trace consumers must key off `agent_framework` /
+`agent_bin` in the session manifest instead of assuming pi's event shape.
 
 ```bash
 ./harness/run_session.sh ox-alpha-opencode2 harness/profiles/opencode-cli-ox-alpha.sh
@@ -191,7 +197,10 @@ and `opencode-cli-gpt-5.6-sol-high.sh` (ChatGPT/Codex OAuth).
 Prefer `AUTH_MODE=env` (`OPENCODE_API_KEY`) for paid Zen. Keyless free
 models use `AUTH_MODE=none`. `AUTH_MODE=file` copies either a legacy
 `auth.json` or an OpenCode 2 `opencode.db` (+ wal/shm) into the session
-data dir. Codex ChatGPT login on the host:
+data dir. Stop any host `opencode2` server before copying; the runner
+runs `PRAGMA wal_checkpoint(TRUNCATE)` when `sqlite3` is available.
+
+Codex ChatGPT login on the host:
 
 ```
 opencode2 auth login --standalone openai --method chatgpt-headless

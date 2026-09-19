@@ -104,6 +104,9 @@ RUN set -eux; \
     install -m 0755 /tmp/opencode2/package/bin/opencode2 /usr/local/bin/opencode2; \
     rm -rf /tmp/opencode2 /tmp/opencode2.tgz
 
+# Exposed so run_session can match `opencode2 --version` to this pin.
+ENV OPENCODE_VERSION=${OPENCODE_VERSION}
+
 # Fail the image build if any advertised language/runtime is missing.
 RUN set -eux; \
     for tool in bash gcc g++ clang go rustc cargo zig python3 pip3 node npm java javac native-image perf perl dot pi opencode2 stackcollapse-perf.pl stackcollapse-go.pl stackcollapse-jstack.pl flamegraph.pl; do \

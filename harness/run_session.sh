@@ -101,6 +101,7 @@ JAVA_GENERATOR="$ROOT/harness/lib/onebrc_generator.sh"
 GENERATOR_SOURCE="$ONEBRC_ROOT/src/main/java/dev/morling/onebrc/CreateMeasurements.java"
 source "$ROOT/harness/lib/auth.sh"
 source "$ROOT/harness/lib/opencode_home.sh"
+source "$ROOT/harness/lib/opencode_version.sh"
 OPENCODE_CONFIG="$ROOT/harness/lib/opencode.v2.jsonc"
 [ -f "$OPENCODE_CONFIG" ] || { echo "missing OpenCode 2 config: $OPENCODE_CONFIG" >&2; exit 1; }
 STAMP="$(date -u +%Y%m%dT%H%M%S)"
@@ -257,6 +258,10 @@ mkdir -p "$RUNDIR/pi-home"
 prepare_auth "$RUNDIR"
 if [ "$AGENT_FRAMEWORK" = opencode ]; then
   seed_opencode_home "$RUNDIR" "$OPENCODE_CONFIG"
+  # Seed runs after prepare_auth's chown. Re-own so uid 1000 can read
+  # opencode.jsonc on hosts whose login user is not 1000 (AUTH_MODE=none
+  # never chowns in prepare_auth).
+  chown_session_home "$RUNDIR"
 fi
 
 # Optional in-container Cursor proxy mode. The proxy package and Cursor CLI
@@ -391,20 +396,17 @@ fi
 AGENT_VERSION="$(docker run --rm --network none --entrypoint "$AGENT_BIN" "$IMAGE" --version 2>/dev/null | head -n 1)"
 [ -n "$AGENT_VERSION" ] || AGENT_VERSION=unknown
 if [ "$AGENT_FRAMEWORK" = opencode ]; then
-  case "$AGENT_VERSION" in
-    *opencode2*|*OpenCode\ 2*|*v2.*|*\ 2.*) ;;
-    *)
-      echo "OpenCode 2 is required in the sandbox image (entrypoint $AGENT_BIN --version)." >&2
-      echo "got: $AGENT_VERSION" >&2
-      exit 1
-      ;;
-  esac
-  case "$AGENT_VERSION" in
-    *v1.*|*1.18.*)
-      echo "refusing OpenCode v1 in an OpenCode 2 session: $AGENT_VERSION" >&2
-      exit 1
-      ;;
-  esac
+  PINNED_OPENCODE_VERSION="$(docker run --rm --network none --entrypoint printenv "$IMAGE" OPENCODE_VERSION 2>/dev/null || true)"
+  if opencode2_version_is_v1 "$AGENT_VERSION"; then
+    echo "refusing OpenCode v1 in an OpenCode 2 session: $AGENT_VERSION" >&2
+    exit 1
+  fi
+  if ! opencode2_version_ok "$AGENT_VERSION" "$PINNED_OPENCODE_VERSION"; then
+    echo "OpenCode 2 is required in the sandbox image (entrypoint $AGENT_BIN --version)." >&2
+    echo "got: $AGENT_VERSION" >&2
+    echo "pinned OPENCODE_VERSION: ${PINNED_OPENCODE_VERSION:-unset}" >&2
+    exit 1
+  fi
 fi
 source "$SCORED_DATASET_LIB"
 SCORED_DATASET_ROWS="$SCORED_ROWS"
@@ -666,8 +668,9 @@ docker run --rm \
   --entrypoint /usr/local/bin/1brc-agent-entrypoint \
   "$IMAGE" \
   "${AGENT_CLI_ARGS[@]}" \
-  > "$RUNDIR/events.jsonl" 2> >(tee "$RUNDIR/agent.err" > "$RUNDIR/pi.err") &
+  > "$RUNDIR/events.jsonl" 2> "$RUNDIR/agent.err" &
 AGENT_PID=$!
+ln -sfn agent.err "$RUNDIR/pi.err"
 
 # Overlayfs/vfs-backed and other cold starts can take well over 2s before
 # the container appears in `docker ps`. Poll for the id instead of a fixed sleep.

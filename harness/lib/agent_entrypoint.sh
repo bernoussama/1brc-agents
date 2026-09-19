@@ -71,6 +71,7 @@ run_selected_agent() {
   case "$AGENT_FRAMEWORK" in
     pi)
       if ! start_cursor_proxy; then
+        stop_cursor_proxy
         return 1
       fi
       pi "$@"
