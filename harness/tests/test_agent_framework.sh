@@ -11,7 +11,8 @@ bash -n \
   "$ROOT/harness/profiles/opencode-cli-ox-alpha.sh" \
   "$ROOT/harness/profiles/opencode-cli-hy3-free-high.sh" \
   "$ROOT/harness/profiles/opencode-cli-muse-spark-free-xhigh.sh" \
-  "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high.sh"
+  "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high.sh" \
+  "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh"
 
 grep -Fq models.dev "$ROOT/harness/setup_network.sh"
 grep -Fq OPENCODE_MODELS_FETCH "$ROOT/harness/run_session.sh"
@@ -19,6 +20,8 @@ grep -Fq chown_session_home "$ROOT/harness/run_session.sh"
 grep -Fq printenv "$ROOT/harness/run_session.sh"
 grep -Fq 'ln -sfn agent.err' "$ROOT/harness/run_session.sh"
 grep -Fq stop_cursor_proxy "$ROOT/harness/lib/agent_entrypoint.sh"
+grep -Fq -- '--agent' "$ROOT/harness/run_session.sh"
+grep -Fq AUTH_EXTRA_ENVS "$ROOT/harness/lib/auth.sh"
 # Do not use a substring v1 gate that matches 2.1.18.x.
 ! grep -Fq '*1.18.*' "$ROOT/harness/run_session.sh"
 
@@ -47,6 +50,23 @@ assert cfg["update"] == "disable"
 assert cfg["share"] == "disabled"
 PY
 
+python3 - "$ROOT/harness/lib/opencode.conductor.jsonc" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+cfg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert cfg["default_agent"] == "conductor"
+assert cfg["plugins"][0]["package"] == "./plugins/opencode-conductor"
+opts = cfg["plugins"][0]["options"]
+assert opts["conductorModel"] == "openai/gpt-5.6-sol#high"
+assert opts["workerModel"].startswith("openrouter/deepseek/deepseek-v4.1-flash")
+assert opts["enableQuestion"] is False
+actions = {row["action"] for row in cfg["permissions"]}
+assert "subagent" in actions
+assert "question" in actions
+PY
+
 TEST_DIR="$(mktemp -d)"
 trap 'rm -rf "$TEST_DIR"' EXIT
 # shellcheck disable=SC1091
@@ -55,6 +75,16 @@ source "$ROOT/harness/lib/opencode_version.sh"
 seed_opencode_home "$TEST_DIR" "$ROOT/harness/lib/opencode.v2.jsonc"
 test -f "$TEST_DIR/pi-home/.config/opencode/opencode.jsonc"
 test "$(stat -c '%a' "$TEST_DIR/pi-home/.config/opencode/opencode.jsonc")" = 600
+
+CONDUCTOR_SEED="$(mktemp -d)"
+trap 'rm -rf "$TEST_DIR" "$CONDUCTOR_SEED"' EXIT
+seed_opencode_home "$CONDUCTOR_SEED" "$ROOT/harness/lib/opencode.conductor.jsonc" \
+  "$ROOT/harness/lib/opencode-conductor" \
+  "$ROOT/harness/lib/opencode.conductor.agents"
+test -f "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/src/index.ts"
+test -f "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+grep -Fq 'openai/gpt-5.6-sol#high' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+grep -Fq 'deepseek-v4.1-flash:floor#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
 
 opencode2_version_ok "opencode2 v0.0.0-beta-19271" "0.0.0-beta-19271"
 opencode2_version_ok "0.0.0-beta-19271" "0.0.0-beta-19271"
@@ -112,6 +142,39 @@ source "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high.sh"
   exit 1
 }
 
+unset AGENT_FRAMEWORK AUTH_MODE AUTH_FILE AUTH_EXTRA_ENVS OPENCODE_MODELS_FETCH \
+  PROVIDER MODEL_ID THINKING OPENCODE_AGENT OPENCODE_CONFIG OPENCODE_PLUGIN_DIR OPENCODE_AGENT_FILES
+# shellcheck disable=SC1091
+source "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh"
+[ "$AGENT_FRAMEWORK" = opencode ] || {
+  echo "conductor profile must set AGENT_FRAMEWORK=opencode" >&2
+  exit 1
+}
+[ "$OPENCODE_AGENT" = conductor ] || {
+  echo "conductor profile must set OPENCODE_AGENT=conductor" >&2
+  exit 1
+}
+[ "$AUTH_MODE" = file ] || {
+  echo "conductor profile must use AUTH_MODE=file" >&2
+  exit 1
+}
+[ "$AUTH_EXTRA_ENVS" = OPENROUTER_API_KEY ] || {
+  echo "conductor profile must request OPENROUTER_API_KEY" >&2
+  exit 1
+}
+[ -f "$OPENCODE_CONFIG" ] || {
+  echo "conductor profile OPENCODE_CONFIG missing: $OPENCODE_CONFIG" >&2
+  exit 1
+}
+[ -d "$OPENCODE_PLUGIN_DIR" ] || {
+  echo "conductor profile OPENCODE_PLUGIN_DIR missing: $OPENCODE_PLUGIN_DIR" >&2
+  exit 1
+}
+[ -d "$OPENCODE_AGENT_FILES" ] || {
+  echo "conductor profile OPENCODE_AGENT_FILES missing: $OPENCODE_AGENT_FILES" >&2
+  exit 1
+}
+
 # Existing pi-to-Zen profiles must stay on pi.
 unset AGENT_FRAMEWORK
 # shellcheck disable=SC1091
@@ -122,7 +185,7 @@ source "$ROOT/harness/profiles/opencode-ox-alpha.sh"
 }
 
 ENTRY_TEST="$(mktemp -d)"
-trap 'rm -rf "$TEST_DIR" "$ENTRY_TEST"' EXIT
+trap 'rm -rf "$TEST_DIR" "$CONDUCTOR_SEED" "$ENTRY_TEST"' EXIT
 mkdir -p "$ENTRY_TEST/bin" "$ENTRY_TEST/lifecycle"
 cat > "$ENTRY_TEST/bin/opencode2" <<EOF
 #!/bin/sh

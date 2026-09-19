@@ -83,4 +83,21 @@ prepare_auth() {
       return 1
       ;;
   esac
+
+  # Optional extra env credentials, e.g. OPENROUTER_API_KEY alongside Codex
+  # OAuth in AUTH_MODE=file. Comma- or space-separated variable names.
+  if [ -n "${AUTH_EXTRA_ENVS:-}" ]; then
+    local extra_name extra_val
+    for extra_name in ${AUTH_EXTRA_ENVS//,/ }; do
+      [ -n "$extra_name" ] || continue
+      [[ "$extra_name" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] \
+        || { echo "AUTH_EXTRA_ENVS contains an invalid name: $extra_name" >&2; return 1; }
+      extra_val="${!extra_name:-}"
+      [ -n "$extra_val" ] || {
+        echo "missing host credential in \$$extra_name (from AUTH_EXTRA_ENVS)" >&2
+        return 1
+      }
+      AUTH_DOCKER_ARGS+=(-e "${extra_name}=${extra_val}")
+    done
+  fi
 }

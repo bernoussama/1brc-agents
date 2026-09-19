@@ -1,0 +1,43 @@
+{
+  "name": "@bernoussama/opencode-conductor",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Conductor-only OpenCode plugin: a tool-less primary agent that delegates everything to explore/shell-runner/coder subagents.",
+  "license": "MIT",
+  "author": "bernoussama",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bernoussama/opencode-conductor.git"
+  },
+  "homepage": "https://github.com/bernoussama/opencode-conductor#readme",
+  "bugs": {
+    "url": "https://github.com/bernoussama/opencode-conductor/issues"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "conductor",
+    "subagents",
+    "ai-agents"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src/",
+    "agents/",
+    "index.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@opencode/plugin": "^2.0.7"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

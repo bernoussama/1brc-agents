@@ -136,9 +136,14 @@ Resource caps, budgets, and judge settings come from `bench.yml`.
 | `MODEL_ID` | model id for that provider |
 | `AUTH_MODE` | `env` for an API key, `file` for a credential file, or `none` |
 | `AUTH_ENV` | name of the host env var holding the API key |
+| `AUTH_EXTRA_ENVS` | optional extra host env var names to inject (comma- or space-separated), e.g. `OPENROUTER_API_KEY` next to Codex OAuth |
 | `AUTH_FILE` | host path to `auth.json` (pi) or OpenCode 2 `opencode.db` when `AUTH_MODE=file` |
 | `THINKING` | optional reasoning level (`off`..`max`, or OpenCode 2 variants such as `xhigh`) |
 | `ADAPTER_ROUTE` | publication label for the complete model/provider adapter path |
+| `OPENCODE_AGENT` | optional OpenCode 2 `--agent` id (e.g. `conductor`) |
+| `OPENCODE_CONFIG` | optional OpenCode 2 jsonc path; defaults to `harness/lib/opencode.v2.jsonc` |
+| `OPENCODE_PLUGIN_DIR` | optional plugin source copied into the session OpenCode home |
+| `OPENCODE_AGENT_FILES` | optional agent markdown copied into `/work/.opencode/agents` |
 
 Never put keys in profile files. The runner reads them from the host env.
 For OAuth, log in once on the host with `pi` and point `AUTH_FILE` at the
@@ -184,6 +189,11 @@ Model selection is `-m provider/model` with an optional `#variant` from
 profiles: `harness/profiles/opencode-cli-ox-alpha.sh`,
 `opencode-cli-hy3-free-high.sh`, `opencode-cli-muse-spark-free-xhigh.sh`,
 and `opencode-cli-gpt-5.6-sol-high.sh` (ChatGPT/Codex OAuth).
+`opencode-cli-gpt-5.6-sol-high-conductor.sh` is a separate adapter: Sol
+high is the tool-less `conductor` primary via the vendored
+[opencode-conductor](https://github.com/bernoussama/opencode-conductor)
+plugin, and DeepSeek V4.1 Flash max workers go through OpenRouter. It is
+not comparable to the solo Sol-high OpenCode 2 session.
 
 `events.jsonl` for this track is OpenCode 2 `--format json`, not pi JSON
 mode. Leaderboard/trace consumers must key off `agent_framework` /
@@ -192,6 +202,9 @@ mode. Leaderboard/trace consumers must key off `agent_framework` /
 ```bash
 ./harness/run_session.sh ox-alpha-opencode2 harness/profiles/opencode-cli-ox-alpha.sh
 ./harness/run_session.sh gpt-5.6-sol-high-opencode2 harness/profiles/opencode-cli-gpt-5.6-sol-high.sh
+export OPENROUTER_API_KEY=sk-or-...
+./harness/run_session.sh gpt-5.6-sol-high-conductor \
+  harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh
 ```
 
 Prefer `AUTH_MODE=env` (`OPENCODE_API_KEY`) for paid Zen. Keyless free

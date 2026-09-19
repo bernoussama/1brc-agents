@@ -50,4 +50,21 @@ cmp "$TEST_DIR/opencode.db-shm" "$TEST_DIR/opencode-db-run/pi-home/.local/share/
 test "$(stat -c '%a' "$TEST_DIR/opencode-db-run/pi-home/.local/share/opencode/opencode.db")" = 600
 test ! -f "$TEST_DIR/opencode-db-run/pi-home/.local/share/opencode/auth.json"
 
+OPENROUTER_API_KEY=test-openrouter-key
+AUTH_MODE=file
+AUTH_FILE="$TEST_DIR/opencode.db"
+AUTH_EXTRA_ENVS=OPENROUTER_API_KEY
+prepare_auth "$TEST_DIR/opencode-extra-env-run"
+test "${AUTH_DOCKER_ARGS[0]}" = -e
+test "${AUTH_DOCKER_ARGS[1]}" = OPENROUTER_API_KEY=test-openrouter-key
+
+AUTH_MODE=file
+AUTH_FILE="$TEST_DIR/opencode.db"
+AUTH_EXTRA_ENVS=MISSING_OPENROUTER_KEY
+if prepare_auth "$TEST_DIR/opencode-extra-env-missing" 2>/dev/null; then
+  echo "AUTH_EXTRA_ENVS must fail when the host variable is unset" >&2
+  exit 1
+fi
+unset AUTH_EXTRA_ENVS
+
 echo "auth tests: ok"
