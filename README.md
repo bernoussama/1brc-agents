@@ -50,7 +50,8 @@ The canonical neutral-prompt v0.5 batch is
 - 1BRC by Gunnar Morling (the task)
 - Prime Intellect's "Measuring Autonomous AI Research" (harness pattern:
   program.md, offline sandbox, frozen verifier, per-run manifests)
-- pi (pi.dev) — the coding-agent harness
+- pi (pi.dev) — the default coding-agent harness
+- OpenCode 2 (`opencode2`) — optional native-CLI track, separate from pi
 
 ## License
 

@@ -31,4 +31,23 @@ prepare_auth "$TEST_DIR/none-run"
 test "${#AUTH_DOCKER_ARGS[@]}" -eq 0
 test ! -f "$TEST_DIR/none-run/pi-home/.pi/agent/auth.json"
 
+AGENT_FRAMEWORK=opencode
+AUTH_MODE=file
+AUTH_FILE="$TEST_DIR/auth.json"
+prepare_auth "$TEST_DIR/opencode-file-run"
+cmp "$TEST_DIR/auth.json" "$TEST_DIR/opencode-file-run/pi-home/.local/share/opencode/auth.json"
+test "$(stat -c '%a' "$TEST_DIR/opencode-file-run/pi-home/.local/share/opencode/auth.json")" = 600
+test ! -f "$TEST_DIR/opencode-file-run/pi-home/.pi/agent/auth.json"
+
+printf 'sqlite-auth' > "$TEST_DIR/opencode.db"
+printf 'wal' > "$TEST_DIR/opencode.db-wal"
+printf 'shm' > "$TEST_DIR/opencode.db-shm"
+AUTH_FILE="$TEST_DIR/opencode.db"
+prepare_auth "$TEST_DIR/opencode-db-run"
+cmp "$TEST_DIR/opencode.db" "$TEST_DIR/opencode-db-run/pi-home/.local/share/opencode/opencode.db"
+cmp "$TEST_DIR/opencode.db-wal" "$TEST_DIR/opencode-db-run/pi-home/.local/share/opencode/opencode.db-wal"
+cmp "$TEST_DIR/opencode.db-shm" "$TEST_DIR/opencode-db-run/pi-home/.local/share/opencode/opencode.db-shm"
+test "$(stat -c '%a' "$TEST_DIR/opencode-db-run/pi-home/.local/share/opencode/opencode.db")" = 600
+test ! -f "$TEST_DIR/opencode-db-run/pi-home/.local/share/opencode/auth.json"
+
 echo "auth tests: ok"

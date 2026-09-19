@@ -1,10 +1,12 @@
 #!/bin/sh
-# Keep the agent container alive after pi exits so the final submission can be
-# scored in the exact image/filesystem/toolchain that produced it.
+# Keep the agent container alive after the selected agent exits so the final
+# submission can be scored in the exact image/filesystem/toolchain that
+# produced it.
 set -u
 
 status=0
 cursor_proxy_pid=""
+AGENT_FRAMEWORK="${AGENT_FRAMEWORK:-pi}"
 
 start_cursor_proxy() {
   [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ] || return 0
@@ -65,12 +67,29 @@ stop_cursor_proxy() {
   fi
 }
 
-if ! start_cursor_proxy; then
-  status=1
-else
-  pi "$@" || status=$?
-fi
-stop_cursor_proxy
+run_selected_agent() {
+  case "$AGENT_FRAMEWORK" in
+    pi)
+      if ! start_cursor_proxy; then
+        stop_cursor_proxy
+        return 1
+      fi
+      pi "$@"
+      status=$?
+      stop_cursor_proxy
+      return "$status"
+      ;;
+    opencode)
+      opencode2 "$@"
+      ;;
+    *)
+      echo "unknown AGENT_FRAMEWORK=$AGENT_FRAMEWORK (expected pi or opencode)" >&2
+      return 1
+      ;;
+  esac
+}
+
+run_selected_agent "$@" || status=$?
 
 printf '%s\n' "$status" > /run/1brc-lifecycle/agent.exit
 
