@@ -166,7 +166,7 @@ native OpenCode 2 sessions, `~/.config/opencode/opencode.jsonc`).
 
 ### Native OpenCode 2 CLI track
 
-`AGENT_FRAMEWORK=opencode` runs OpenCode 2 (`opencode2 --standalone run`)
+`AGENT_FRAMEWORK=opencode` runs OpenCode 2 (`opencode2 run --standalone`)
 instead of pi. That is a separate adapter from the pi-to-Zen profiles
 (`harness/profiles/opencode-ox-alpha.sh` and friends). Do not mix the two
 on one leaderboard.

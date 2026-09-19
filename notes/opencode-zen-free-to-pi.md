@@ -94,7 +94,7 @@ The profiles above still run **pi** against the Zen HTTP API. That is not
 the same configuration as a native OpenCode 2 session.
 
 `AGENT_FRAMEWORK=opencode` profiles (`harness/profiles/opencode-cli-*.sh`)
-launch `opencode2 --standalone run` inside the sandbox. Treat those rows as
+launch `opencode2 run --standalone` inside the sandbox. Treat those rows as
 a separate adapter/leaderboard. Do not collapse them into pi-to-Zen scores.
 
 `opencode-cli-gpt-5.6-sol-high.sh` is the native OpenCode 2 + ChatGPT/Codex

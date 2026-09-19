@@ -565,7 +565,8 @@ case "$AGENT_FRAMEWORK" in
   opencode)
     OPENCODE_MODEL="$PROVIDER/$MODEL_ID"
     [ -n "${THINKING:-}" ] && OPENCODE_MODEL="${OPENCODE_MODEL}#${THINKING}"
-    AGENT_CLI_ARGS+=(--standalone run --format json --auto --title "1brc-${SLUG}" -m "$OPENCODE_MODEL" "$GOAL_PROMPT")
+    # `--standalone` is a flag of `run`, not a global-before-subcommand flag.
+    AGENT_CLI_ARGS+=(run --standalone --format json --auto --title "1brc-${SLUG}" -m "$OPENCODE_MODEL" "$GOAL_PROMPT")
     ;;
   *)
     echo "AGENT_FRAMEWORK must be pi or opencode (got '$AGENT_FRAMEWORK')" >&2

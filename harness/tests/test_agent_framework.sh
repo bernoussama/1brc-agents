@@ -23,7 +23,7 @@ grep -Fq stop_cursor_proxy "$ROOT/harness/lib/agent_entrypoint.sh"
 ! grep -Fq '*1.18.*' "$ROOT/harness/run_session.sh"
 
 # Native OpenCode 2 launch argv, not the v1 CLI.
-grep -Fq -- '--standalone run' "$ROOT/harness/run_session.sh"
+grep -Fq -- 'run --standalone' "$ROOT/harness/run_session.sh"
 grep -Fq -- 'opencode2' "$ROOT/harness/lib/agent_entrypoint.sh"
 grep -Fq -- 'AGENT_FRAMEWORK' "$ROOT/harness/lib/agent_entrypoint.sh"
 grep -Fq 'agent_framework:' "$ROOT/harness/run_session.sh"
@@ -147,10 +147,10 @@ sed \
 chmod +x "$ENTRY_TEST/entrypoint.sh"
 touch "$ENTRY_TEST/lifecycle/release"
 PATH="$ENTRY_TEST/bin:$PATH" AGENT_FRAMEWORK=opencode \
-  "$ENTRY_TEST/entrypoint.sh" --standalone run --format json --auto -m opencode/x-preview-f-free#max "goal" \
+  "$ENTRY_TEST/entrypoint.sh" run --standalone --format json --auto -m opencode/x-preview-f-free#max "goal" \
   >"$ENTRY_TEST/out" 2>"$ENTRY_TEST/err"
 test "$(cat "$ENTRY_TEST/lifecycle/agent.exit")" = 0
-grep -Fq -- '--standalone run' "$ENTRY_TEST/opencode2.args"
+grep -Fq -- 'run --standalone' "$ENTRY_TEST/opencode2.args"
 grep -Fq -- '-m opencode/x-preview-f-free#max' "$ENTRY_TEST/opencode2.args"
 
 PATH="$ENTRY_TEST/bin:$PATH" AGENT_FRAMEWORK=unknown \
