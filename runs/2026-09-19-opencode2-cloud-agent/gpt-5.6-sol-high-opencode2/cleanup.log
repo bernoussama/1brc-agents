@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/workspace/.sessions/gpt-5.6-sol-high-opencode2-20260919T081247
+started_utc=2026-09-19T10:09:19Z
+removed=data bytes=137969664
+removed=lifecycle bytes=8192
+removed=pi-home bytes=11206656
+removed=container.id bytes=4096
+removed_bytes=149188608
+preserved=events.jsonl pi.err agent.err work control score.json score.log manifest.yaml reports expected-output snapshots run_session.frozen.sh
+finished_utc=2026-09-19T10:09:19Z

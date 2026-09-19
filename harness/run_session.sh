@@ -11,8 +11,9 @@
 # 1. ensures image + datasets exist
 # 2. starts container: internal network + allowlist proxy, workdir /work,
 #    /data ro-mounted
-# 3. runs pi --mode json headless inside it with the single goal prompt
-# 4. enforces wall-clock budget (stops pi at deadline, preserves container)
+# 3. runs the selected agent headless (pi, or OpenCode 2 via opencode2)
+#    inside it with the single goal prompt
+# 4. enforces wall-clock budget (stops the agent at deadline, preserves container)
 # 5. injects the held-out input and scores inside the agent container
 #    before releasing it, then writes the run manifest
 #
@@ -99,6 +100,10 @@ ONEBRC_ROOT="${ONEBRC_ROOT:-$ROOT/../1brc}"
 JAVA_GENERATOR="$ROOT/harness/lib/onebrc_generator.sh"
 GENERATOR_SOURCE="$ONEBRC_ROOT/src/main/java/dev/morling/onebrc/CreateMeasurements.java"
 source "$ROOT/harness/lib/auth.sh"
+source "$ROOT/harness/lib/opencode_home.sh"
+source "$ROOT/harness/lib/opencode_version.sh"
+OPENCODE_CONFIG="$ROOT/harness/lib/opencode.v2.jsonc"
+[ -f "$OPENCODE_CONFIG" ] || { echo "missing OpenCode 2 config: $OPENCODE_CONFIG" >&2; exit 1; }
 STAMP="$(date -u +%Y%m%dT%H%M%S)"
 RUNDIR="$ROOT/.sessions/${SLUG}-${STAMP}"
 mkdir -p "$RUNDIR"
@@ -193,7 +198,26 @@ if [ "${NCPUS+x}" = x ] || [ "${MEM+x}" = x ]; then
 fi
 NCPUS="$PROFILE_NCPUS_BEFORE"
 MEM="$PROFILE_MEM_BEFORE"
-ADAPTER_ROUTE="${ADAPTER_ROUTE:-pi to $PROVIDER/$MODEL_ID}"
+AGENT_FRAMEWORK="${AGENT_FRAMEWORK:-pi}"
+case "$AGENT_FRAMEWORK" in
+  pi)
+    AGENT_BIN=pi
+    ADAPTER_ROUTE="${ADAPTER_ROUTE:-pi to $PROVIDER/$MODEL_ID}"
+    ;;
+  opencode)
+    AGENT_BIN=opencode2
+    ADAPTER_ROUTE="${ADAPTER_ROUTE:-opencode2 to $PROVIDER/$MODEL_ID}"
+    if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
+      echo "OpenCode 2 sessions cannot use the in-container Cursor proxy" >&2
+      exit 2
+    fi
+    ;;
+  *)
+    echo "AGENT_FRAMEWORK must be pi or opencode (got '$AGENT_FRAMEWORK')" >&2
+    echo "offending profile: $PROFILE" >&2
+    exit 2
+    ;;
+esac
 PROFILE_SHA256="$(sha256sum "$PROFILE" | awk '{print $1}')"
 PROMPT_SHA256="$(sha256sum "$ROOT/task/program.md" | awk '{print $1}')"
 JUDGE_SHA256="$(sha256sum "$ROOT/judge/score.py" | awk '{print $1}')"
@@ -232,6 +256,13 @@ if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
 fi
 mkdir -p "$RUNDIR/pi-home"
 prepare_auth "$RUNDIR"
+if [ "$AGENT_FRAMEWORK" = opencode ]; then
+  seed_opencode_home "$RUNDIR" "$OPENCODE_CONFIG"
+  # Seed runs after prepare_auth's chown. Re-own so uid 1000 can read
+  # opencode.jsonc on hosts whose login user is not 1000 (AUTH_MODE=none
+  # never chowns in prepare_auth).
+  chown_session_home "$RUNDIR"
+fi
 
 # Optional in-container Cursor proxy mode. The proxy package and Cursor CLI
 # stay host-owned, while the proxy process and all of Cursor's native tools run
@@ -362,8 +393,21 @@ if [ -n "$BENCH_IMAGE_DIGEST" ] && [ "$IMAGE_DIGEST" != "$BENCH_IMAGE_DIGEST" ];
     exit 2
   fi
 fi
-AGENT_VERSION="$(docker run --rm --network none --entrypoint pi "$IMAGE" --version 2>/dev/null | head -n 1)"
+AGENT_VERSION="$(docker run --rm --network none --entrypoint "$AGENT_BIN" "$IMAGE" --version 2>/dev/null | head -n 1)"
 [ -n "$AGENT_VERSION" ] || AGENT_VERSION=unknown
+if [ "$AGENT_FRAMEWORK" = opencode ]; then
+  PINNED_OPENCODE_VERSION="$(docker run --rm --network none --entrypoint printenv "$IMAGE" OPENCODE_VERSION 2>/dev/null || true)"
+  if opencode2_version_is_v1 "$AGENT_VERSION"; then
+    echo "refusing OpenCode v1 in an OpenCode 2 session: $AGENT_VERSION" >&2
+    exit 1
+  fi
+  if ! opencode2_version_ok "$AGENT_VERSION" "$PINNED_OPENCODE_VERSION"; then
+    echo "OpenCode 2 is required in the sandbox image (entrypoint $AGENT_BIN --version)." >&2
+    echo "got: $AGENT_VERSION" >&2
+    echo "pinned OPENCODE_VERSION: ${PINNED_OPENCODE_VERSION:-unset}" >&2
+    exit 1
+  fi
+fi
 source "$SCORED_DATASET_LIB"
 SCORED_DATASET_ROWS="$SCORED_ROWS"
 SCORED_DATASET_ROOT="$ROOT"
@@ -490,9 +534,9 @@ if [ "${CURSOR_PROXY_IN_CONTAINER:-0}" = 1 ]; then
   esac
 fi
 
-echo "[$SLUG] starting: host=$BENCH_HOST budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS} cpus=$NCPUS mem=$MEM"
+echo "[$SLUG] starting: host=$BENCH_HOST agent=$AGENT_FRAMEWORK budget=${BUDGET_MIN}m round=$ROUND scored_rows=${SCORED_ROWS} cpus=$NCPUS mem=$MEM"
 
-# --- launch pi headless inside the sandbox ---
+# --- launch the selected agent headless inside the sandbox ---
 GOAL_PROMPT="Read program.md and follow it exactly. Run fully autonomously — never stop, never ask for input, never wait for a human. Goal: make /work/submission/run.sh the fastest CORRECT solution for Round ${ROUND} (${ROUND} is defined in program.md) within your ${BUDGET_MIN}-minute budget. Keep run.sh valid at all times once your first correct version exists.
 
 Authoritative time management: the harness provides the read-only command 1brc-remaining-time. Run it at startup, after each candidate or major measurement batch, and before finalizing. Use its remaining_seconds value; do not estimate the budget from timestamps, tool-call counts, or model reasoning. While remaining_seconds is greater than ${BUDGET_WRAPUP_SEC}, continue optimizing or validating. At or below that threshold, preserve the best known submission and perform final checks. If the command fails, treat the remaining time as unknown and do not claim that the budget is exhausted."
@@ -511,8 +555,24 @@ if [ "$ROUND" = "B" ]; then
 Round B task (replaces Round A output): for each station print name=median/stdev where median is the middle value (mean of the two middle values for even counts) and stdev is the population standard deviation. Median rounded half-up to 1 decimal, stdev to 2 decimals (−0.0 normalized to 0.0). Same output envelope: {a=1.0/2.25, b=...}, stations sorted byte-wise."
 fi
 
-THINK_ARGS=()
-[ -n "${THINKING:-}" ] && THINK_ARGS+=(--thinking "$THINKING")
+AGENT_CLI_ARGS=()
+case "$AGENT_FRAMEWORK" in
+  pi)
+    AGENT_CLI_ARGS+=(--mode json --provider "$PROVIDER" --model "$MODEL_ID")
+    [ -n "${THINKING:-}" ] && AGENT_CLI_ARGS+=(--thinking "$THINKING")
+    AGENT_CLI_ARGS+=(--name "1brc-${SLUG}" "$GOAL_PROMPT")
+    ;;
+  opencode)
+    OPENCODE_MODEL="$PROVIDER/$MODEL_ID"
+    [ -n "${THINKING:-}" ] && OPENCODE_MODEL="${OPENCODE_MODEL}#${THINKING}"
+    # `--standalone` is a flag of `run`, not a global-before-subcommand flag.
+    AGENT_CLI_ARGS+=(run --standalone --format json --auto --title "1brc-${SLUG}" -m "$OPENCODE_MODEL" "$GOAL_PROMPT")
+    ;;
+  *)
+    echo "AGENT_FRAMEWORK must be pi or opencode (got '$AGENT_FRAMEWORK')" >&2
+    exit 2
+    ;;
+esac
 
 SESSION_START_EPOCH="$(date +%s)"
 deadline=$(( SESSION_START_EPOCH + BUDGET_MIN * 60 ))
@@ -530,25 +590,26 @@ CONTAINER_EXIT_STATUS=unknown
 STALE_COMMAND_KILLS=0
 
 enforce_agent_command_timeout() {
-  local cid="$1" pi_pid stale pid elapsed
-  pi_pid="$(docker exec "$cid" pgrep -xo pi 2>/dev/null || true)"
-  [ -n "$pi_pid" ] || return 0
+  local cid="$1" agent_pid stale pid elapsed
+  agent_pid="$(docker exec "$cid" pgrep -xo "$AGENT_BIN" 2>/dev/null || true)"
+  [ -n "$agent_pid" ] || return 0
   stale="$(docker exec "$cid" ps -eo pid=,ppid=,etimes=,comm= 2>/dev/null \
-    | awk -v parent="$pi_pid" -v max="$EXPERIMENT_MAX_SEC" \
-      '$2 == parent && $3 > max && $4 != "pi" { print $1 ":" $3 }' || true)"
+    | awk -v parent="$agent_pid" -v max="$EXPERIMENT_MAX_SEC" \
+      '$2 == parent && $3 > max && $4 != "pi" && $4 != "opencode" && $4 != "opencode2" && $4 != "bun" && $4 != "node" { print $1 ":" $3 }' || true)"
   while IFS=: read -r pid elapsed; do
     [ -n "$pid" ] || continue
     echo "[$SLUG] stopping unwrapped agent command pid=$pid after ${elapsed}s"
     docker exec "$cid" sh -c '
       target="$1"
+      agent_bin="$2"
       group="$(ps -o pgid= -p "$target" | tr -d " ")"
-      owner="$(pgrep -xo pi || true)"
+      owner="$(pgrep -xo "$agent_bin" || true)"
       if [ -n "$group" ] && [ "$group" != 1 ] && [ "$group" != "$owner" ]; then
         /bin/kill -KILL -- "-$group" 2>/dev/null || /bin/kill -KILL "$target" 2>/dev/null || true
       else
         /bin/kill -KILL "$target" 2>/dev/null || true
       fi
-    ' sh "$pid" >/dev/null 2>&1 || true
+    ' sh "$pid" "$AGENT_BIN" >/dev/null 2>&1 || true
     STALE_COMMAND_KILLS=$((STALE_COMMAND_KILLS + 1))
   done <<< "$stale"
 }
@@ -556,12 +617,27 @@ enforce_agent_command_timeout() {
 ( sleep $(( BUDGET_MIN * 60 + 300 )); \
   cid="$(cat "$CID_FILE" 2>/dev/null || true)"; \
   if [ -n "$cid" ]; then \
-    docker exec "$cid" sh -c 'pid="$(pgrep -xo pi || true)"; [ -z "$pid" ] || kill -KILL "$pid"' >/dev/null 2>&1 || true; \
+    docker exec "$cid" sh -c 'pid="$(pgrep -xo "$1" || true)"; [ -z "$pid" ] || kill -KILL "$pid"' sh "$AGENT_BIN" >/dev/null 2>&1 || true; \
     sleep 30; \
     docker kill "$cid" >/dev/null 2>&1 || true; \
   fi \
 ) &
 WATCHDOG=$!
+
+if [ "$AGENT_FRAMEWORK" = opencode ]; then
+  CONTAINER_EXTRA_ARGS+=(
+    -e OPENCODE_DISABLE_AUTOUPDATE=1
+    -e OPENCODE_DISABLE_LSP_DOWNLOAD=1
+    -e OPENCODE_DISABLE_DEFAULT_PLUGINS=1
+    -e OPENCODE_DISABLE_CLAUDE_CODE=1
+  )
+  # Codex/ChatGPT models come from the models.dev catalog. Zen-free
+  # profiles can keep fetch disabled; paid/OAuth profiles should set
+  # OPENCODE_MODELS_FETCH=1.
+  if [ "${OPENCODE_MODELS_FETCH:-0}" != 1 ]; then
+    CONTAINER_EXTRA_ARGS+=(-e OPENCODE_DISABLE_MODELS_FETCH=1)
+  fi
+fi
 
 docker run --rm \
   --name "1brc-${SLUG}-${STAMP}" \
@@ -571,6 +647,7 @@ docker run --rm \
   --cap-add=PERFMON \
   --user 1000:1000 \
   -e HOME=/home/agent \
+  -e AGENT_FRAMEWORK="$AGENT_FRAMEWORK" \
   -e ONEBRC_CPU_QUOTA="$NCPUS" \
   -e ONEBRC_MEMORY_LIMIT="$MEM" \
   -e HTTPS_PROXY="http://${PROXY_IP}:${PROXY_PORT}" \
@@ -591,12 +668,10 @@ docker run --rm \
   -v "$DATA_DIR:/data:ro" \
   --entrypoint /usr/local/bin/1brc-agent-entrypoint \
   "$IMAGE" \
-  --mode json \
-  --provider "$PROVIDER" --model "$MODEL_ID" "${THINK_ARGS[@]}" \
-  --name "1brc-${SLUG}" \
-  "$GOAL_PROMPT" \
-  > "$RUNDIR/events.jsonl" 2> "$RUNDIR/pi.err" &
+  "${AGENT_CLI_ARGS[@]}" \
+  > "$RUNDIR/events.jsonl" 2> "$RUNDIR/agent.err" &
 AGENT_PID=$!
+ln -sfn agent.err "$RUNDIR/pi.err"
 
 # Overlayfs/vfs-backed and other cold starts can take well over 2s before
 # the container appears in `docker ps`. Poll for the id instead of a fixed sleep.
@@ -613,7 +688,7 @@ for _ in $(seq 1 60); do
 done
 echo "$CID" > "$CID_FILE"
 
-# --- wait for pi to finish while keeping the container alive for scoring ---
+# --- wait for the agent to finish while keeping the container alive for scoring ---
 if [ -n "$CID" ]; then
   deadline_signal_sent=0
   while :; do
@@ -626,10 +701,11 @@ if [ -n "$CID" ]; then
     fi
     NOW=$(date +%s)
     if [ "$NOW" -ge "$deadline" ] && [ "$deadline_signal_sent" -eq 0 ]; then
-      echo "[$SLUG] budget elapsed — stopping pi; preserving container for scoring"
+      echo "[$SLUG] budget elapsed — stopping $AGENT_BIN; preserving container for scoring"
       STOP_REASON=budget_deadline
       docker exec "$CID" sh -c \
-        'pid="$(pgrep -xo pi || true)"; [ -z "$pid" ] || kill -TERM "$pid"' \
+        'pid="$(pgrep -xo "$1" || true)"; [ -z "$pid" ] || kill -TERM "$pid"' \
+        sh "$AGENT_BIN" \
         >/dev/null 2>&1 || true
       deadline_signal_sent=1
     fi
@@ -735,6 +811,8 @@ fi
   echo "model: $MODEL_ID"
   echo "thinking: ${THINKING:-default}"
   echo "adapter_route: \"$ADAPTER_ROUTE\""
+  echo "agent_framework: $AGENT_FRAMEWORK"
+  echo "agent_bin: $AGENT_BIN"
   echo "agent_version: \"$AGENT_VERSION\""
   echo "harness_git_commit: $HARNESS_GIT_COMMIT"
   echo "harness_git_dirty: $HARNESS_GIT_DIRTY"

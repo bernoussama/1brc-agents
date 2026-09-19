@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# The sandbox runs as uid 1000. Host-written files under pi-home must match.
+chown_session_home() {
+  local rundir="$1"
+  [ -d "$rundir/pi-home" ] || return 0
+  docker run --rm -v "$rundir/pi-home:/h" alpine:latest chown -R 1000:1000 /h
+}
+
 # Prepare credentials for the session container.
 # Sets AUTH_DOCKER_ARGS for API-key mode and copies auth.json for OAuth mode.
 prepare_auth() {
@@ -23,10 +30,40 @@ prepare_auth() {
     file)
       AUTH_FILE="${AUTH_FILE:-$HOME/.pi/agent/auth.json}"
       [ -f "$AUTH_FILE" ] || { echo "auth file not found at $AUTH_FILE" >&2; return 1; }
-      mkdir -p "$rundir/pi-home/.pi/agent"
-      cp "$AUTH_FILE" "$rundir/pi-home/.pi/agent/auth.json"
-      chmod 600 "$rundir/pi-home/.pi/agent/auth.json"
-      docker run --rm -v "$rundir/pi-home:/h" alpine:latest chown -R 1000:1000 /h
+      if [ "${AGENT_FRAMEWORK:-pi}" = opencode ]; then
+        # OpenCode 2 stores live credentials in SQLite. Copy a db (+ wal/shm)
+        # when AUTH_FILE points at opencode.db; otherwise keep a legacy
+        # auth.json for first-start import.
+        mkdir -p "$rundir/pi-home/.local/share/opencode"
+        case "$AUTH_FILE" in
+          *.db)
+            # A live host `opencode2` server can keep WAL dirty. Checkpoint
+            # first; stop the host CLI/server if copy still looks torn.
+            if command -v sqlite3 >/dev/null 2>&1; then
+              sqlite3 "$AUTH_FILE" "PRAGMA wal_checkpoint(TRUNCATE);" >/dev/null 2>&1 || true
+            fi
+            cp "$AUTH_FILE" "$rundir/pi-home/.local/share/opencode/opencode.db"
+            chmod 600 "$rundir/pi-home/.local/share/opencode/opencode.db"
+            if [ -f "${AUTH_FILE}-wal" ]; then
+              cp "${AUTH_FILE}-wal" "$rundir/pi-home/.local/share/opencode/opencode.db-wal"
+              chmod 600 "$rundir/pi-home/.local/share/opencode/opencode.db-wal"
+            fi
+            if [ -f "${AUTH_FILE}-shm" ]; then
+              cp "${AUTH_FILE}-shm" "$rundir/pi-home/.local/share/opencode/opencode.db-shm"
+              chmod 600 "$rundir/pi-home/.local/share/opencode/opencode.db-shm"
+            fi
+            ;;
+          *)
+            cp "$AUTH_FILE" "$rundir/pi-home/.local/share/opencode/auth.json"
+            chmod 600 "$rundir/pi-home/.local/share/opencode/auth.json"
+            ;;
+        esac
+      else
+        mkdir -p "$rundir/pi-home/.pi/agent"
+        cp "$AUTH_FILE" "$rundir/pi-home/.pi/agent/auth.json"
+        chmod 600 "$rundir/pi-home/.pi/agent/auth.json"
+      fi
+      chown_session_home "$rundir"
       ;;
     env)
       [ -n "${AUTH_ENV:-}" ] || { echo "AUTH_ENV is required when AUTH_MODE=env" >&2; return 1; }
