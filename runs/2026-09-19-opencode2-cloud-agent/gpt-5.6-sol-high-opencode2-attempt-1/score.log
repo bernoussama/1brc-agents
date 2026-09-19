@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/workspace/judge/score.py", line 210, in <module>
+    main()
+  File "/workspace/judge/score.py", line 157, in main
+    os.chmod(args.submission, 0o755)
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/.sessions/gpt-5.6-sol-high-opencode2-20260919T075838/work/submission/run.sh'
