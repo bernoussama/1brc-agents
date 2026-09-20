@@ -95,9 +95,20 @@ grep -Fq 'background false' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'deepseek-v4.1-flash#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
 grep -Fq 'You are a conductor' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 ! grep -Fq 'muse-spark' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
+! grep -Fq 'Fan out independent work in parallel' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+grep -Fq 'muse-spark-1.3-contributor-free' \
+  "$ROOT/harness/lib/opencode-conductor/agents/conductor/coder.md"
+grep -Fq 'Fan out independent work in parallel' \
+  "$ROOT/harness/lib/opencode-conductor/agents/conductor.md"
 ! test -d "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/node_modules"
+! test -d "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/.opencode/agents"
 grep -Fq 'from "@opencode/plugin"' \
   "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/src/index.ts"
+grep -Fq 'sourceVariants = entry?.variants' \
+  "$ROOT/harness/lib/opencode-conductor/src/index.ts"
+grep -Fq 'export function normalizeVariants' \
+  "$ROOT/harness/lib/opencode-conductor/src/contract.ts"
+! grep -Fq 'void variantId' "$ROOT/harness/lib/opencode-conductor/src/index.ts"
 
 python3 - "$ROOT/harness/lib/opencode.conductor.jsonc" \
   "$ROOT/harness/lib/opencode-conductor" <<'PY'

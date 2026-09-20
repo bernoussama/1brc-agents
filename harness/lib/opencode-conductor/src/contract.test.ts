@@ -152,4 +152,13 @@ describe("selectWorkerModel", () => {
       ["high", "max"],
     );
   });
+
+  test("copies object-map headers and body even without a settings key", () => {
+    const source = {
+      max: { headers: { "X-Test": "1" }, body: { reasoning: { effort: "max" } } },
+    };
+    expect(normalizeVariants(source)).toEqual([
+      { id: "max", headers: { "X-Test": "1" }, body: { reasoning: { effort: "max" } } },
+    ]);
+  });
 });

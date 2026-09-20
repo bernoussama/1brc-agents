@@ -198,12 +198,15 @@ not comparable to the solo Sol-high OpenCode 2 session.
 Session agent markdown is seeded into `/work/.opencode/agents` from
 `harness/lib/opencode.conductor.agents`. That tree is the source of truth
 for worker models and orchestration (foreground DeepSeek `#max` workers).
-The plugin's bundled `agents/` files are upstream defaults and are not
-installed in this profile (`installAgents: false`). OpenCode 2 injects
-`@opencode/plugin` when loading the local plugin package, so the seeded
-tree does not include `node_modules`. The 2026-09-19 conductor session
-dispatched `conductor/explore`, `conductor/shell-runner`, and
-`conductor/coder` subagents, which only exist after that plugin setup.
+The plugin's bundled `agents/` files are upstream defaults (muse-spark
+workers, parallel fan-out) and are not installed in this profile
+(`installAgents: false`). OpenCode 2 injects `@opencode/plugin` when
+loading the local plugin package, so the seeded tree does not include
+`node_modules`. The 2026-09-19 `T213507` session did not retain
+`[conductor]` console lines (`agent.err` empty; `pi-home` removed on
+cleanup), but it dispatched `conductor/explore`, `conductor/shell-runner`,
+and `conductor/coder` — namespaced workers the plugin registers — which
+is the evidence the SDK import resolved without vendored `node_modules`.
 
 `events.jsonl` for this track is OpenCode 2 `--format json`, not pi JSON
 mode. Leaderboard/trace consumers must key off `agent_framework` /

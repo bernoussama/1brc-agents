@@ -32,13 +32,6 @@ interface Options {
 const CONDUCTOR_SYSTEM_APPEND =
   "You are a conductor. You never read files, edit files, or run shell commands directly: you have no direct tools. Delegate every concrete step to one of your subagents with a self-contained prompt (goal, constraints, repo paths, and the exact return shape you need). Ask workers for distilled summaries, never raw transcripts.";
 
-function workerKind(id: string): "explore" | "shell-runner" | "coder" | null {
-  if (id.endsWith("/explore")) return "explore";
-  if (id.endsWith("/shell-runner")) return "shell-runner";
-  if (id.endsWith("/coder")) return "coder";
-  return null;
-}
-
 export default Plugin.define({
   id: "conductor",
   async setup(ctx: any) {
@@ -174,7 +167,6 @@ export default Plugin.define({
             continue;
           }
           editor.update(id, (agent: any) => {
-            const kind = workerKind(id);
             const filled = fillUnset(agent, { mode: "subagent", model: workerModels[id] });
             Object.assign(agent, filled);
             // Permissions intentionally left alone when the user/file defined any.

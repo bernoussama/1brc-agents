@@ -112,16 +112,16 @@ export function normalizeVariants(source: unknown): ExistingVariant[] {
         continue;
       }
       const def: VariantDef = { id };
-      if (rec.settings && typeof rec.settings === "object") {
+      if (rec.settings && typeof rec.settings === "object" && !Array.isArray(rec.settings)) {
         def.settings = rec.settings as Record<string, unknown>;
-        if (rec.headers && typeof rec.headers === "object") {
-          def.headers = rec.headers as Record<string, string>;
-        }
-        if (rec.body && typeof rec.body === "object") {
-          def.body = rec.body as Record<string, unknown>;
-        }
-      } else {
+      } else if (!("settings" in rec) && !("headers" in rec) && !("body" in rec)) {
         def.settings = rec;
+      }
+      if (rec.headers && typeof rec.headers === "object" && !Array.isArray(rec.headers)) {
+        def.headers = rec.headers as Record<string, string>;
+      }
+      if (rec.body && typeof rec.body === "object" && !Array.isArray(rec.body)) {
+        def.body = rec.body as Record<string, unknown>;
       }
       out.push(def);
       continue;
