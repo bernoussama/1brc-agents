@@ -1,0 +1,88 @@
+{
+  "failed_first_attempts": [
+    {
+      "agent_elapsed_seconds": 379,
+      "label": "GPT-5.6 Sol high conductor first attempt",
+      "profile": "harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh",
+      "published_artifacts": "gpt-5.6-sol-high-conductor-attempt-1",
+      "reason": "Workers used openrouter/deepseek/deepseek-v4.1-flash:floor. OpenCode rejected that slug (Model unavailable), the conductor exited after 379 seconds without work/submission/run.sh, and scoring failed at the missing submission boundary.",
+      "run_dir": ".sessions/gpt-5.6-sol-high-conductor-20260919T212407",
+      "score_exit_status": 1
+    },
+    {
+      "agent_elapsed_seconds": 16,
+      "label": "GPT-5.6 Sol high conductor second attempt",
+      "profile": "harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh",
+      "published_artifacts": "gpt-5.6-sol-high-conductor-attempt-2",
+      "reason": "Sol launched workers with background true, treated OpenCode's end-your-response hint as session completion, and exited after 16 seconds without a submission.",
+      "run_dir": ".sessions/gpt-5.6-sol-high-conductor-20260919T213340",
+      "score_exit_status": 1
+    }
+  ],
+  "interpretation": {
+    "comparable_to_neutral_v0.5": false,
+    "comparable_to_opencode2_sol_high_solo": false,
+    "round_b_run": false,
+    "sample_size": "n=1 autonomous agent session per configuration"
+  },
+  "release": {
+    "agent_version": "opencode2 v0.0.0-beta-19271",
+    "bench_allow_override": true,
+    "dataset_sha256": "50bf18178cd265180197b03b03f5e7f25c1feea1c1b26e0c7301d8f5f04c5b8a",
+    "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+    "hardware": {
+      "cpu": "Intel(R) Xeon(R) Processor",
+      "host": "Linux 6.12.94+ x86_64 GNU/Linux",
+      "logical_cpus": 4,
+      "per_run_cpu_quota": 4,
+      "per_run_memory_gib": 16,
+      "physical_cores": 4,
+      "storage": "cloud-ephemeral"
+    },
+    "harness_git_commit": "59095f15b2507ed07b1a6a594a71641da9a2efca",
+    "id": "opencode-conductor-cloud-agent-2026-09-19",
+    "image_sha256": "sha256:b794b46f3f61c26a7811a0166962b867ba7bd484306ab2afab98ebdd87f794bb",
+    "judge_runner_sha256": "b4a5c51b4143f81c2e2b18f50b4f016dd54a85c73bc5690540f523613c48edcc",
+    "judge_sha256": "1f3f8aeb0181e18248a253e54d0bfb23fec7c9166350c5be28f5447064cee2c1",
+    "opencode_plugin_revision": "a24df9464a3cb2897a1da01da60a0383aa629685",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "proxy_image_sha256": "sha256:7d4e6261afa4c70de6fdd626e11f79d0dfe3ec73cba11fb78e754c8c0f7a55ac",
+    "published_on": "2026-09-20",
+    "runner_sha256": "d2b769876d684a5768234befdfb91a9f9d08fab3be75b6f9e4f7a68c02c5a9e0",
+    "scope": "single-box single-session unofficial Round A OpenCode conductor cloud-agent result; not comparable to v0.5 or solo Sol-high OpenCode 2",
+    "tag": null,
+    "warm_cache_policy": "one untimed warmup followed by five timed runs"
+  },
+  "results": [
+    {
+      "adapter_route": "opencode2 conductor openai/gpt-5.6-sol#high via ChatGPT Codex OAuth; workers openrouter/deepseek/deepseek-v4.1-flash#max",
+      "agent_elapsed_seconds": 7221,
+      "agent_framework": "opencode",
+      "correct": true,
+      "dataset_sha256": "50bf18178cd265180197b03b03f5e7f25c1feea1c1b26e0c7301d8f5f04c5b8a",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:b794b46f3f61c26a7811a0166962b867ba7bd484306ab2afab98ebdd87f794bb",
+      "label": "GPT-5.6 Sol high conductor + DeepSeek V4.1 Flash max workers",
+      "max_ms": 6732.2,
+      "median_ms": 6399.3,
+      "min_ms": 6325.2,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh",
+      "profile_sha256": "3a8099c65e0ae184894b8054f9b398d54ee798e831e9b3d7cb89f39a76885c16",
+      "published_artifacts": "gpt-5.6-sol-high-conductor",
+      "rank": 1,
+      "reasoning": "high",
+      "runs_ms": [
+        6732.2,
+        6399.3,
+        6325.2,
+        6379.9,
+        6425.9
+      ],
+      "source_run_dir": ".sessions/gpt-5.6-sol-high-conductor-20260919T213507",
+      "stop_reason": "budget_deadline",
+      "worker_model": "openrouter/deepseek/deepseek-v4.1-flash#max"
+    }
+  ]
+}

@@ -50,6 +50,11 @@ An unofficial native OpenCode 2 (`opencode2`) cloud-agent session is
 It is a different adapter, image, dataset digest, and host; it is not part of
 the v0.5 leaderboard.
 
+An unofficial OpenCode 2 **conductor** session (Sol high orchestrating
+DeepSeek V4.1 Flash `#max` workers) is
+[runs/2026-09-19-opencode-conductor-cloud-agent](runs/2026-09-19-opencode-conductor-cloud-agent/).
+It is a different adapter from both v0.5 and solo Sol-high OpenCode 2.
+
 ## Credits
 
 - 1BRC by Gunnar Morling (the task)
