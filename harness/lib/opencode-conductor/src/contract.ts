@@ -62,7 +62,8 @@ export interface ModelRef {
   variant?: string;
 }
 
-export function parseModelRef(ref: string): ModelRef {  const hash = ref.indexOf("#");
+export function parseModelRef(ref: string): ModelRef {
+  const hash = ref.indexOf("#");
   const variant = hash >= 0 ? ref.slice(hash + 1) || undefined : undefined;
   const base = hash >= 0 ? ref.slice(0, hash) : ref;
   const slash = base.indexOf("/");
@@ -81,27 +82,69 @@ export interface VariantDef {
   body?: Record<string, unknown>;
 }
 
-type ExistingVariant = VariantDef | string;
+export type ExistingVariant = VariantDef | string;
+
+function variantId(value: ExistingVariant): string {
+  return typeof value === "string" ? value : value.id;
+}
+
+/** OpenCode config uses a variant object map; the live catalog may also return an array. */
+export function normalizeVariants(source: unknown): ExistingVariant[] {
+  if (source == null) return [];
+  if (Array.isArray(source)) {
+    return source.filter(
+      (item): item is ExistingVariant =>
+        typeof item === "string" ||
+        (typeof item === "object" && item !== null && typeof (item as VariantDef).id === "string"),
+    );
+  }
+  if (typeof source !== "object") return [];
+  const out: ExistingVariant[] = [];
+  for (const [id, value] of Object.entries(source as Record<string, unknown>)) {
+    if (typeof value === "string") {
+      out.push({ id });
+      continue;
+    }
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      const rec = value as Record<string, unknown>;
+      if (typeof rec.id === "string") {
+        out.push(rec as VariantDef);
+        continue;
+      }
+      const def: VariantDef = { id };
+      if (rec.settings && typeof rec.settings === "object") {
+        def.settings = rec.settings as Record<string, unknown>;
+        if (rec.headers && typeof rec.headers === "object") {
+          def.headers = rec.headers as Record<string, string>;
+        }
+        if (rec.body && typeof rec.body === "object") {
+          def.body = rec.body as Record<string, unknown>;
+        }
+      } else {
+        def.settings = rec;
+      }
+      out.push(def);
+      continue;
+    }
+    out.push({ id });
+  }
+  return out;
+}
 
 export function buildMaxVariant(
-  existing: readonly ExistingVariant[] | undefined,
+  existing: unknown,
   settings: Record<string, unknown>,
 ): ExistingVariant[] {
-  const rest = (existing ?? []).filter((v) =>
-    typeof v === "string" ? v !== "max" : v.id !== "max",
-  );
+  const rest = normalizeVariants(existing).filter((v) => variantId(v) !== "max");
   return [...rest, { id: "max", settings }];
 }
 
-export function sourceHasVariant(
-  existing: readonly ExistingVariant[] | undefined,
-  id: string,
-): boolean {
-  return (existing ?? []).some((v) => (typeof v === "string" ? v : v.id) === id);
+export function sourceHasVariant(existing: unknown, id: string): boolean {
+  return normalizeVariants(existing).some((v) => variantId(v) === id);
 }
 
 export function selectWorkerModel(
-  sourceVariants: readonly ExistingVariant[] | undefined,
+  sourceVariants: unknown,
   preferred: string,
   fallback: string,
 ): string {

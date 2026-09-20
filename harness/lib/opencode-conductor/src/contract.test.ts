@@ -6,6 +6,7 @@ import {
   buildConductorPermissions,
   fillUnset,
   isSet,
+  normalizeVariants,
   parseModelRef,
   selectWorkerModel,
   stripTools,
@@ -106,7 +107,8 @@ describe("parseModelRef", () => {
   });
 });
 
-describe("buildMaxVariant", () => {  test("adds max object variant, preserves existing, replaces duplicate max", () => {
+describe("buildMaxVariant", () => {
+  test("adds max object variant, preserves existing, replaces duplicate max", () => {
     const existing = [{ id: "high", settings: { reasoningEffort: "high" } }, { id: "max", settings: { reasoningEffort: "low" } }];
     const out = buildMaxVariant(existing, { reasoningEffort: "max" });
     expect(out.filter((v) => v.id === "max")).toHaveLength(1);
@@ -138,5 +140,16 @@ describe("selectWorkerModel", () => {
   test("falls back on missing or unreadable source variants", () => {
     expect(selectWorkerModel(undefined, preferred, fallback)).toBe(fallback);
     expect(selectWorkerModel([], preferred, fallback)).toBe(fallback);
+  });
+
+  test("keeps #max when OpenCode config variants are an object map", () => {
+    const fromConfig = {
+      max: { reasoningEffort: "max" },
+      high: { reasoningEffort: "high" },
+    };
+    expect(selectWorkerModel(fromConfig, preferred, fallback)).toBe(preferred);
+    expect(normalizeVariants(fromConfig).map((v) => (typeof v === "string" ? v : v.id)).sort()).toEqual(
+      ["high", "max"],
+    );
   });
 });

@@ -64,6 +64,11 @@ assert opts["workerModel"] == "openrouter/deepseek/deepseek-v4.1-flash#max"
 assert ":floor" not in opts["workerModel"]
 assert ":floor" not in opts["workerFallbackModel"]
 assert opts["enableQuestion"] is False
+assert opts["installAgents"] is False
+variants = cfg["providers"]["openrouter"]["models"]["deepseek/deepseek-v4.1-flash"]["variants"]
+assert isinstance(variants, dict)
+assert "max" in variants
+assert "high" in variants
 actions = {row["action"] for row in cfg["permissions"]}
 assert "subagent" in actions
 assert "question" in actions
@@ -88,6 +93,84 @@ test -f "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'openai/gpt-5.6-sol#high' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'background false' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'deepseek-v4.1-flash#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
+grep -Fq 'You are a conductor' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+! grep -Fq 'muse-spark' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
+! test -d "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/node_modules"
+grep -Fq 'from "@opencode/plugin"' \
+  "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/src/index.ts"
+
+python3 - "$ROOT/harness/lib/opencode.conductor.jsonc" \
+  "$ROOT/harness/lib/opencode-conductor" <<'PY'
+import hashlib
+import json
+import re
+import sys
+from pathlib import Path
+
+cfg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+variants = cfg["providers"]["openrouter"]["models"]["deepseek/deepseek-v4.1-flash"]["variants"]
+
+
+def normalize_variants(source):
+    if source is None:
+        return []
+    if isinstance(source, list):
+        out = []
+        for item in source:
+            if isinstance(item, str):
+                out.append(item)
+            elif isinstance(item, dict) and isinstance(item.get("id"), str):
+                out.append(item)
+        return out
+    if not isinstance(source, dict):
+        return []
+    out = []
+    for vid, value in source.items():
+        if isinstance(value, dict) and isinstance(value.get("id"), str):
+            out.append(value)
+        else:
+            out.append({"id": vid})
+    return out
+
+
+def source_has_variant(source, vid):
+    for item in normalize_variants(source):
+        ident = item if isinstance(item, str) else item["id"]
+        if ident == vid:
+            return True
+    return False
+
+
+preferred = cfg["plugins"][0]["options"]["workerModel"]
+fallback = cfg["plugins"][0]["options"]["workerFallbackModel"]
+assert preferred.endswith("#max")
+
+
+def select_worker_model(source, pref, fall):
+    variant = pref.split("#", 1)[1] if "#" in pref else None
+    if not variant:
+        return pref
+    return pref if source_has_variant(source, variant) else fall
+
+
+assert select_worker_model(variants, preferred, fallback) == preferred
+assert select_worker_model({}, preferred, fallback) == fallback
+
+plugin = Path(sys.argv[2])
+pin = (plugin / "PINNED_REVISION").read_text(encoding="utf-8").strip()
+assert re.fullmatch(r"[0-9a-f]{40}", pin), pin
+tree_file = plugin / "PINNED_TREE"
+assert tree_file.is_file(), "missing PINNED_TREE"
+digest = hashlib.sha256()
+skip = {"PINNED_TREE"}
+for path in sorted(p for p in plugin.rglob("*") if p.is_file() and p.name not in skip):
+    digest.update(path.relative_to(plugin).as_posix().encode())
+    digest.update(b"\0")
+    digest.update(path.read_bytes())
+actual = digest.hexdigest()
+expected = tree_file.read_text(encoding="utf-8").strip()
+assert actual == expected, f"vendored plugin tree drifted from PINNED_TREE\n{actual}\n{expected}"
+PY
 
 opencode2_version_ok "opencode2 v0.0.0-beta-19271" "0.0.0-beta-19271"
 opencode2_version_ok "0.0.0-beta-19271" "0.0.0-beta-19271"

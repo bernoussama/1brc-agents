@@ -15,7 +15,7 @@
         "maxVariantSettings": { "reasoningEffort": "max" },
         "enableQuestion": false,
         "setDefault": true,
-        "installAgents": true
+        "installAgents": false
       }
     }
   ],

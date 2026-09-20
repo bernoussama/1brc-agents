@@ -30,7 +30,7 @@ interface Options {
 }
 
 const CONDUCTOR_SYSTEM_APPEND =
-  "You are an conductor. You never read files, edit files, or run shell commands directly: you have no direct tools. Delegate every concrete step to one of your subagents with a self-contained prompt (goal, constraints, repo paths, and the exact return shape you need). Fan out independent work in parallel with background subagents, then synthesize results into a decision-ready answer. Ask workers for distilled summaries, never raw transcripts.";
+  "You are a conductor. You never read files, edit files, or run shell commands directly: you have no direct tools. Delegate every concrete step to one of your subagents with a self-contained prompt (goal, constraints, repo paths, and the exact return shape you need). Ask workers for distilled summaries, never raw transcripts.";
 
 function workerKind(id: string): "explore" | "shell-runner" | "coder" | null {
   if (id.endsWith("/explore")) return "explore";
@@ -89,7 +89,7 @@ export default Plugin.define({
     // back. Never trust a transform that "succeeds" vacuously.
     const preferredRef = parseModelRef(workerModel);
     const workerBase = preferredRef.modelID;
-    let sourceVariants: Array<{ id: string }> | string[] | undefined;
+    let sourceVariants: unknown;
     try {
       const providers = await ctx.provider.list();
       const records = Array.isArray(providers) ? providers : [];
@@ -102,17 +102,14 @@ export default Plugin.define({
           typeof models?.get === "function"
             ? models.get(workerBase)
             : models?.[workerBase];
-        const variants = entry?.variants;
-        if (Array.isArray(variants)) {
-          sourceVariants = variants;
-        }
+        sourceVariants = entry?.variants;
         break;
       }
     } catch (err) {
       console.warn(`[conductor] could not probe provider variants: ${String(err)}`);
     }
 
-    const effectiveWorkerModel = selectWorkerModel(sourceVariants as any, workerModel, workerFallback);
+    const effectiveWorkerModel = selectWorkerModel(sourceVariants, workerModel, workerFallback);
     if (effectiveWorkerModel !== workerModel) {
       console.warn(
         `[conductor] variant "${preferredRef.variant ?? "?"}" not served for ${preferredRef.providerID}/${workerBase}; workers use fallback ${workerFallback}`,
@@ -123,7 +120,6 @@ export default Plugin.define({
     // (keeps metadata in sync without advertising an unresolvable variant).
     if (effectiveWorkerModel === workerModel && preferredRef.variant) {
       try {
-        const variantId = preferredRef.variant;
         await ctx.provider.transform((editor: any) => {
           try {
             const record = editor.get(preferredRef.providerID);
@@ -135,7 +131,6 @@ export default Plugin.define({
             // Leave catalog untouched on unexpected shapes.
           }
         });
-        void variantId;
       } catch (err) {
         console.warn(`[conductor] could not register variant: ${String(err)}`);
       }
