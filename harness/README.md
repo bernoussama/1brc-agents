@@ -194,13 +194,14 @@ high is the `conductor` primary via the vendored
 [opencode-conductor](https://github.com/bernoussama/opencode-conductor)
 plugin. The conductor calls first-class `1brc_remaining_time` and
 `1brc_resources` tools itself (PATH helpers wrapped by the plugin; no
-general `shell`). DeepSeek V4.1 Flash max workers go through OpenRouter
-and keep `1brc-bounded` experiments. It is not comparable to the solo
-Sol-high OpenCode 2 session.
+general `shell`). Workers use the OpenRouter preset
+`openrouter/@preset/ds-v4-1-flash` and keep `1brc-bounded` experiments.
+The 2026-09-19 `T213507` session used `deepseek/deepseek-v4.1-flash#max`
+instead. It is not comparable to the solo Sol-high OpenCode 2 session.
 
 Session agent markdown is seeded into `/work/.opencode/agents` from
 `harness/lib/opencode.conductor.agents`. That tree is the source of truth
-for worker models and orchestration (foreground DeepSeek `#max` workers).
+for worker models and orchestration (foreground OpenRouter `@preset/ds-v4-1-flash` workers).
 The plugin's bundled `agents/` files are upstream defaults (muse-spark
 workers, parallel fan-out) and are not installed in this profile
 (`installAgents: false`). OpenCode 2 injects `@opencode/plugin` when

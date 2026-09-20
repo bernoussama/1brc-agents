@@ -1,7 +1,7 @@
 ---
 description: Maps code and researches read-only. Returns file paths, key snippets, and architecture notes without editing anything.
 mode: subagent
-model: openrouter/deepseek/deepseek-v4.1-flash#max
+model: openrouter/@preset/ds-v4-1-flash
 steps: 10
 permissions:
   - action: "*"

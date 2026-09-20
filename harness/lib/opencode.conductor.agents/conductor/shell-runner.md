@@ -1,7 +1,7 @@
 ---
 description: Runs shell commands and inspects runtime state. Returns command, exit code, distilled output, and artifacts. Trusted with host shell; cannot edit via file tools.
 mode: subagent
-model: openrouter/deepseek/deepseek-v4.1-flash#max
+model: openrouter/@preset/ds-v4-1-flash
 steps: 10
 permissions:
   - action: "*"

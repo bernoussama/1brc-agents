@@ -10,8 +10,8 @@
       "package": "./plugins/opencode-conductor",
       "options": {
         "conductorModel": "openai/gpt-5.6-sol#high",
-        "workerModel": "openrouter/deepseek/deepseek-v4.1-flash#max",
-        "workerFallbackModel": "openrouter/deepseek/deepseek-v4.1-flash#high",
+        "workerModel": "openrouter/@preset/ds-v4-1-flash",
+        "workerFallbackModel": "openrouter/@preset/ds-v4-1-flash",
         "maxVariantSettings": { "reasoningEffort": "max" },
         "enableQuestion": false,
         "setDefault": true,
@@ -23,12 +23,8 @@
     "openrouter": {
       "env": ["OPENROUTER_API_KEY"],
       "models": {
-        "deepseek/deepseek-v4.1-flash": {
-          "name": "DeepSeek V4.1 Flash",
-          "variants": {
-            "max": { "reasoningEffort": "max" },
-            "high": { "reasoningEffort": "high" }
-          }
+        "@preset/ds-v4-1-flash": {
+          "name": "OpenRouter preset ds-v4-1-flash"
         }
       }
     }

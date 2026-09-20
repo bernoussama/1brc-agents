@@ -1,7 +1,7 @@
 ---
 description: Implements changes, writes files, and runs commands/tests. Returns files changed, diff summary, test outcomes, and follow-ups.
 mode: subagent
-model: openrouter/deepseek/deepseek-v4.1-flash#max
+model: openrouter/@preset/ds-v4-1-flash
 steps: 12
 permissions:
   - action: "*"

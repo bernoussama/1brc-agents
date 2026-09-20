@@ -60,15 +60,15 @@ assert cfg["default_agent"] == "conductor"
 assert cfg["plugins"][0]["package"] == "./plugins/opencode-conductor"
 opts = cfg["plugins"][0]["options"]
 assert opts["conductorModel"] == "openai/gpt-5.6-sol#high"
-assert opts["workerModel"] == "openrouter/deepseek/deepseek-v4.1-flash#max"
+assert opts["workerModel"] == "openrouter/@preset/ds-v4-1-flash"
+assert opts["workerFallbackModel"] == "openrouter/@preset/ds-v4-1-flash"
 assert ":floor" not in opts["workerModel"]
 assert ":floor" not in opts["workerFallbackModel"]
+assert "#" not in opts["workerModel"]
 assert opts["enableQuestion"] is False
 assert opts["installAgents"] is False
-variants = cfg["providers"]["openrouter"]["models"]["deepseek/deepseek-v4.1-flash"]["variants"]
-assert isinstance(variants, dict)
-assert "max" in variants
-assert "high" in variants
+models = cfg["providers"]["openrouter"]["models"]
+assert "@preset/ds-v4-1-flash" in models
 actions = {row["action"] for row in cfg["permissions"]}
 assert "subagent" in actions
 assert "question" in actions
@@ -94,7 +94,9 @@ test -f "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/src
 test -f "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'openai/gpt-5.6-sol#high' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'background false' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
-grep -Fq 'deepseek-v4.1-flash#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
+grep -Fq 'openrouter/@preset/ds-v4-1-flash' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
+grep -Fq 'openrouter/@preset/ds-v4-1-flash' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/explore.md"
+grep -Fq 'openrouter/@preset/ds-v4-1-flash' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/shell-runner.md"
 grep -Fq 'You are a conductor' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq '1brc_remaining_time' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq '1brc_resources' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
@@ -130,7 +132,8 @@ import sys
 from pathlib import Path
 
 cfg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-variants = cfg["providers"]["openrouter"]["models"]["deepseek/deepseek-v4.1-flash"]["variants"]
+preset = cfg["providers"]["openrouter"]["models"]["@preset/ds-v4-1-flash"]
+assert isinstance(preset, dict)
 
 
 def normalize_variants(source):
@@ -165,7 +168,9 @@ def source_has_variant(source, vid):
 
 preferred = cfg["plugins"][0]["options"]["workerModel"]
 fallback = cfg["plugins"][0]["options"]["workerFallbackModel"]
-assert preferred.endswith("#max")
+assert preferred == "openrouter/@preset/ds-v4-1-flash"
+assert fallback == preferred
+assert "#" not in preferred
 
 
 def select_worker_model(source, pref, fall):
@@ -175,8 +180,13 @@ def select_worker_model(source, pref, fall):
     return pref if source_has_variant(source, variant) else fall
 
 
-assert select_worker_model(variants, preferred, fallback) == preferred
-assert select_worker_model({}, preferred, fallback) == fallback
+assert select_worker_model({}, preferred, fallback) == preferred
+assert select_worker_model(None, preferred, fallback) == preferred
+# Variant fallback still applies when a #variant is requested and missing.
+max_pref = "openrouter/deepseek/deepseek-v4.1-flash#max"
+max_fall = "openrouter/deepseek/deepseek-v4.1-flash#high"
+assert select_worker_model({"max": {}}, max_pref, max_fall) == max_pref
+assert select_worker_model({}, max_pref, max_fall) == max_fall
 
 plugin = Path(sys.argv[2])
 pin = (plugin / "PINNED_REVISION").read_text(encoding="utf-8").strip()
