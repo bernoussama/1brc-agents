@@ -96,7 +96,7 @@ export default function OpenCodeDashboard() {
           </h1>
           <p className="font-mono text-xs leading-relaxed text-muted-foreground sm:text-sm">
             Xeon 4 CPU / 16 GiB · 120m budget · native <code className="text-foreground">opencode2</code>{" "}
-            CLI · GPT-5.6 Sol high solo and Sol high conductor + DeepSeek V4.1 Flash #max workers
+            CLI · GPT-5.6 Sol high solo, Sol conductor + DeepSeek #max workers, and Sol conductor + OpenRouter @preset/ds-v4-1-flash workers
           </p>
         </header>
       ) : null}
@@ -131,6 +131,10 @@ export default function OpenCodeDashboard() {
             {" · "}
             <a className="text-foreground underline" href="https://github.com/bernoussama/1brc-agents/tree/main/runs/2026-09-19-opencode-conductor-cloud-agent">
               opencode-conductor-cloud-agent
+            </a>
+            {" · "}
+            <a className="text-foreground underline" href="https://github.com/bernoussama/1brc-agents/tree/main/runs/2026-09-20-opencode-conductor-preset-cloud-agent">
+              opencode-conductor-preset-cloud-agent
             </a>
           </p>
           <p className="mt-2 leading-relaxed">
