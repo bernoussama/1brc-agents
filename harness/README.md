@@ -190,10 +190,13 @@ profiles: `harness/profiles/opencode-cli-ox-alpha.sh`,
 `opencode-cli-hy3-free-high.sh`, `opencode-cli-muse-spark-free-xhigh.sh`,
 and `opencode-cli-gpt-5.6-sol-high.sh` (ChatGPT/Codex OAuth).
 `opencode-cli-gpt-5.6-sol-high-conductor.sh` is a separate adapter: Sol
-high is the tool-less `conductor` primary via the vendored
+high is the `conductor` primary via the vendored
 [opencode-conductor](https://github.com/bernoussama/opencode-conductor)
-plugin, and DeepSeek V4.1 Flash max workers go through OpenRouter. It is
-not comparable to the solo Sol-high OpenCode 2 session.
+plugin. The conductor calls first-class `1brc_remaining_time` and
+`1brc_resources` tools itself (PATH helpers wrapped by the plugin; no
+general `shell`). DeepSeek V4.1 Flash max workers go through OpenRouter
+and keep `1brc-bounded` experiments. It is not comparable to the solo
+Sol-high OpenCode 2 session.
 
 Session agent markdown is seeded into `/work/.opencode/agents` from
 `harness/lib/opencode.conductor.agents`. That tree is the source of truth

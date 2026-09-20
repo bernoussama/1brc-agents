@@ -2,7 +2,7 @@
   "name": "@bernoussama/opencode-conductor",
   "version": "0.2.0",
   "type": "module",
-  "description": "Conductor-only OpenCode plugin: a tool-less primary agent that delegates everything to explore/shell-runner/coder subagents.",
+  "description": "Conductor-only OpenCode plugin: a primary agent that calls 1BRC remaining-time/resources itself and delegates implementation to explore/shell-runner/coder subagents.",
   "license": "MIT",
   "author": "bernoussama",
   "repository": {

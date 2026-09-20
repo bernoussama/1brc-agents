@@ -22,4 +22,13 @@ describe("AGENT_FILES", () => {
       expect(content).toBe(onDisk);
     }
   });
+
+  test("conductor primary may call 1brc remaining-time and resources, not shell", () => {
+    const conductor = AGENT_FILES["conductor.md"];
+    expect(conductor).toContain("action: 1brc_remaining_time");
+    expect(conductor).toContain("action: 1brc_resources");
+    expect(conductor).toContain("You DO call `1brc_remaining_time` and `1brc_resources` yourself");
+    expect(conductor).not.toMatch(/action:\s+shell/);
+    expect(conductor).not.toContain("1brc_bounded");
+  });
 });

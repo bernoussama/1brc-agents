@@ -1,8 +1,8 @@
 # opencode-conductor
 
-Conductor-only OpenCode setup: a tool-less primary agent that delegates everything to three subagents.
+Conductor-only OpenCode setup: a primary agent that delegates implementation to three subagents, but calls the 1BRC remaining-time and resources helpers itself.
 
-- `conductor` (primary, `cliproxy/gpt-5.6-sol#high`): sees only `subagent` (+ `question`). No `read/edit/shell` schemas.
+- `conductor` (primary, `cliproxy/gpt-5.6-sol#high`): sees `subagent`, `1brc_remaining_time`, `1brc_resources` (+ `question`). No `read/edit/shell` schemas. `1brc-bounded` stays with workers.
 - `conductor/explore` (subagent, DeepSeek `#max`): read-only research.
 - `conductor/shell-runner` (subagent, DeepSeek `#max`): commands + read. Trusted with host shell.
 - `conductor/coder` (subagent, DeepSeek `#max`): write + shell + verify.

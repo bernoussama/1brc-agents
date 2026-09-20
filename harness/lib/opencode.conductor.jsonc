@@ -38,6 +38,8 @@
     { "action": "webfetch", "resource": "*", "effect": "deny" },
     { "action": "websearch", "resource": "*", "effect": "deny" },
     { "action": "skill", "resource": "*", "effect": "deny" },
+    { "action": "1brc_remaining_time", "resource": "*", "effect": "allow" },
+    { "action": "1brc_resources", "resource": "*", "effect": "allow" },
     { "action": "read", "resource": "*", "effect": "allow" },
     { "action": "edit", "resource": "*", "effect": "allow" },
     { "action": "glob", "resource": "*", "effect": "allow" },

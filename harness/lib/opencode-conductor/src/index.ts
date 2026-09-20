@@ -7,12 +7,14 @@ import {
   WORKER_IDS,
   buildMaxVariant,
   buildConductorPermissions,
+  conductorKeepTools,
   fillUnset,
   isSet,
   parseModelRef,
   selectWorkerModel,
   stripTools,
 } from "./contract";
+import { HARNESS_TOOL_SPECS, runHarnessBinary } from "./harness-tools";
 
 const DEFAULT_CONDUCTOR_MODEL = "cliproxy/gpt-5.6-sol#high";
 const DEFAULT_WORKER_MODEL = "opencode/muse-spark-1.3-contributor-free#xhigh";
@@ -30,7 +32,7 @@ interface Options {
 }
 
 const CONDUCTOR_SYSTEM_APPEND =
-  "You are a conductor. You never read files, edit files, or run shell commands directly: you have no direct tools. Delegate every concrete step to one of your subagents with a self-contained prompt (goal, constraints, repo paths, and the exact return shape you need). Ask workers for distilled summaries, never raw transcripts.";
+  "You are a conductor. You never read, edit, or run general shell commands: those stay with subagents. You DO call 1brc_remaining_time and 1brc_resources yourself to drive the budget and CPU/memory decisions. Delegate implementation, exploration, and candidate experiments to subagents. Ask workers for distilled summaries, never raw transcripts.";
 
 export default Plugin.define({
   id: "conductor",
@@ -45,7 +47,7 @@ export default Plugin.define({
     const installAgents = opts.installAgents ?? true;
     const maxSettings = opts.maxVariantSettings ?? { reasoningEffort: "max" };
 
-    const keepTools = enableQuestion ? ["subagent", "question"] : ["subagent"];
+    const keepTools = conductorKeepTools(enableQuestion);
 
     // 0. Self-install agent definitions. The agent API has no `add`, so this
     // is how plugins ship custom agents: write missing .md files, then reload.
@@ -145,7 +147,7 @@ export default Plugin.define({
             const filled = fillUnset(agent, {
               mode: "primary",
               model: conductorModel,
-              description: "Delegates all work via subagents. Has no direct tools.",
+              description: "Delegates implementation via subagents. Calls 1brc remaining-time and resources itself.",
             });
             Object.assign(agent, filled);
             if (!isSet(agent.permissions) || (Array.isArray(agent.permissions) && agent.permissions.length === 0)) {
@@ -183,6 +185,21 @@ export default Plugin.define({
       });
     } catch (err) {
       console.warn(`[conductor] agent transform failed: ${String(err)}`);
+    }
+
+    try {
+      await ctx.tool.transform((editor: any) => {
+        for (const spec of HARNESS_TOOL_SPECS) {
+          editor.add({
+            name: spec.name,
+            description: spec.description,
+            input: { type: "object", properties: {}, additionalProperties: false },
+            execute: async () => runHarnessBinary(spec.command),
+          });
+        }
+      });
+    } catch (err) {
+      console.warn(`[conductor] could not register 1brc harness tools: ${String(err)}`);
     }
 
     // 3. Hide tool schemas from the conductor on every tool-bearing request.

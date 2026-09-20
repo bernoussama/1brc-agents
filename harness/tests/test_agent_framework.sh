@@ -72,6 +72,8 @@ assert "high" in variants
 actions = {row["action"] for row in cfg["permissions"]}
 assert "subagent" in actions
 assert "question" in actions
+assert "1brc_remaining_time" in actions
+assert "1brc_resources" in actions
 PY
 
 TEST_DIR="$(mktemp -d)"
@@ -94,6 +96,10 @@ grep -Fq 'openai/gpt-5.6-sol#high' "$CONDUCTOR_SEED/work/.opencode/agents/conduc
 grep -Fq 'background false' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'deepseek-v4.1-flash#max' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
 grep -Fq 'You are a conductor' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+grep -Fq '1brc_remaining_time' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+grep -Fq '1brc_resources' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+grep -Fq 'You DO call' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
+! grep -Eq 'action:[[:space:]]+shell' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 ! grep -Fq 'muse-spark' "$CONDUCTOR_SEED/work/.opencode/agents/conductor/coder.md"
 ! grep -Fq 'Fan out independent work in parallel' "$CONDUCTOR_SEED/work/.opencode/agents/conductor.md"
 grep -Fq 'muse-spark-1.3-contributor-free' \
@@ -106,6 +112,11 @@ grep -Fq 'from "@opencode/plugin"' \
   "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/src/index.ts"
 grep -Fq 'sourceVariants = entry?.variants' \
   "$ROOT/harness/lib/opencode-conductor/src/index.ts"
+grep -Fq 'conductorKeepTools' "$ROOT/harness/lib/opencode-conductor/src/index.ts"
+grep -Fq 'HARNESS_TOOL_SPECS' "$ROOT/harness/lib/opencode-conductor/src/index.ts"
+grep -Fq 'editor.add' "$ROOT/harness/lib/opencode-conductor/src/index.ts"
+grep -Fq '1brc_remaining_time' "$ROOT/harness/lib/opencode-conductor/src/harness-tools.ts"
+! grep -Fq '1brc_bounded' "$ROOT/harness/lib/opencode-conductor/src/harness-tools.ts"
 grep -Fq 'export function normalizeVariants' \
   "$ROOT/harness/lib/opencode-conductor/src/contract.ts"
 ! grep -Fq 'void variantId' "$ROOT/harness/lib/opencode-conductor/src/index.ts"

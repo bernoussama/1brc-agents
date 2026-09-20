@@ -8,6 +8,14 @@ export const WORKER_IDS = [
 
 export type WorkerID = (typeof WORKER_IDS)[number];
 
+/** Read-only 1BRC harness helpers the conductor must call itself. */
+export const CONDUCTOR_HARNESS_TOOLS = [
+  "1brc_remaining_time",
+  "1brc_resources",
+] as const;
+
+export type ConductorHarnessTool = (typeof CONDUCTOR_HARNESS_TOOLS)[number];
+
 export interface PermissionRule {
   action: string;
   resource: string;
@@ -37,8 +45,17 @@ export function buildConductorPermissions(
 ): PermissionRule[] {
   const rules: PermissionRule[] = [{ action: "*", resource: "*", effect: "deny" }];
   if (enableQuestion) rules.push({ action: "question", resource: "*", effect: "allow" });
+  for (const tool of CONDUCTOR_HARNESS_TOOLS) {
+    rules.push({ action: tool, resource: "*", effect: "allow" });
+  }
   for (const id of workerIDs) rules.push({ action: "subagent", resource: id, effect: "allow" });
   return rules;
+}
+
+export function conductorKeepTools(enableQuestion: boolean): string[] {
+  const keep: string[] = ["subagent", ...CONDUCTOR_HARNESS_TOOLS];
+  if (enableQuestion) keep.push("question");
+  return keep;
 }
 
 export function isSet(value: unknown): boolean {

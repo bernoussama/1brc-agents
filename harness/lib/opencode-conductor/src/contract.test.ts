@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import {
   CONDUCTOR_ID,
+  CONDUCTOR_HARNESS_TOOLS,
   WORKER_IDS,
   buildMaxVariant,
   buildConductorPermissions,
+  conductorKeepTools,
   fillUnset,
   isSet,
   normalizeVariants,
@@ -13,7 +15,7 @@ import {
 } from "./contract";
 
 describe("stripTools", () => {
-  test("keeps only subagent and question for conductor", () => {
+  test("keeps only the listed tools", () => {
     const tools = {
       subagent: { description: "s", input: {} },
       question: { description: "q", input: {} },
@@ -44,21 +46,62 @@ describe("stripTools", () => {
 });
 
 describe("buildConductorPermissions", () => {
-  test("denies all first, allows narrow subagents + question last", () => {
+  test("denies all first, allows 1brc harness tools, narrow subagents, and question", () => {
     const rules = buildConductorPermissions(WORKER_IDS, true);
     expect(rules[0]).toEqual({ action: "*", resource: "*", effect: "deny" });
     const allows = rules.filter((r) => r.effect === "allow");
     expect(allows).toContainEqual({ action: "question", resource: "*", effect: "allow" });
+    for (const tool of CONDUCTOR_HARNESS_TOOLS) {
+      expect(allows).toContainEqual({ action: tool, resource: "*", effect: "allow" });
+    }
     for (const id of WORKER_IDS) {
       expect(allows).toContainEqual({ action: "subagent", resource: id, effect: "allow" });
     }
-    // No broad subagent allow
     expect(allows.some((r) => r.action === "subagent" && r.resource === "*")).toBe(false);
+    expect(allows.some((r) => r.action === "shell")).toBe(false);
+    expect(allows.some((r) => r.action === "1brc_bounded")).toBe(false);
   });
 
   test("omits question allow when disabled", () => {
     const rules = buildConductorPermissions(WORKER_IDS, false);
     expect(rules.some((r) => r.action === "question")).toBe(false);
+    for (const tool of CONDUCTOR_HARNESS_TOOLS) {
+      expect(rules).toContainEqual({ action: tool, resource: "*", effect: "allow" });
+    }
+  });
+});
+
+describe("conductorKeepTools", () => {
+  test("keeps subagent plus 1brc remaining-time and resources", () => {
+    expect(CONDUCTOR_HARNESS_TOOLS).toEqual(["1brc_remaining_time", "1brc_resources"]);
+    expect(conductorKeepTools(true).sort()).toEqual([
+      "1brc_remaining_time",
+      "1brc_resources",
+      "question",
+      "subagent",
+    ]);
+    expect(conductorKeepTools(false).sort()).toEqual([
+      "1brc_remaining_time",
+      "1brc_resources",
+      "subagent",
+    ]);
+  });
+
+  test("stripTools with keep list drops shell/read/edit", () => {
+    const tools = {
+      subagent: { description: "s", input: {} },
+      question: { description: "q", input: {} },
+      "1brc_remaining_time": { description: "t", input: {} },
+      "1brc_resources": { description: "r", input: {} },
+      shell: { description: "sh", input: {} },
+      read: { description: "rd", input: {} },
+      edit: { description: "e", input: {} },
+    };
+    expect(Object.keys(stripTools(tools, conductorKeepTools(false))).sort()).toEqual([
+      "1brc_remaining_time",
+      "1brc_resources",
+      "subagent",
+    ]);
   });
 });
 
