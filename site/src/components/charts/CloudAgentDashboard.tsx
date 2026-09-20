@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   CLOUD_AGENT_RUNS,
   cloudMetricBarValue,
@@ -121,7 +122,7 @@ export default function CloudAgentDashboard() {
       {showHeader ? (
         <header className="flex flex-col gap-2 text-center">
           <h1 className="font-mono text-xl font-semibold text-foreground sm:text-2xl">
-            Cloud-agent Round A — scored configurations
+            Cloud-agent Round A — pi harness
           </h1>
           <p className="font-mono text-xs leading-relaxed text-muted-foreground sm:text-sm">
             Xeon 4 CPU / 16 GiB · 120m budget · GPT-5.6 Sol · MiniMax M3 · Grok 4.6 · ox-alpha ·
@@ -159,7 +160,12 @@ export default function CloudAgentDashboard() {
           <p className="mt-2 leading-relaxed">
             Median is warm-cache processing time on the held-out billion-row file (seconds). Agent wall
             time is harness clock until scoring (minutes). Cost uses published input, output, and
-            cache-read list rates; Cursor Grok rows are N/A. Not comparable to laptop v0.5 medians.
+            cache-read list rates; Cursor Grok rows are N/A. Not comparable to laptop v0.5 medians or
+            to the{" "}
+            <a className="text-foreground underline" href="/charts/opencode/">
+              OpenCode 2 dashboard
+            </a>
+            .
           </p>
         </footer>
       ) : null}

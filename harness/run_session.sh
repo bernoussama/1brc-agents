@@ -102,8 +102,8 @@ GENERATOR_SOURCE="$ONEBRC_ROOT/src/main/java/dev/morling/onebrc/CreateMeasuremen
 source "$ROOT/harness/lib/auth.sh"
 source "$ROOT/harness/lib/opencode_home.sh"
 source "$ROOT/harness/lib/opencode_version.sh"
-OPENCODE_CONFIG="$ROOT/harness/lib/opencode.v2.jsonc"
-[ -f "$OPENCODE_CONFIG" ] || { echo "missing OpenCode 2 config: $OPENCODE_CONFIG" >&2; exit 1; }
+OPENCODE_CONFIG_DEFAULT="$ROOT/harness/lib/opencode.v2.jsonc"
+[ -f "$OPENCODE_CONFIG_DEFAULT" ] || { echo "missing OpenCode 2 config: $OPENCODE_CONFIG_DEFAULT" >&2; exit 1; }
 STAMP="$(date -u +%Y%m%dT%H%M%S)"
 RUNDIR="$ROOT/.sessions/${SLUG}-${STAMP}"
 mkdir -p "$RUNDIR"
@@ -218,6 +218,51 @@ case "$AGENT_FRAMEWORK" in
     exit 2
     ;;
 esac
+if [ "$AGENT_FRAMEWORK" = opencode ]; then
+  OPENCODE_CONFIG="${OPENCODE_CONFIG:-$OPENCODE_CONFIG_DEFAULT}"
+  case "$OPENCODE_CONFIG" in
+    "$ROOT"/*) ;;
+    *)
+      echo "OPENCODE_CONFIG must be inside the repository: $OPENCODE_CONFIG" >&2
+      exit 2
+      ;;
+  esac
+  [ -f "$OPENCODE_CONFIG" ] || { echo "missing OpenCode 2 config: $OPENCODE_CONFIG" >&2; exit 1; }
+  if [ -n "${OPENCODE_PLUGIN_DIR:-}" ]; then
+    case "$OPENCODE_PLUGIN_DIR" in
+      "$ROOT"/*) ;;
+      *)
+        echo "OPENCODE_PLUGIN_DIR must be inside the repository: $OPENCODE_PLUGIN_DIR" >&2
+        exit 2
+        ;;
+    esac
+    [ -d "$OPENCODE_PLUGIN_DIR" ] || {
+      echo "OpenCode plugin directory not found: $OPENCODE_PLUGIN_DIR" >&2
+      exit 1
+    }
+  fi
+  if [ -n "${OPENCODE_AGENT_FILES:-}" ]; then
+    case "$OPENCODE_AGENT_FILES" in
+      "$ROOT"/*) ;;
+      *)
+        echo "OPENCODE_AGENT_FILES must be inside the repository: $OPENCODE_AGENT_FILES" >&2
+        exit 2
+        ;;
+    esac
+    [ -d "$OPENCODE_AGENT_FILES" ] || {
+      echo "OpenCode agent files directory not found: $OPENCODE_AGENT_FILES" >&2
+      exit 1
+    }
+  fi
+  if [ -n "${OPENCODE_AGENT:-}" ]; then
+    case "$OPENCODE_AGENT" in
+      *[!a-zA-Z0-9/_-]*)
+        echo "OPENCODE_AGENT contains invalid characters: $OPENCODE_AGENT" >&2
+        exit 2
+        ;;
+    esac
+  fi
+fi
 PROFILE_SHA256="$(sha256sum "$PROFILE" | awk '{print $1}')"
 PROMPT_SHA256="$(sha256sum "$ROOT/task/program.md" | awk '{print $1}')"
 JUDGE_SHA256="$(sha256sum "$ROOT/judge/score.py" | awk '{print $1}')"
@@ -257,7 +302,8 @@ fi
 mkdir -p "$RUNDIR/pi-home"
 prepare_auth "$RUNDIR"
 if [ "$AGENT_FRAMEWORK" = opencode ]; then
-  seed_opencode_home "$RUNDIR" "$OPENCODE_CONFIG"
+  seed_opencode_home "$RUNDIR" "$OPENCODE_CONFIG" \
+    "${OPENCODE_PLUGIN_DIR:-}" "${OPENCODE_AGENT_FILES:-}"
   # Seed runs after prepare_auth's chown. Re-own so uid 1000 can read
   # opencode.jsonc on hosts whose login user is not 1000 (AUTH_MODE=none
   # never chowns in prepare_auth).
@@ -566,7 +612,9 @@ case "$AGENT_FRAMEWORK" in
     OPENCODE_MODEL="$PROVIDER/$MODEL_ID"
     [ -n "${THINKING:-}" ] && OPENCODE_MODEL="${OPENCODE_MODEL}#${THINKING}"
     # `--standalone` is a flag of `run`, not a global-before-subcommand flag.
-    AGENT_CLI_ARGS+=(run --standalone --format json --auto --title "1brc-${SLUG}" -m "$OPENCODE_MODEL" "$GOAL_PROMPT")
+    AGENT_CLI_ARGS+=(run --standalone --format json --auto)
+    [ -n "${OPENCODE_AGENT:-}" ] && AGENT_CLI_ARGS+=(--agent "$OPENCODE_AGENT")
+    AGENT_CLI_ARGS+=(--title "1brc-${SLUG}" -m "$OPENCODE_MODEL" "$GOAL_PROMPT")
     ;;
   *)
     echo "AGENT_FRAMEWORK must be pi or opencode (got '$AGENT_FRAMEWORK')" >&2
@@ -814,6 +862,12 @@ fi
   echo "agent_framework: $AGENT_FRAMEWORK"
   echo "agent_bin: $AGENT_BIN"
   echo "agent_version: \"$AGENT_VERSION\""
+  echo "opencode_agent: ${OPENCODE_AGENT:-}"
+  echo "opencode_config: ${OPENCODE_CONFIG:-}"
+  echo "opencode_plugin_dir: ${OPENCODE_PLUGIN_DIR:-}"
+  if [ -n "${OPENCODE_PLUGIN_DIR:-}" ] && [ -f "$OPENCODE_PLUGIN_DIR/PINNED_REVISION" ]; then
+    echo "opencode_plugin_revision: $(tr -d '[:space:]' < "$OPENCODE_PLUGIN_DIR/PINNED_REVISION")"
+  fi
   echo "harness_git_commit: $HARNESS_GIT_COMMIT"
   echo "harness_git_dirty: $HARNESS_GIT_DIRTY"
   echo "profile_sha256: $PROFILE_SHA256"

@@ -136,9 +136,14 @@ Resource caps, budgets, and judge settings come from `bench.yml`.
 | `MODEL_ID` | model id for that provider |
 | `AUTH_MODE` | `env` for an API key, `file` for a credential file, or `none` |
 | `AUTH_ENV` | name of the host env var holding the API key |
+| `AUTH_EXTRA_ENVS` | optional extra host env var names to inject (comma- or space-separated), e.g. `OPENROUTER_API_KEY` next to Codex OAuth |
 | `AUTH_FILE` | host path to `auth.json` (pi) or OpenCode 2 `opencode.db` when `AUTH_MODE=file` |
 | `THINKING` | optional reasoning level (`off`..`max`, or OpenCode 2 variants such as `xhigh`) |
 | `ADAPTER_ROUTE` | publication label for the complete model/provider adapter path |
+| `OPENCODE_AGENT` | optional OpenCode 2 `--agent` id (e.g. `conductor`) |
+| `OPENCODE_CONFIG` | optional OpenCode 2 jsonc path; defaults to `harness/lib/opencode.v2.jsonc` |
+| `OPENCODE_PLUGIN_DIR` | optional plugin source copied into the session OpenCode home |
+| `OPENCODE_AGENT_FILES` | optional agent markdown copied into `/work/.opencode/agents` |
 
 Never put keys in profile files. The runner reads them from the host env.
 For OAuth, log in once on the host with `pi` and point `AUTH_FILE` at the
@@ -184,6 +189,28 @@ Model selection is `-m provider/model` with an optional `#variant` from
 profiles: `harness/profiles/opencode-cli-ox-alpha.sh`,
 `opencode-cli-hy3-free-high.sh`, `opencode-cli-muse-spark-free-xhigh.sh`,
 and `opencode-cli-gpt-5.6-sol-high.sh` (ChatGPT/Codex OAuth).
+`opencode-cli-gpt-5.6-sol-high-conductor.sh` is a separate adapter: Sol
+high is the `conductor` primary via the vendored
+[opencode-conductor](https://github.com/bernoussama/opencode-conductor)
+plugin. The conductor calls first-class `1brc_remaining_time` and
+`1brc_resources` tools itself (PATH helpers wrapped by the plugin; no
+general `shell`). Workers use the OpenRouter preset
+`openrouter/@preset/ds-v4-1-flash` and keep `1brc-bounded` experiments.
+The 2026-09-19 `T213507` session used `deepseek/deepseek-v4.1-flash#max`
+instead. It is not comparable to the solo Sol-high OpenCode 2 session.
+
+Session agent markdown is seeded into `/work/.opencode/agents` from
+`harness/lib/opencode.conductor.agents`. That tree is the source of truth
+for worker models and orchestration (foreground OpenRouter `@preset/ds-v4-1-flash` workers).
+The plugin's bundled `agents/` files are upstream defaults (muse-spark
+workers, parallel fan-out) and are not installed in this profile
+(`installAgents: false`). OpenCode 2 injects `@opencode/plugin` when
+loading the local plugin package, so the seeded tree does not include
+`node_modules`. The 2026-09-19 `T213507` session did not retain
+`[conductor]` console lines (`agent.err` empty; `pi-home` removed on
+cleanup), but it dispatched `conductor/explore`, `conductor/shell-runner`,
+and `conductor/coder` — namespaced workers the plugin registers — which
+is the evidence the SDK import resolved without vendored `node_modules`.
 
 `events.jsonl` for this track is OpenCode 2 `--format json`, not pi JSON
 mode. Leaderboard/trace consumers must key off `agent_framework` /
@@ -192,6 +219,9 @@ mode. Leaderboard/trace consumers must key off `agent_framework` /
 ```bash
 ./harness/run_session.sh ox-alpha-opencode2 harness/profiles/opencode-cli-ox-alpha.sh
 ./harness/run_session.sh gpt-5.6-sol-high-opencode2 harness/profiles/opencode-cli-gpt-5.6-sol-high.sh
+export OPENROUTER_API_KEY=sk-or-...
+./harness/run_session.sh gpt-5.6-sol-high-conductor \
+  harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh
 ```
 
 Prefer `AUTH_MODE=env` (`OPENCODE_API_KEY`) for paid Zen. Keyless free

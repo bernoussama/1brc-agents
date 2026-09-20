@@ -7,8 +7,8 @@ import type { APIRoute } from "astro";
  * absolute and in sync with `site` + siteData. Prerenders to a static file at build.
  *
  * ponytail: hand-curated, not an auto-generated sitemap — add new top-level entry points here as
- * the site grows, or this drifts. Currently the main pages, the blog index, and the RSS feed. It's
- * an editorial content map for AI crawlers, not a ranking factor.
+ * the site grows, or this drifts. Currently the main pages, chart dashboards, the blog index, and
+ * the RSS feed. It's an editorial content map for AI crawlers, not a ranking factor.
  */
 export const GET: APIRoute = ({ site }) => {
   const { name, description } = siteData;
@@ -25,6 +25,8 @@ export const GET: APIRoute = ({ site }) => {
     `- [Blog](${new URL("blog/", base).href})`,
     `- [Projects](${new URL("projects/", base).href})`,
     `- [Contact](${new URL("contact/", base).href})`,
+    `- [pi cloud-agent charts](${new URL("charts/cloud-agent/", base).href})`,
+    `- [OpenCode 2 charts](${new URL("charts/opencode/", base).href})`,
     "",
     "## Feeds & legal",
     `- [RSS feed](${new URL("rss.xml", base).href})`,

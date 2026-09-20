@@ -1,0 +1,69 @@
+{
+  "interpretation": {
+    "comparable_to_neutral_v0.5": false,
+    "comparable_to_opencode2_sol_high_solo": false,
+    "comparable_to_opencode_conductor_deepseek_max": false,
+    "round_b_run": false,
+    "sample_size": "n=1 autonomous agent session per configuration"
+  },
+  "release": {
+    "agent_version": "opencode2 v0.0.0-beta-19271",
+    "bench_allow_override": true,
+    "dataset_sha256": "50bf18178cd265180197b03b03f5e7f25c1feea1c1b26e0c7301d8f5f04c5b8a",
+    "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+    "hardware": {
+      "cpu": "Intel(R) Xeon(R) Processor",
+      "host": "Linux 6.12.94+ x86_64 GNU/Linux",
+      "logical_cpus": 4,
+      "per_run_cpu_quota": 4,
+      "per_run_memory_gib": 16,
+      "physical_cores": 4,
+      "storage": "cloud-ephemeral"
+    },
+    "harness_git_commit": "9ed072c46b103393af17f1e46ab134b71e90cc44",
+    "id": "opencode-conductor-preset-cloud-agent-2026-09-20",
+    "image_sha256": "sha256:b794b46f3f61c26a7811a0166962b867ba7bd484306ab2afab98ebdd87f794bb",
+    "judge_runner_sha256": "b4a5c51b4143f81c2e2b18f50b4f016dd54a85c73bc5690540f523613c48edcc",
+    "judge_sha256": "1f3f8aeb0181e18248a253e54d0bfb23fec7c9166350c5be28f5447064cee2c1",
+    "opencode_plugin_revision": "a24df9464a3cb2897a1da01da60a0383aa629685",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "proxy_image_sha256": "sha256:7d4e6261afa4c70de6fdd626e11f79d0dfe3ec73cba11fb78e754c8c0f7a55ac",
+    "published_on": "2026-09-20",
+    "runner_sha256": "d2b769876d684a5768234befdfb91a9f9d08fab3be75b6f9e4f7a68c02c5a9e0",
+    "scope": "single-box single-session unofficial Round A OpenCode conductor cloud-agent result using OpenRouter @preset/ds-v4-1-flash workers; not comparable to v0.5, solo Sol-high OpenCode 2, or the DeepSeek #max conductor session",
+    "tag": null,
+    "warm_cache_policy": "one untimed warmup followed by five timed runs"
+  },
+  "results": [
+    {
+      "adapter_route": "opencode2 conductor openai/gpt-5.6-sol#high via ChatGPT Codex OAuth; workers openrouter/@preset/ds-v4-1-flash",
+      "agent_elapsed_seconds": 6914,
+      "agent_framework": "opencode",
+      "correct": true,
+      "dataset_sha256": "50bf18178cd265180197b03b03f5e7f25c1feea1c1b26e0c7301d8f5f04c5b8a",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:b794b46f3f61c26a7811a0166962b867ba7bd484306ab2afab98ebdd87f794bb",
+      "label": "GPT-5.6 Sol high conductor + OpenRouter @preset/ds-v4-1-flash workers",
+      "max_ms": 7747.7,
+      "median_ms": 7282.5,
+      "min_ms": 7208.6,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh",
+      "profile_sha256": "dad4d9f73354c84fdc886b32952fea37ef47ef6794eeba7ffeb247ed3b2f8129",
+      "published_artifacts": "gpt-5.6-sol-high-conductor-or-preset",
+      "rank": 1,
+      "reasoning": "high",
+      "runs_ms": [
+        7691.7,
+        7747.7,
+        7208.6,
+        7282.5,
+        7278.9
+      ],
+      "source_run_dir": ".sessions/gpt-5.6-sol-high-conductor-or-preset-20260920T135115",
+      "stop_reason": "agent_exit",
+      "worker_model": "openrouter/@preset/ds-v4-1-flash"
+    }
+  ]
+}

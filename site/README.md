@@ -26,8 +26,9 @@ pnpm dev          # http://localhost:4321
 | `dither-kit.json` | CLI lockfile for `pnpm dlx @dither-kit/cli update` |
 
 The blog post body tracks `notes/1brc-agents-blog-draft.md` in the repo root
-(with absolute GitHub links for in-repo paths). Cloud / Muse medians are also
-rendered as dithered bar charts.
+(with absolute GitHub links for in-repo paths). Cloud / Muse / OpenCode medians
+are also rendered as dithered bar charts (`/charts/cloud-agent/` for pi,
+`/charts/opencode/` for native OpenCode 2).
 ## Commands
 
 | Command | Action |
