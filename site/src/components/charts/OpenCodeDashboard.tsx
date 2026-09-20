@@ -1,49 +1,35 @@
 import { useEffect, useState } from "react";
 
-import {
-  CLOUD_AGENT_RUNS,
-  cloudMetricBarValue,
-} from "./cloud-agent-runs";
 import { CloudMetricPanel } from "./CloudMetricPanel";
 import {
   formatMinutesFromSeconds,
   formatYAxisMinutesFromSeconds,
 } from "./format-minutes";
 import { formatSecondsFromMs, formatYAxisSecondsFromMs } from "./format-seconds";
-import { formatUsd, formatYAxisUsd } from "./format-usd";
+import { OPENCODE_CHART_BAR_COUNT, OPENCODE_RUNS } from "./opencode-runs";
 
-const medianData = CLOUD_AGENT_RUNS.map(({ model, median }) => ({ model, median }));
+const medianData = OPENCODE_RUNS.map(({ model, median }) => ({ model, median }));
 
-const agentTimeData = CLOUD_AGENT_RUNS.map(({ model, agentSeconds }) => ({
+const agentTimeData = OPENCODE_RUNS.map(({ model, agentSeconds }) => ({
   model,
   agentSeconds,
 }));
 
-const costData = CLOUD_AGENT_RUNS.map((run) => ({
-  model: run.model,
-  costUsd: cloudMetricBarValue(run, "costUsd"),
-  metricsAvailable: run.metricsAvailable,
-}));
-
-type CapturePanel = "median-run-time" | "agent-wall-time" | "estimated-cost";
+type CapturePanel = "median-run-time" | "agent-wall-time";
 
 function readCapturePanel(): CapturePanel | null {
   if (typeof window === "undefined") return null;
   const params = new URLSearchParams(window.location.search);
   if (!params.has("capture")) return null;
   const panel = params.get("panel");
-  if (
-    panel === "median-run-time" ||
-    panel === "agent-wall-time" ||
-    panel === "estimated-cost"
-  ) {
+  if (panel === "median-run-time" || panel === "agent-wall-time") {
     return panel;
   }
   return null;
 }
 
-/** Three-up dashboard: median, agent wall time, estimated cost. Mount with `client:load`. */
-export default function CloudAgentDashboard() {
+/** Two-up dashboard: median and agent wall time for native OpenCode 2. Mount with `client:load`. */
+export default function OpenCodeDashboard() {
   const [replayToken, setReplayToken] = useState(0);
   const capturePanel = readCapturePanel();
 
@@ -81,7 +67,6 @@ export default function CloudAgentDashboard() {
       yAxisFormatter: formatYAxisSecondsFromMs,
       bloom: "aura" as const,
       barVariant: "gradient" as const,
-      naAware: false,
     },
     {
       slug: "agent-wall-time" as const,
@@ -95,21 +80,6 @@ export default function CloudAgentDashboard() {
       yAxisFormatter: formatYAxisMinutesFromSeconds,
       bloom: "low" as const,
       barVariant: "hatched" as const,
-      naAware: false,
-    },
-    {
-      slug: "estimated-cost" as const,
-      title: "Estimated cost",
-      hint: "*lower is better*",
-      dataKey: "costUsd",
-      seriesLabel: "est_cost_usd",
-      color: "green" as const,
-      data: costData,
-      valueFormatter: formatUsd,
-      yAxisFormatter: formatYAxisUsd,
-      bloom: "low" as const,
-      barVariant: "hatched" as const,
-      naAware: true,
     },
   ];
 
@@ -122,16 +92,16 @@ export default function CloudAgentDashboard() {
       {showHeader ? (
         <header className="flex flex-col gap-2 text-center">
           <h1 className="font-mono text-xl font-semibold text-foreground sm:text-2xl">
-            Cloud-agent Round A — pi harness
+            Cloud-agent Round A — OpenCode 2
           </h1>
           <p className="font-mono text-xs leading-relaxed text-muted-foreground sm:text-sm">
-            Xeon 4 CPU / 16 GiB · 120m budget · GPT-5.6 Sol · MiniMax M3 · Grok 4.6 · ox-alpha ·
-            GPT-5.6 Luna · Muse Spark · MiniMax M2.7
+            Xeon 4 CPU / 16 GiB · 120m budget · native <code className="text-foreground">opencode2</code>{" "}
+            CLI · GPT-5.6 Sol high solo and Sol high conductor + DeepSeek V4.1 Flash #max workers
           </p>
         </header>
       ) : null}
 
-      <div className={capturePanel ? "w-full max-w-3xl" : "grid grid-cols-1 gap-8 xl:grid-cols-3 xl:gap-4"}>
+      <div className={capturePanel ? "w-full max-w-3xl" : "grid grid-cols-1 gap-8 xl:grid-cols-2 xl:gap-4"}>
         {visiblePanels.map((panel) => (
           <CloudMetricPanel
             key={panel.slug}
@@ -143,10 +113,10 @@ export default function CloudAgentDashboard() {
             data={panel.data}
             valueFormatter={panel.valueFormatter}
             yAxisFormatter={panel.yAxisFormatter}
-            naAware={panel.naAware}
             bloom={panel.bloom}
             barVariant={panel.barVariant}
             replayToken={replayToken}
+            barCount={OPENCODE_CHART_BAR_COUNT}
           />
         ))}
       </div>
@@ -154,18 +124,24 @@ export default function CloudAgentDashboard() {
       {showFooter ? (
         <footer className="font-mono text-[10px] text-muted-foreground sm:text-xs">
           <p className="text-right">
-            Source: 1BRC-Agents cloud-agent sessions · cost from{" "}
-            <code className="text-foreground">scripts/model_pricing.json</code>
+            Source:{" "}
+            <a className="text-foreground underline" href="https://github.com/bernoussama/1brc-agents/tree/main/runs/2026-09-19-opencode2-cloud-agent">
+              opencode2-cloud-agent
+            </a>
+            {" · "}
+            <a className="text-foreground underline" href="https://github.com/bernoussama/1brc-agents/tree/main/runs/2026-09-19-opencode-conductor-cloud-agent">
+              opencode-conductor-cloud-agent
+            </a>
           </p>
           <p className="mt-2 leading-relaxed">
             Median is warm-cache processing time on the held-out billion-row file (seconds). Agent wall
-            time is harness clock until scoring (minutes). Cost uses published input, output, and
-            cache-read list rates; Cursor Grok rows are N/A. Not comparable to laptop v0.5 medians or
-            to the{" "}
-            <a className="text-foreground underline" href="/charts/opencode/">
-              OpenCode 2 dashboard
-            </a>
-            .
+            time is harness clock until scoring (minutes). Token and list-rate cost are omitted: OpenCode
+            events do not match the pi cost script, and the conductor mix of Codex plus OpenRouter is
+            not one list price. Not comparable to the{" "}
+            <a className="text-foreground underline" href="/charts/cloud-agent/">
+              pi cloud-agent dashboard
+            </a>{" "}
+            or to laptop v0.5.
           </p>
         </footer>
       ) : null}

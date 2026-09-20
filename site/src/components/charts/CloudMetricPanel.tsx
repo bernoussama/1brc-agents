@@ -1,16 +1,18 @@
 import type { ReactNode } from "react";
+
 import { Bar } from "@/components/dither-kit/bar";
 import { BarChart } from "@/components/dither-kit/bar-chart";
+import type { AreaVariant } from "@/components/dither-kit/chart-context";
 import type { BloomInput } from "@/components/dither-kit/dither-paint";
 import { Grid } from "@/components/dither-kit/grid";
+import type { DitherColor } from "@/components/dither-kit/palette";
 import { Tooltip } from "@/components/dither-kit/tooltip";
 import { YAxis } from "@/components/dither-kit/y-axis";
-import type { DitherColor } from "@/components/dither-kit/palette";
-import type { AreaVariant } from "@/components/dither-kit/chart-context";
+
 import { BarValueLabels } from "./BarValueLabels";
+import { CLOUD_CHART_BAR_COUNT } from "./cloud-agent-runs";
 import { NaAwareBarValueLabels } from "./NaAwareBarValueLabels";
 import { NaAwareMetricTooltip } from "./NaAwareMetricTooltip";
-import { CLOUD_CHART_BAR_COUNT } from "./cloud-agent-runs";
 import { WrappedXAxis } from "./WrappedXAxis";
 
 type PanelRow = Record<string, unknown>;
@@ -29,6 +31,7 @@ export type CloudMetricPanelProps = {
   barVariant?: AreaVariant;
   replayToken?: number;
   animationDuration?: number;
+  barCount?: number;
 };
 
 function MetricTooltip({
@@ -86,6 +89,7 @@ export function CloudMetricPanel({
   barVariant = "gradient",
   replayToken = 0,
   animationDuration,
+  barCount = CLOUD_CHART_BAR_COUNT,
 }: CloudMetricPanelProps) {
   const config = {
     [dataKey]: { label: seriesLabel, color },
@@ -108,7 +112,7 @@ export function CloudMetricPanel({
           margins={{ top: 28, bottom: 72, left: 40, right: 8 }}
         >
           <Grid horizontal />
-          <WrappedXAxis dataKey="model" maxTicks={CLOUD_CHART_BAR_COUNT} tickMargin={4} lineHeight={10} />
+          <WrappedXAxis dataKey="model" maxTicks={barCount} tickMargin={4} lineHeight={10} />
           <YAxis tickFormatter={yAxisFormatter} tickCount={4} />
           <MetricTooltip
             naAware={naAware}

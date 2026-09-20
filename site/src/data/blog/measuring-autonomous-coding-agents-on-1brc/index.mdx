@@ -15,6 +15,8 @@ import CloudAgentTimeBarChart from "../../../components/charts/CloudAgentTimeBar
 import CloudTokenUsageBarChart from "../../../components/charts/CloudTokenUsageBarChart.tsx";
 import CloudCostBarChart from "../../../components/charts/CloudCostBarChart.tsx";
 import MuseBudgetBarChart from "../../../components/charts/MuseBudgetBarChart.tsx";
+import OpenCodeMedianBarChart from "../../../components/charts/OpenCodeMedianBarChart.tsx";
+import OpenCodeAgentTimeBarChart from "../../../components/charts/OpenCodeAgentTimeBarChart.tsx";
 
 *Draft. Not a formal release. The published laptop batch and later cloud-agent
 sessions are different boxes — do not rank them against each other.*
@@ -113,6 +115,26 @@ landed at 3174.4 ms, high at 1311.4 ms. Ox Alpha moved the other way relativ
 to its own max run. We would not build a theory of reasoning budgets from two
 pairs — but the setting is load-bearing enough that it belongs in the profile
 name, not buried in a chat transcript.
+
+### Native OpenCode 2 (separate adapter)
+
+Same cloud-agent host class, **different CLI**. These rows use native
+`opencode2`, not pi. Do not rank them against the pi table above.
+
+| Configuration | Thinking | Correct | Median | Agent time | Notes |
+|---|---|---|---:|---:|---|
+| gpt-5.6-sol (OpenCode 2) | high | true | **4685.9 ms** | 116.0 min | ChatGPT/Codex OAuth; first `--standalone` argv attempt failed |
+| gpt-5.6-sol conductor | high / max | true | **6399.3 ms** | 120.4 min | Sol orchestrates; DeepSeek V4.1 Flash `#max` workers via OpenRouter |
+
+Full dashboard: [/charts/opencode/](/charts/opencode/). Bundles:
+[`runs/2026-09-19-opencode2-cloud-agent`](https://github.com/bernoussama/1brc-agents/tree/master/runs/2026-09-19-opencode2-cloud-agent)
+and
+[`runs/2026-09-19-opencode-conductor-cloud-agent`](https://github.com/bernoussama/1brc-agents/tree/master/runs/2026-09-19-opencode-conductor-cloud-agent).
+
+<OpenCodeMedianBarChart client:load />
+
+<OpenCodeAgentTimeBarChart client:load />
+
 
 ## Context
 

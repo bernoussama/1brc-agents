@@ -1,0 +1,15 @@
+---
+import siteData from "@config/siteData.json";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+import OpenCodeDashboard from "@/components/charts/OpenCodeDashboard.tsx";
+---
+
+<BaseLayout
+  title={`OpenCode 2 charts — ${siteData.name}`}
+  description="Median run time and agent wall time for native OpenCode 2 cloud-agent Round A sessions. Separate from the pi dashboard."
+>
+  <div class="site-container py-8 md:py-12">
+    <OpenCodeDashboard client:load />
+  </div>
+</BaseLayout>
