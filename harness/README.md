@@ -198,10 +198,14 @@ general `shell`). Workers use the OpenRouter preset
 `openrouter/@preset/ds-v4-1-flash` and keep `1brc-bounded` experiments.
 The 2026-09-19 `T213507` session used `deepseek/deepseek-v4.1-flash#max`
 instead. It is not comparable to the solo Sol-high OpenCode 2 session.
+`opencode-cli-gpt-5.6-sol-high-conductor-luna.sh` is another conductor
+adapter: same Sol high primary, but workers are GPT-5.6 Luna `#max` on
+the Codex/ChatGPT subscription (no OpenRouter key).
 
 Session agent markdown is seeded into `/work/.opencode/agents` from
 `harness/lib/opencode.conductor.agents`. That tree is the source of truth
 for worker models and orchestration (foreground OpenRouter `@preset/ds-v4-1-flash` workers).
+The Luna adapter seeds `harness/lib/opencode.conductor.luna.agents` instead.
 The plugin's bundled `agents/` files are upstream defaults (muse-spark
 workers, parallel fan-out) and are not installed in this profile
 (`installAgents: false`). OpenCode 2 injects `@opencode/plugin` when
@@ -222,6 +226,8 @@ mode. Leaderboard/trace consumers must key off `agent_framework` /
 export OPENROUTER_API_KEY=sk-or-...
 ./harness/run_session.sh gpt-5.6-sol-high-conductor \
   harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh
+./harness/run_session.sh gpt-5.6-sol-high-conductor-luna \
+  harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor-luna.sh
 ```
 
 Prefer `AUTH_MODE=env` (`OPENCODE_API_KEY`) for paid Zen. Keyless free
