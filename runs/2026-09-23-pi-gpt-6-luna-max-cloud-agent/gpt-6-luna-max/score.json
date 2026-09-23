@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/workspace/.sessions/gpt-6-luna-max-20260923T105240/work/submission/run.sh",
+  "execution_environment": "container:1c432b9c97c6",
+  "correct": true,
+  "median_ms": 8034.2,
+  "runs_ms": [
+    9959.2,
+    8654.4,
+    7890.0,
+    8034.2,
+    7990.8
+  ],
+  "expected_ms": 3.2,
+  "scoring_elapsed_ms": 56647.2,
+  "expected_sha256": "8bd23ddeb5bb77a2",
+  "actual_sha256": "8bd23ddeb5bb77a2"
+}

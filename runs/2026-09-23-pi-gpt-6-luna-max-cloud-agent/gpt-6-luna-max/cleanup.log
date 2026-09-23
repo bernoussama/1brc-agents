@@ -1,0 +1,10 @@
+cleanup_version=1
+run_directory=/workspace/.sessions/gpt-6-luna-max-20260923T105240
+started_utc=2026-09-23T12:50:04Z
+removed=data bytes=137969664
+removed=lifecycle bytes=8192
+removed=pi-home bytes=2461696
+removed=container.id bytes=4096
+removed_bytes=140443648
+preserved=events.jsonl pi.err agent.err work control score.json score.log manifest.yaml reports expected-output snapshots run_session.frozen.sh
+finished_utc=2026-09-23T12:50:04Z

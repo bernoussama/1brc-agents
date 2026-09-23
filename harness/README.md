@@ -148,6 +148,17 @@ Resource caps, budgets, and judge settings come from `bench.yml`.
 Never put keys in profile files. The runner reads them from the host env.
 For OAuth, log in once on the host with `pi` and point `AUTH_FILE` at the
 resulting `~/.pi/agent/auth.json`.
+
+`harness/profiles/gpt-6-luna-max.sh` runs GPT-6 Luna at thinking `max` through
+pi's `openai-codex` provider (ChatGPT/Codex OAuth). The sandbox image pins
+`@earendil-works/pi-coding-agent@0.87.1`, the catalog that includes
+`gpt-6-luna` with a `max` level. That image digest is not the v0.5 pin
+(`pi 0.84.2`); do not compare the session to v0.5 or to the GPT-6 Sol high
+cloud-agent row.
+
+```bash
+./harness/run_session.sh gpt-6-luna-max harness/profiles/gpt-6-luna-max.sh
+```
 The current runner must give pi the provider credential so it can authenticate.
 Commands launched by pi share that process environment and can therefore read
 the credential. The network boundary is fail-closed, but this is not a
