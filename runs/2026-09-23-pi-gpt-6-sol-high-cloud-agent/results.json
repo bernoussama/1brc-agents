@@ -1,0 +1,67 @@
+{
+  "interpretation": {
+    "comparable_to_neutral_v0.5": false,
+    "comparable_to_earlier_pi_cloud_agent_rows": false,
+    "round_b_run": false,
+    "sample_size": "n=1 autonomous agent session per configuration"
+  },
+  "release": {
+    "agent_version": "pi 0.87.1",
+    "bench_allow_override": true,
+    "dataset_sha256": "11a6e87f0336ae842a2ddad4a3a9fb3d410a1a2dab9cbd9ea03e1f347ec0c350",
+    "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+    "hardware": {
+      "cpu": "Intel(R) Xeon(R) Processor",
+      "host": "Linux 6.12.94+ x86_64 GNU/Linux",
+      "logical_cpus": 4,
+      "per_run_cpu_quota": 4,
+      "per_run_memory_gib": 16,
+      "physical_cores": 4,
+      "storage": "cloud-ephemeral"
+    },
+    "harness_git_commit": "be0cbfe57a48429c4c9752454246f882ae5206d5",
+    "id": "pi-gpt-6-sol-high-cloud-agent-2026-09-23",
+    "image_sha256": "sha256:fa47a4fb7c27ca4d0d56be6d34ce78b1c4d44a44966b4264085ebda48cc702be",
+    "judge_runner_sha256": "b4a5c51b4143f81c2e2b18f50b4f016dd54a85c73bc5690540f523613c48edcc",
+    "judge_sha256": "1f3f8aeb0181e18248a253e54d0bfb23fec7c9166350c5be28f5447064cee2c1",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "proxy_image_sha256": "sha256:5ffb4be2bc56058c8c8d503b548ae009aa434db3206ee0f09ad6c39cb10f33df",
+    "published_on": "2026-09-23",
+    "runner_sha256": "d2b769876d684a5768234befdfb91a9f9d08fab3be75b6f9e4f7a68c02c5a9e0",
+    "scope": "single-box single-session unofficial Round A pi cloud-agent result using GPT-6 Sol high; not comparable to v0.5 or earlier pi cloud-agent rows",
+    "tag": null,
+    "warm_cache_policy": "one untimed warmup followed by five timed runs"
+  },
+  "results": [
+    {
+      "adapter_route": "pi to openai-codex OAuth to gpt-6-sol",
+      "agent_elapsed_seconds": 7163,
+      "agent_framework": "pi",
+      "correct": true,
+      "dataset_sha256": "11a6e87f0336ae842a2ddad4a3a9fb3d410a1a2dab9cbd9ea03e1f347ec0c350",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:fa47a4fb7c27ca4d0d56be6d34ce78b1c4d44a44966b4264085ebda48cc702be",
+      "label": "GPT-6 Sol high",
+      "max_ms": 4355.8,
+      "median_ms": 3901.4,
+      "min_ms": 3833.5,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/gpt-6-sol-high.sh",
+      "profile_sha256": "2f8990d0097a599ccd41bbec297e07b42129dd66e59408158308ccac9a35e00d",
+      "published_artifacts": "gpt-6-sol-high",
+      "rank": 1,
+      "reasoning": "high",
+      "runs_ms": [
+        4355.8,
+        3991.7,
+        3833.5,
+        3901.4,
+        3891.6
+      ],
+      "source_run_dir": ".sessions/gpt-6-sol-high-20260923T081738",
+      "stop_reason": "agent_exit",
+      "worker_model": null
+    }
+  ]
+}
