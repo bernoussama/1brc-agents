@@ -293,6 +293,34 @@ source "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh"
   exit 1
 }
 
+unset PROVIDER MODEL_ID THINKING ADAPTER_ROUTE AUTH_MODE AUTH_FILE AGENT_FRAMEWORK
+# shellcheck disable=SC1091
+source "$ROOT/harness/profiles/gpt-6-luna-max.sh"
+[ "${AGENT_FRAMEWORK:-pi}" = pi ] || {
+  echo "GPT-6 Luna max profile must stay on pi" >&2
+  exit 1
+}
+[ "$PROVIDER" = openai-codex ] || {
+  echo "GPT-6 Luna max profile must use PROVIDER=openai-codex" >&2
+  exit 1
+}
+[ "$MODEL_ID" = gpt-6-luna ] || {
+  echo "GPT-6 Luna max profile must use MODEL_ID=gpt-6-luna" >&2
+  exit 1
+}
+[ "$THINKING" = max ] || {
+  echo "GPT-6 Luna max profile must use THINKING=max" >&2
+  exit 1
+}
+[ "$AUTH_MODE" = file ] || {
+  echo "GPT-6 Luna max profile must use AUTH_MODE=file" >&2
+  exit 1
+}
+grep -Fq 'ARG PI_VERSION=0.87.1' "$ROOT/docker/Dockerfile" || {
+  echo "sandbox image must pin pi 0.87.1 so gpt-6-luna is in the Codex catalog" >&2
+  exit 1
+}
+
 # Existing pi-to-Zen profiles must stay on pi.
 unset AGENT_FRAMEWORK
 # shellcheck disable=SC1091
