@@ -12,7 +12,8 @@ bash -n \
   "$ROOT/harness/profiles/opencode-cli-hy3-free-high.sh" \
   "$ROOT/harness/profiles/opencode-cli-muse-spark-free-xhigh.sh" \
   "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high.sh" \
-  "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh"
+  "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh" \
+  "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor-luna.sh"
 
 grep -Fq models.dev "$ROOT/harness/setup_network.sh"
 grep -Fq OPENCODE_MODELS_FETCH "$ROOT/harness/run_session.sh"
@@ -76,6 +77,25 @@ assert "1brc_remaining_time" in actions
 assert "1brc_resources" in actions
 PY
 
+python3 - "$ROOT/harness/lib/opencode.conductor.luna.jsonc" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+cfg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+assert cfg["default_agent"] == "conductor"
+opts = cfg["plugins"][0]["options"]
+assert opts["conductorModel"] == "openai/gpt-5.6-sol#high"
+assert opts["workerModel"] == "openai/gpt-5.6-luna#max"
+assert opts["workerFallbackModel"] == "openai/gpt-5.6-luna#high"
+assert opts["enableQuestion"] is False
+assert opts["installAgents"] is False
+assert "openrouter" not in cfg.get("providers", {})
+luna = cfg["providers"]["openai"]["models"]["gpt-5.6-luna"]["variants"]
+assert "max" in luna
+assert "high" in luna
+PY
+
 TEST_DIR="$(mktemp -d)"
 trap 'rm -rf "$TEST_DIR"' EXIT
 # shellcheck disable=SC1091
@@ -108,6 +128,17 @@ grep -Fq 'muse-spark-1.3-contributor-free' \
   "$ROOT/harness/lib/opencode-conductor/agents/conductor/coder.md"
 grep -Fq 'Fan out independent work in parallel' \
   "$ROOT/harness/lib/opencode-conductor/agents/conductor.md"
+
+LUNA_SEED="$(mktemp -d)"
+trap 'rm -rf "$TEST_DIR" "$CONDUCTOR_SEED" "$LUNA_SEED"' EXIT
+seed_opencode_home "$LUNA_SEED" "$ROOT/harness/lib/opencode.conductor.luna.jsonc" \
+  "$ROOT/harness/lib/opencode-conductor" \
+  "$ROOT/harness/lib/opencode.conductor.luna.agents"
+grep -Fq 'openai/gpt-5.6-luna#max' "$LUNA_SEED/work/.opencode/agents/conductor/coder.md"
+grep -Fq 'openai/gpt-5.6-luna#max' "$LUNA_SEED/work/.opencode/agents/conductor/explore.md"
+grep -Fq 'openai/gpt-5.6-luna#max' "$LUNA_SEED/work/.opencode/agents/conductor/shell-runner.md"
+grep -Fq 'openai/gpt-5.6-sol#high' "$LUNA_SEED/work/.opencode/agents/conductor.md"
+! grep -Fq 'openrouter' "$LUNA_SEED/work/.opencode/agents/conductor/coder.md"
 ! test -d "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/node_modules"
 ! test -d "$CONDUCTOR_SEED/pi-home/.config/opencode/plugins/opencode-conductor/.opencode/agents"
 grep -Fq 'from "@opencode/plugin"' \
@@ -293,6 +324,37 @@ source "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor.sh"
   exit 1
 }
 
+unset AGENT_FRAMEWORK AUTH_MODE AUTH_FILE AUTH_EXTRA_ENVS OPENCODE_MODELS_FETCH \
+  PROVIDER MODEL_ID THINKING OPENCODE_AGENT OPENCODE_CONFIG OPENCODE_PLUGIN_DIR OPENCODE_AGENT_FILES
+# shellcheck disable=SC1091
+source "$ROOT/harness/profiles/opencode-cli-gpt-5.6-sol-high-conductor-luna.sh"
+[ "$AGENT_FRAMEWORK" = opencode ] || {
+  echo "luna conductor profile must set AGENT_FRAMEWORK=opencode" >&2
+  exit 1
+}
+[ "$OPENCODE_AGENT" = conductor ] || {
+  echo "luna conductor profile must set OPENCODE_AGENT=conductor" >&2
+  exit 1
+}
+[ "$AUTH_MODE" = file ] || {
+  echo "luna conductor profile must use AUTH_MODE=file" >&2
+  exit 1
+}
+[ -z "${AUTH_EXTRA_ENVS:-}" ] || {
+  echo "luna conductor profile must not require OPENROUTER_API_KEY" >&2
+  exit 1
+}
+[ "$OPENCODE_CONFIG" = "$ROOT/harness/lib/opencode.conductor.luna.jsonc" ] || {
+  echo "luna conductor profile OPENCODE_CONFIG mismatch: $OPENCODE_CONFIG" >&2
+  exit 1
+}
+[ "$OPENCODE_AGENT_FILES" = "$ROOT/harness/lib/opencode.conductor.luna.agents" ] || {
+  echo "luna conductor profile OPENCODE_AGENT_FILES mismatch: $OPENCODE_AGENT_FILES" >&2
+  exit 1
+}
+grep -Fq 'openai/gpt-5.6-luna#max' "$OPENCODE_CONFIG"
+grep -Fq 'workers openai/gpt-5.6-luna#max' <<< "$ADAPTER_ROUTE"
+
 # Existing pi-to-Zen profiles must stay on pi.
 unset AGENT_FRAMEWORK
 # shellcheck disable=SC1091
@@ -302,8 +364,36 @@ source "$ROOT/harness/profiles/opencode-ox-alpha.sh"
   exit 1
 }
 
+unset PROVIDER MODEL_ID THINKING ADAPTER_ROUTE AUTH_MODE AUTH_FILE AGENT_FRAMEWORK
+# shellcheck disable=SC1091
+source "$ROOT/harness/profiles/gpt-6-sol-high.sh"
+[ "${AGENT_FRAMEWORK:-pi}" = pi ] || {
+  echo "GPT-6 Sol high profile must stay on pi" >&2
+  exit 1
+}
+[ "$PROVIDER" = openai-codex ] || {
+  echo "GPT-6 Sol high profile must use PROVIDER=openai-codex" >&2
+  exit 1
+}
+[ "$MODEL_ID" = gpt-6-sol ] || {
+  echo "GPT-6 Sol high profile must use MODEL_ID=gpt-6-sol" >&2
+  exit 1
+}
+[ "$THINKING" = high ] || {
+  echo "GPT-6 Sol high profile must use THINKING=high" >&2
+  exit 1
+}
+[ "$AUTH_MODE" = file ] || {
+  echo "GPT-6 Sol high profile must use AUTH_MODE=file" >&2
+  exit 1
+}
+grep -Fq 'ARG PI_VERSION=0.87.1' "$ROOT/docker/Dockerfile" || {
+  echo "sandbox image must pin pi 0.87.1 so gpt-6-sol is in the Codex catalog" >&2
+  exit 1
+}
+
 ENTRY_TEST="$(mktemp -d)"
-trap 'rm -rf "$TEST_DIR" "$CONDUCTOR_SEED" "$ENTRY_TEST"' EXIT
+trap 'rm -rf "$TEST_DIR" "$CONDUCTOR_SEED" "$LUNA_SEED" "$ENTRY_TEST"' EXIT
 mkdir -p "$ENTRY_TEST/bin" "$ENTRY_TEST/lifecycle"
 cat > "$ENTRY_TEST/bin/opencode2" <<EOF
 #!/bin/sh

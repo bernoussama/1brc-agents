@@ -1,0 +1,74 @@
+slug: gpt-6-sol-high
+profile: harness/profiles/gpt-6-sol-high.sh
+bench_file: /workspace/bench.yml
+bench_sha256: e9924d2c22f5a58112411771b720f4597e88e7bec1b8299596eec4e747a2b86e
+bench_host: cloud-agent
+bench_allow_override: 1
+round: A
+budget_min: 120
+scored_rows: 1000000000
+scored_dataset_volume: 1brc-agents-scored-1b-v1
+scored_dataset_bytes: 13795392079
+scored_dataset_sha256: 11a6e87f0336ae842a2ddad4a3a9fb3d410a1a2dab9cbd9ea03e1f347ec0c350
+scored_dataset_reused: false
+expected_output_cache: /workspace/data/.1brc-expected-A-388bd3b5fde49f8f8da848bc916daafeec7cad1393fe44bcf29498b23de03882-11a6e87f0336ae842a2ddad4a3a9fb3d410a1a2dab9cbd9ea03e1f347ec0c350.txt
+generator: dev.morling.onebrc.CreateMeasurements
+generator_root: /home/ubuntu/1brc
+generator_source_sha256: efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d
+started: 20260923T081738
+provider: openai-codex
+model: gpt-6-sol
+thinking: high
+adapter_route: "pi to openai-codex OAuth to gpt-6-sol"
+agent_framework: pi
+agent_bin: pi
+agent_version: "0.87.1"
+opencode_agent: 
+opencode_config: 
+opencode_plugin_dir: 
+harness_git_commit: be0cbfe57a48429c4c9752454246f882ae5206d5
+harness_git_dirty: false
+profile_sha256: 2f8990d0097a599ccd41bbec297e07b42129dd66e59408158308ccac9a35e00d
+prompt_sha256: dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e
+judge_sha256: 1f3f8aeb0181e18248a253e54d0bfb23fec7c9166350c5be28f5447064cee2c1
+judge_runner_sha256: b4a5c51b4143f81c2e2b18f50b4f016dd54a85c73bc5690540f523613c48edcc
+runner_sha256: d2b769876d684a5768234befdfb91a9f9d08fab3be75b6f9e4f7a68c02c5a9e0
+network: 1brc-agent-net
+proxy_ip: 172.28.77.2
+proxy_allow_domains: api.openai.com,auth.openai.com,chatgpt.com,models.dev,api.anthropic.com,api.deepseek.com,openrouter.ai,opencode.ai,api.z.ai,z.ai,api.moonshot.cn,api.moonshot.ai,api.gmi-serving.com,cursor.sh,cursor.com
+proxy_local_forward_port: 8317
+proxy_idle_timeout_ms: 0
+cursor_proxy_execution: host
+cursor_proxy_timeout_ms: 0
+pi_http_idle_timeout_ms: default
+credential_isolation: process-shared
+image: sha256:fa47a4fb7c27ca4d0d56be6d34ce78b1c4d44a44966b4264085ebda48cc702be
+proxy_image: sha256:5ffb4be2bc56058c8c8d503b548ae009aa434db3206ee0f09ad6c39cb10f33df
+host: Linux 6.12.94+ x86_64 GNU/Linux
+cpus: 4
+requested_cpu_quota: 4
+requested_memory_limit: 16g
+bench_hardware_cpu: "Intel(R) Xeon(R) Processor"
+bench_hardware_physical_cores: 4
+bench_hardware_logical_cpus: 4
+bench_hardware_storage: "cloud-ephemeral"
+host_cpu_model: "Intel(R) Xeon(R) Processor"
+host_cpu_microcode: ""
+warm_cache_policy: 1_untimed_warmup_then_5_timed_runs
+budget_started_epoch: 1790152135
+budget_deadline_epoch: 1790159335
+budget_wrapup_seconds: 300
+experiment_max_seconds: 300
+agent_ended_epoch: 1790159298
+agent_elapsed_seconds: 7163
+stop_reason: agent_exit
+container_exit_status: 0
+stale_command_kills: 0
+score_started_epoch: 1790159299
+score_ended_epoch: 1790159346
+score_elapsed_seconds: 47
+score_exit_status: 0
+score_execution: same_agent_container
+score_input_handoff: complete
+score_network: disconnected
+cleanup_run_artifacts: 1

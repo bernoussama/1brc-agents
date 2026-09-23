@@ -1,0 +1,19 @@
+{
+  "round": "A",
+  "input": "measurements.txt",
+  "submission": "/workspace/.sessions/gpt-6-sol-high-20260923T081738/work/submission/run.sh",
+  "execution_environment": "container:b1df50b4cf10",
+  "correct": true,
+  "median_ms": 3901.4,
+  "runs_ms": [
+    4355.8,
+    3991.7,
+    3833.5,
+    3901.4,
+    3891.6
+  ],
+  "expected_ms": 1.3,
+  "scoring_elapsed_ms": 46367.0,
+  "expected_sha256": "8bd23ddeb5bb77a2",
+  "actual_sha256": "8bd23ddeb5bb77a2"
+}

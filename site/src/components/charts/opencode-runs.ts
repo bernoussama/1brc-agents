@@ -5,7 +5,7 @@ export type OpenCodeRun = {
   agentSeconds: number;
 };
 
-/** From runs/2026-09-19-opencode2-cloud-agent, runs/2026-09-19-opencode-conductor-cloud-agent, and runs/2026-09-20-opencode-conductor-preset-cloud-agent. */
+/** From runs/2026-09-19-opencode2-cloud-agent, runs/2026-09-19-opencode-conductor-cloud-agent, runs/2026-09-20-opencode-conductor-preset-cloud-agent, and runs/2026-09-20-opencode-conductor-luna-cloud-agent. */
 export const OPENCODE_RUNS: OpenCodeRun[] = [
   {
     model: "sol high (OpenCode 2)",
@@ -21,6 +21,11 @@ export const OPENCODE_RUNS: OpenCodeRun[] = [
     model: "sol conductor + OR preset",
     median: 7282.5,
     agentSeconds: 6914,
+  },
+  {
+    model: "sol conductor + Luna #max",
+    median: 13628.0,
+    agentSeconds: 6545,
   },
 ];
 
