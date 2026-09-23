@@ -45,6 +45,11 @@ label and full traces. That transparency is the product.
 The canonical neutral-prompt v0.5 batch is
 [runs/2026-08-21-neutral-v0.5](runs/2026-08-21-neutral-v0.5/).
 
+An unofficial pi 0.87.1 GPT-6 Luna max cloud-agent session is
+[runs/2026-09-23-pi-gpt-6-luna-max-cloud-agent](runs/2026-09-23-pi-gpt-6-luna-max-cloud-agent/).
+It uses a newer pi pin, a new sandbox digest, and a different scored-file
+digest than v0.5, and it is not the GPT-6 Sol high row.
+
 An unofficial native OpenCode 2 (`opencode2`) cloud-agent session is
 [runs/2026-09-19-opencode2-cloud-agent](runs/2026-09-19-opencode2-cloud-agent/).
 It is a different adapter, image, dataset digest, and host; it is not part of

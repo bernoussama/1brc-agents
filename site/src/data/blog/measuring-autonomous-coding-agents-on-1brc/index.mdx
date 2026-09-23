@@ -116,6 +116,20 @@ to its own max run. We would not build a theory of reasoning budgets from two
 pairs — but the setting is load-bearing enough that it belongs in the profile
 name, not buried in a chat transcript.
 
+### GPT-6 Luna max on pi 0.87.1 (separate image)
+
+Same Xeon 4 CPU / 16 GiB class and 120-minute budget, but a rebuilt sandbox
+(`pi 0.87.1`) and a scored file that is not the v0.5 pin. **Not comparable**
+to the cloud-agent table above, to laptop v0.5, or to the GPT-6 Sol high row
+(3901.4 ms on the same image and dataset, different model and thinking level).
+
+| Configuration | Thinking | Correct | Median | Agent time | Notes |
+|---|---|---|---:|---:|---|
+| gpt-6-luna | max | true | **8034.2 ms** | 116.4 min | pi 0.87.1 → openai-codex OAuth |
+
+Bundle:
+[`runs/2026-09-23-pi-gpt-6-luna-max-cloud-agent`](https://github.com/bernoussama/1brc-agents/tree/master/runs/2026-09-23-pi-gpt-6-luna-max-cloud-agent).
+
 ### Native OpenCode 2 (separate adapter)
 
 Same cloud-agent host class, **different CLI**. These rows use native

@@ -1,0 +1,66 @@
+{
+  "interpretation": {
+    "comparable_to_neutral_v0.5": false,
+    "comparable_to_gpt6_sol_high": false,
+    "round_b_run": false,
+    "sample_size": "n=1 autonomous agent session per configuration"
+  },
+  "release": {
+    "agent_version": "pi 0.87.1",
+    "bench_allow_override": true,
+    "dataset_sha256": "11a6e87f0336ae842a2ddad4a3a9fb3d410a1a2dab9cbd9ea03e1f347ec0c350",
+    "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+    "hardware": {
+      "cpu": "Intel(R) Xeon(R) Processor",
+      "host": "Linux 6.12.94+ x86_64 GNU/Linux",
+      "logical_cpus": 4,
+      "per_run_cpu_quota": 4,
+      "per_run_memory_gib": 16,
+      "physical_cores": 4,
+      "storage": "cloud-ephemeral"
+    },
+    "harness_git_commit": "32a4b4a861fe19e0aaf08c2eb89ddbce0249e7d5",
+    "id": "pi-gpt-6-luna-max-cloud-agent-2026-09-23",
+    "image_sha256": "sha256:fa47a4fb7c27ca4d0d56be6d34ce78b1c4d44a44966b4264085ebda48cc702be",
+    "judge_runner_sha256": "b4a5c51b4143f81c2e2b18f50b4f016dd54a85c73bc5690540f523613c48edcc",
+    "judge_sha256": "1f3f8aeb0181e18248a253e54d0bfb23fec7c9166350c5be28f5447064cee2c1",
+    "prompt_sha256": "dc40755a1e6c067e60d5c1159336678483db9ff74cce124ed74129c5f933b34e",
+    "proxy_image_sha256": "sha256:5ffb4be2bc56058c8c8d503b548ae009aa434db3206ee0f09ad6c39cb10f33df",
+    "published_on": "2026-09-23",
+    "runner_sha256": "d2b769876d684a5768234befdfb91a9f9d08fab3be75b6f9e4f7a68c02c5a9e0",
+    "scope": "single-box single-session unofficial Round A pi cloud-agent result using GPT-6 Luna max; not comparable to v0.5 or to the GPT-6 Sol high row",
+    "tag": null,
+    "warm_cache_policy": "one untimed warmup followed by five timed runs"
+  },
+  "results": [
+    {
+      "adapter_route": "pi to openai-codex OAuth to gpt-6-luna",
+      "agent_elapsed_seconds": 6983,
+      "agent_framework": "pi",
+      "correct": true,
+      "dataset_sha256": "11a6e87f0336ae842a2ddad4a3a9fb3d410a1a2dab9cbd9ea03e1f347ec0c350",
+      "generator_source_sha256": "efc83686387bfb2fd4b7d03c6e6248ff8828764758ae6dd32ea817a2207a093d",
+      "image_sha256": "sha256:fa47a4fb7c27ca4d0d56be6d34ce78b1c4d44a44966b4264085ebda48cc702be",
+      "label": "GPT-6 Luna max",
+      "max_ms": 9959.2,
+      "median_ms": 8034.2,
+      "min_ms": 7890.0,
+      "n_agent_sessions": 1,
+      "omitted_generated_files": [],
+      "profile": "harness/profiles/gpt-6-luna-max.sh",
+      "profile_sha256": "9bffd6c5bd8266e39d3bb76d8a75316288e630fa636d126e1f3fb7360741e30b",
+      "published_artifacts": "gpt-6-luna-max",
+      "rank": 1,
+      "reasoning": "max",
+      "runs_ms": [
+        9959.2,
+        8654.4,
+        7890.0,
+        8034.2,
+        7990.8
+      ],
+      "source_run_dir": ".sessions/gpt-6-luna-max-20260923T105240",
+      "stop_reason": "agent_exit"
+    }
+  ]
+}
