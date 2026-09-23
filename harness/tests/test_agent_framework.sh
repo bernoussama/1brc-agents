@@ -364,6 +364,34 @@ source "$ROOT/harness/profiles/opencode-ox-alpha.sh"
   exit 1
 }
 
+unset PROVIDER MODEL_ID THINKING ADAPTER_ROUTE AUTH_MODE AUTH_FILE AGENT_FRAMEWORK
+# shellcheck disable=SC1091
+source "$ROOT/harness/profiles/gpt-6-sol-high.sh"
+[ "${AGENT_FRAMEWORK:-pi}" = pi ] || {
+  echo "GPT-6 Sol high profile must stay on pi" >&2
+  exit 1
+}
+[ "$PROVIDER" = openai-codex ] || {
+  echo "GPT-6 Sol high profile must use PROVIDER=openai-codex" >&2
+  exit 1
+}
+[ "$MODEL_ID" = gpt-6-sol ] || {
+  echo "GPT-6 Sol high profile must use MODEL_ID=gpt-6-sol" >&2
+  exit 1
+}
+[ "$THINKING" = high ] || {
+  echo "GPT-6 Sol high profile must use THINKING=high" >&2
+  exit 1
+}
+[ "$AUTH_MODE" = file ] || {
+  echo "GPT-6 Sol high profile must use AUTH_MODE=file" >&2
+  exit 1
+}
+grep -Fq 'ARG PI_VERSION=0.87.1' "$ROOT/docker/Dockerfile" || {
+  echo "sandbox image must pin pi 0.87.1 so gpt-6-sol is in the Codex catalog" >&2
+  exit 1
+}
+
 ENTRY_TEST="$(mktemp -d)"
 trap 'rm -rf "$TEST_DIR" "$CONDUCTOR_SEED" "$LUNA_SEED" "$ENTRY_TEST"' EXIT
 mkdir -p "$ENTRY_TEST/bin" "$ENTRY_TEST/lifecycle"
